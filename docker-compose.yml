@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PORT=5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  server:
+    restart: always
+    image: ifrc-gates-server/server
+    build:
+      context: ./
+    tty: true
+    environment:
+      DEBUG: True
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-xxxxxxxx-do-not-use-in-production}
+      DB_NAME: ${DB_NAME:-postgres}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PWD: ${DB_PWD:-postgres}
+      DB_HOST: db
+      DB_PORT: 5432
+    env_file:
+      - .env
+    command: bash -c "/code/scripts/run_develop.sh"
+    volumes:
+      - ./:/code
+      - media:/media
+    ports:
+      - '7020:7020'
+    depends_on:
+      - db
+
+volumes:
+  media:
+  postgres-data:
