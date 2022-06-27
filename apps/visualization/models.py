@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class TCountryProfile(models.Model):
+class CountryProfile(models.Model):
     iso3 = models.CharField(primary_key=True, max_length=3)
     population_size = models.BigIntegerField(blank=True, null=True)
     region = models.CharField(max_length=15, blank=True, null=True)
@@ -55,7 +55,7 @@ class TCountryProfile(models.Model):
         db_table = 't_country_profile'
 
 
-class TDataCountryLevel(models.Model):
+class DataCountryLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     country_name = models.CharField(max_length=50)
     iso3 = models.CharField(max_length=3)
@@ -84,7 +84,7 @@ class TDataCountryLevel(models.Model):
         )
 
 
-class TDataCountryLevelMostRecent(models.Model):
+class DataCountryLevelMostRecent(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     country_name = models.CharField(max_length=50)
     iso3 = models.CharField(max_length=3)
@@ -115,7 +115,7 @@ class TDataCountryLevelMostRecent(models.Model):
         )
 
 
-class TDataCountryLevelQuantiles(models.Model):
+class DataCountryLevelQuantilty(models.Model):
     indicator_month = models.CharField(max_length=10)
     indicator_id = models.CharField(max_length=6)
     subvariable = models.CharField(max_length=50)
@@ -133,7 +133,7 @@ class TDataCountryLevelQuantiles(models.Model):
         unique_together = (('region', 'indicator_id', 'subvariable', 'indicator_month', 'category'),)
 
 
-class TDataGranular(models.Model):
+class DataGranular(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     iso3 = models.CharField(max_length=3)
     admin_level_1 = models.CharField(max_length=100)
@@ -201,7 +201,7 @@ class TDataGranular(models.Model):
         )
 
 
-class TEpiData(models.Model):
+class EpiData(models.Model):
     iso3 = models.CharField(primary_key=True, max_length=3)
     context_date = models.DateField()
     new_cases = models.FloatField()
@@ -253,7 +253,7 @@ class TEpiData(models.Model):
         unique_together = (('iso3', 'context_date'),)
 
 
-class TGlobalLevel(models.Model):
+class GlobalLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     region = models.CharField(max_length=6)
     indicator_id = models.CharField(max_length=6)
@@ -274,7 +274,7 @@ class TGlobalLevel(models.Model):
         unique_together = (('emergency', 'region', 'indicator_month', 'indicator_id', 'subvariable', 'category'),)
 
 
-class TRegionLevel(models.Model):
+class RegionLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     region = models.CharField(max_length=15)
     indicator_id = models.CharField(max_length=6)
