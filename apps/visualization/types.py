@@ -61,3 +61,8 @@ class CountryProfileType:
     vulnerability: auto
     risk: auto
     response: auto
+
+
+@strawberry.django.type(CountryProfile)
+class CountryListType(CountryProfileType):
+    pass
