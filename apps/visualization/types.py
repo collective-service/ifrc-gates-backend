@@ -1,9 +1,10 @@
 # types.py
 import strawberry
 from strawberry import auto
-from .models import CountryProfile
+from .models import CountryProfile, CountryEmergencyProfile
 from strawberry.types import Info
 from typing import List
+from .filters import CountryEmergencyProfileFilter
 
 
 @strawberry.django.type(CountryProfile)
@@ -66,3 +67,12 @@ class CountryProfileType:
 @strawberry.django.type(CountryProfile)
 class CountryListType(CountryProfileType):
     pass
+
+
+@strawberry.django.type(CountryEmergencyProfile, filters=CountryEmergencyProfileFilter)
+class CountryEmergencyProfileType:
+    emergency: auto
+    iso3: auto
+    context_indicator_id: auto
+    context_indicator_value: auto
+    context_date: auto
