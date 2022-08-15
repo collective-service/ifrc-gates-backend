@@ -54,7 +54,10 @@ env = environ.Env(
     DJANGO_MEDIA_URL=(str, '/media/'),
     DJANGO_STATIC_ROOT=(str, os.path.join(BASE_DIR, "staticfiles")),
     DJANGO_MEDIA_ROOT=(str, os.path.join(BASE_DIR, "media")),
-    USE_LOCAL_STORAGE=(bool, True)
+    USE_LOCAL_STORAGE=(bool, True),
+
+    # Celery
+    REDIS_URL=(str, 'redis://redis:6379/0'),
 )
 
 # Quick-start development settings - unsuitable for production
@@ -81,6 +84,7 @@ INSTALLED_APPS = [
     'storages',
     'apps.visualization',
     'corsheaders',
+    'apps.migrate_csv',
 ]
 
 MIDDLEWARE = [
@@ -232,3 +236,9 @@ CORS_ALLOW_HEADERS = (
     'sentry-trace',
 )
 CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS')
+
+# Celery settings
+BROKER_URL = env("REDIS_URL")
+BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
