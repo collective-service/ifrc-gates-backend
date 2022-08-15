@@ -1,6 +1,48 @@
 from django.db import models
 
 
+class Narratives(models.Model):
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    indicator_id = models.CharField(max_length=6)
+    narrative = models.TextField()
+    insert_date = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'narratives'
+        unique_together = (('iso3', 'indicator_id'),)
+
+
+class Countries(models.Model):
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    iso2 = models.CharField(max_length=2, blank=True, null=True)
+    country_name_full = models.CharField(max_length=50, blank=True, null=True)
+    country_name = models.CharField(max_length=50, blank=True, null=True)
+    region = models.CharField(max_length=15, blank=True, null=True)
+    flag_url = models.CharField(max_length=100, blank=True, null=True)
+    income_group = models.CharField(max_length=50, blank=True, null=True)
+    fragility_index_fund_for_peace = models.CharField(max_length=50, blank=True, null=True)
+    fragility_index_oecd = models.CharField(max_length=50, blank=True, null=True)
+    display_in_tableau = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_countries'
+
+
+class CountryEmergencyProfile(models.Model):
+    emergency = models.CharField(max_length=50)
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    context_indicator_id = models.CharField(max_length=255)
+    context_indicator_value = models.FloatField(blank=True, null=True)
+    context_date = models.DateField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_country_emergency_profile'
+        unique_together = (('iso3', 'context_indicator_id', 'emergency'),)
+
+
 class CountryProfile(models.Model):
     iso3 = models.CharField(primary_key=True, max_length=3)
     country_name = models.CharField(max_length=50, blank=True, null=True)
@@ -278,6 +320,20 @@ class EpiData(models.Model):
         unique_together = (('iso3', 'context_date'),)
 
 
+class EpiDataGlobal(models.Model):
+    region = models.CharField(primary_key=True, max_length=255)
+    emergency = models.CharField(max_length=50)
+    context_date = models.DateField()
+    context_indicator_id = models.CharField(max_length=50)
+    context_indicator_value = models.FloatField(blank=True, null=True)
+    most_recent = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_epi_data_global'
+        unique_together = (('region', 'context_date', 'emergency', 'context_indicator_id'),)
+
+
 class GlobalLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     region = models.TextField()
@@ -301,6 +357,15 @@ class GlobalLevel(models.Model):
         unique_together = (('emergency', 'region', 'indicator_month', 'indicator_id', 'subvariable', 'category'),)
 
 
+class Outbreaks(models.Model):
+    outbreak = models.CharField(primary_key=True, max_length=50)
+    active = models.BooleanField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_outbreaks'
+
+
 class RegionLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     region = models.CharField(max_length=15)
@@ -322,45 +387,3 @@ class RegionLevel(models.Model):
         managed = False
         db_table = 't_region_level'
         unique_together = (('emergency', 'region', 'indicator_month', 'indicator_id', 'subvariable', 'category'),)
-
-
-class Narratives(models.Model):
-    iso3 = models.CharField(primary_key=True, max_length=3)
-    indicator_id = models.CharField(max_length=6)
-    narrative = models.TextField()
-    insert_date = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'narratives'
-        unique_together = (('iso3', 'indicator_id'),)
-
-
-class Countries(models.Model):
-    iso3 = models.CharField(primary_key=True, max_length=3)
-    iso2 = models.CharField(max_length=2, blank=True, null=True)
-    country_name_full = models.CharField(max_length=50, blank=True, null=True)
-    country_name = models.CharField(max_length=50, blank=True, null=True)
-    region = models.CharField(max_length=15, blank=True, null=True)
-    flag_url = models.CharField(max_length=100, blank=True, null=True)
-    income_group = models.CharField(max_length=50, blank=True, null=True)
-    fragility_index_fund_for_peace = models.CharField(max_length=50, blank=True, null=True)
-    fragility_index_oecd = models.CharField(max_length=50, blank=True, null=True)
-    display_in_tableau = models.BooleanField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 't_countries'
-
-
-class CountryEmergencyProfile(models.Model):
-    emergency = models.CharField(max_length=50)
-    iso3 = models.CharField(primary_key=True, max_length=3)
-    context_indicator_id = models.CharField(max_length=255)
-    context_indicator_value = models.FloatField(blank=True, null=True)
-    context_date = models.DateField(blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 't_country_emergency_profile'
-        unique_together = (('iso3', 'context_indicator_id', 'emergency'),)
