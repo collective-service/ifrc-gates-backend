@@ -130,7 +130,10 @@ class DataCountryLevel(models.Model):
     class Meta:
         managed = False
         db_table = 't_data_country_level'
-        unique_together = (('emergency', 'iso3', 'indicator_month', 'indicator_id', 'subvariable', 'category', 'admin_level_1'),)
+        unique_together = (
+            'emergency', 'iso3', 'indicator_month', 'indicator_id',
+            'subvariable', 'category', 'admin_level_1'
+        )
 
 
 class DataCountryLevelMostRecent(models.Model):
@@ -245,7 +248,10 @@ class DataGranular(models.Model):
     class Meta:
         managed = False
         db_table = 't_data_granular'
-        unique_together = (('emergency', 'iso3', 'indicator_month', 'indicator_id', 'subvariable', 'category', 'admin_level_1', 'source_id'),)
+        unique_together = (
+            'emergency', 'iso3', 'indicator_month', 'indicator_id',
+            'subvariable', 'category', 'admin_level_1', 'source_id'
+        )
 
 
 class EpiData(models.Model):

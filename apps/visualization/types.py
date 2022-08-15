@@ -2,8 +2,6 @@
 import strawberry
 from strawberry import auto
 from .models import CountryProfile, CountryEmergencyProfile
-from strawberry.types import Info
-from typing import List
 from .filters import CountryEmergencyProfileFilter
 
 

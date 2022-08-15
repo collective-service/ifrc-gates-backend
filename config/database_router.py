@@ -79,7 +79,7 @@ class RcceVisualizationRouter:
 class RcceProductionRouter:
     """
     A router to control all database operations on models rcce production
-    we have read write access on few tables only, we don't create/update any 
+    we have read write access on few tables only, we don't create/update any
     tables definitions on production database.
     """
     route_app_labels = {'migrate_csv', }
