@@ -1,8 +1,14 @@
 import strawberry
 from django.db.models import Q
 from typing import List
-from strawberry import auto
-from .models import CountryEmergencyProfile, Outbreaks
+from .models import (
+    CountryEmergencyProfile,
+    Outbreaks,
+    DataCountryLevel,
+    DataCountryLevelMostRecent,
+    RegionLevel,
+    DataGranular
+)
 
 
 def disabled_outbreaks():
@@ -13,7 +19,7 @@ def disabled_outbreaks():
 
 @strawberry.django.filters.filter(CountryEmergencyProfile)
 class CountryEmergencyProfileFilter:
-    iso3: auto
+    iso3: str
     emergencies: List[str] | None
     context_indicator_ids: List[str] | None
 
@@ -32,3 +38,33 @@ class CountryEmergencyProfileFilter:
             Q(context_indicator_id__in=self.context_indicator_ids) &
             ~Q(emergency__in=disabled_outbreaks())
         )
+
+
+@strawberry.django.filters.filter(DataCountryLevel)
+class DataCountryLevelFilter():
+    iso3: str
+    region: List[str] | None
+    emergency: List[str] | None
+    indicator_description: str
+    indicator_name: str
+
+
+@strawberry.django.filters.filter(DataCountryLevelMostRecent)
+class DataCountryLevelMostRecentFilter():
+    iso3: str
+    region: str
+    emergency: str
+    indicator_description: str
+
+
+@strawberry.django.filters.filter(RegionLevel)
+class RegionLevelFilter():
+    region: str
+    emergency: str
+    type: str
+    category: str
+
+
+@strawberry.django.filters.filter(DataGranular)
+class DataGranularFilter():
+    iso3: str
