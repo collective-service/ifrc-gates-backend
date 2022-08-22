@@ -55,6 +55,7 @@ class DataCountryLevelMostRecentFilter():
     region: str
     emergency: str
     indicator_description: str
+    subvariable: str
 
 
 @strawberry.django.filters.filter(RegionLevel)
