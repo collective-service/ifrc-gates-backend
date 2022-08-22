@@ -48,6 +48,7 @@ env = environ.Env(
     RCCE_VISUALIZATION_SCHEMA_NAME=(str, 'default'),
 
     TIME_ZONE=(str, 'Asia/Kathmandu'),
+    CORS_ALLOWED_ORIGINS=(list, ['http://localhost:3050']),
     # Static, Media configs
     DJANGO_STATIC_URL=(str, '/static/'),
     DJANGO_MEDIA_URL=(str, '/media/'),
@@ -79,11 +80,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'storages',
     'apps.visualization',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -204,3 +207,28 @@ if DEBUG or env('USE_LOCAL_STORATE'):
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Cors settings
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+)
+CORS_ALLOW_HEADERS = (
+    'accept',
+    'accept-encoding',
+    'accept-language',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'sentry-trace',
+)
+CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS')
