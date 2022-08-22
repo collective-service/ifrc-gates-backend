@@ -21,9 +21,9 @@ from .filters import (
     DataCountryLevelFilter,
     DataCountryLevelMostRecentFilter,
     RegionLevelFilter,
-    DataGranularFilter
+    DataGranularFilter,
+    IndicatorFilter
 )
-
 
 
 @strawberry.django.type(Countries)
@@ -363,3 +363,9 @@ class RegionLevelType:
     population_coverage: auto
     error_margin: auto
     std_dev: auto
+
+
+@strawberry.django.type(DataCountryLevelMostRecent, filters=IndicatorFilter)
+class IndicatorType:
+    indicator_name: auto
+    indicator_description: auto

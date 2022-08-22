@@ -69,3 +69,8 @@ class RegionLevelFilter():
 @strawberry.django.filters.filter(DataGranular)
 class DataGranularFilter():
     iso3: str
+
+
+@strawberry.django.filters.filter(DataCountryLevelMostRecent)
+class IndicatorFilter():
+    indicator_name: str
