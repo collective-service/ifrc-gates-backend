@@ -1,6 +1,14 @@
 # types.py
 import strawberry
+from typing import List, Optional
 from strawberry import auto
+
+from .utils import (
+    get_indicators,
+    get_outbreaks,
+    get_gender_disaggregation_data,
+    get_age_disaggregation_data
+)
 from .models import (
     CountryProfile,
     CountryEmergencyProfile,
@@ -21,8 +29,7 @@ from .filters import (
     DataCountryLevelFilter,
     DataCountryLevelMostRecentFilter,
     RegionLevelFilter,
-    DataGranularFilter,
-    IndicatorFilter
+    DataGranularFilter
 )
 
 
@@ -346,6 +353,11 @@ class OutbreaksType:
     active: auto
 
 
+@strawberry.type
+class CountryOutbreaksType:
+    outbreak: str
+
+
 @strawberry.django.type(RegionLevel, filters=RegionLevelFilter)
 class RegionLevelType:
     emergency: auto
@@ -365,7 +377,54 @@ class RegionLevelType:
     std_dev: auto
 
 
-@strawberry.django.type(DataCountryLevelMostRecent, filters=IndicatorFilter)
+@strawberry.type
+class GenderDisaggregationType:
+    category: str
+    indicator_value: float
+
+
+@strawberry.type
+class AgeDisaggregationType:
+    category: str
+    indicator_value: float
+
+
+@strawberry.type
+class DisaggregationType:
+    @strawberry.field
+    async def gender_disaggregation(
+        self, iso3: str,
+        indicator_name: Optional[str] = None,
+        subvariable: Optional[str] = None
+    ) -> List[GenderDisaggregationType]:
+
+        return await get_gender_disaggregation_data(iso3, indicator_name, subvariable)
+
+    @strawberry.field
+    async def age_disaggregation(
+        self,
+        iso3: str,
+        indicator_name: Optional[str] = None,
+        subvariable: Optional[str] = None
+    ) -> List[AgeDisaggregationType]:
+
+        return await get_age_disaggregation_data(iso3, indicator_name, subvariable)
+
+
+@strawberry.django.type(DataCountryLevelMostRecent)
 class IndicatorType:
     indicator_name: auto
     indicator_description: auto
+    subvariable: str
+
+
+@strawberry.type
+class FilterOptionsType:
+
+    @strawberry.field
+    async def indicators(self, iso3: str, indicator_name: Optional[str] = None) -> List[IndicatorType]:
+        return await get_indicators(iso3, indicator_name)
+
+    @strawberry.field
+    async def out_breaks(self, iso3: str) -> List[CountryOutbreaksType]:
+        return await get_outbreaks(iso3)

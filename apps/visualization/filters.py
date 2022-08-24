@@ -1,6 +1,5 @@
 import strawberry
 from django.db.models import Q
-from typing import List
 from .models import (
     CountryEmergencyProfile,
     Outbreaks,
@@ -20,22 +19,22 @@ def disabled_outbreaks():
 @strawberry.django.filters.filter(CountryEmergencyProfile)
 class CountryEmergencyProfileFilter:
     iso3: str
-    emergencies: List[str] | None
-    context_indicator_ids: List[str] | None
+    emergency: str
+    context_indicator_id: str
 
-    def filter_emergencies(self, queryset):
-        if not self.emergencies:
+    def filter_emergency(self, queryset):
+        if not self.emergency:
             return queryset
         return queryset.filter(
-            Q(emergency__in=self.emergencies) &
+            Q(emergency=self.emergency) &
             ~Q(emergency__in=disabled_outbreaks())
         )
 
-    def filter_context_indicator_ids(self, queryset):
-        if not self.context_indicator_ids:
+    def filter_context_indicator_id(self, queryset):
+        if not self.context_indicator_id:
             return queryset
         return queryset.filter(
-            Q(context_indicator_id__in=self.context_indicator_ids) &
+            Q(context_indicator_id=self.context_indicator_id) &
             ~Q(emergency__in=disabled_outbreaks())
         )
 
@@ -43,10 +42,11 @@ class CountryEmergencyProfileFilter:
 @strawberry.django.filters.filter(DataCountryLevel)
 class DataCountryLevelFilter():
     iso3: str
-    region: List[str] | None
-    emergency: List[str] | None
+    region: str
+    emergency: str
     indicator_description: str
     indicator_name: str
+    category: str
 
 
 @strawberry.django.filters.filter(DataCountryLevelMostRecent)
@@ -56,6 +56,7 @@ class DataCountryLevelMostRecentFilter():
     emergency: str
     indicator_description: str
     subvariable: str
+    category: str
 
 
 @strawberry.django.filters.filter(RegionLevel)
@@ -69,8 +70,7 @@ class RegionLevelFilter():
 @strawberry.django.filters.filter(DataGranular)
 class DataGranularFilter():
     iso3: str
-
-
-@strawberry.django.filters.filter(DataCountryLevelMostRecent)
-class IndicatorFilter():
+    emergency: str
     indicator_name: str
+    indicator_discription: str
+    subvariable: str

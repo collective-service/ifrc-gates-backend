@@ -1,5 +1,12 @@
 import strawberry
-from .models import CountryProfile, DataCountryLevelMostRecent
+from typing import List
+from asgiref.sync import sync_to_async
+from typing import Optional
+
+from .models import (
+    CountryProfile,
+    Outbreaks
+)
 from .types import (
     CountryProfileType,
     CountryEmergencyProfileType,
@@ -11,11 +18,10 @@ from .types import (
     GlobalLevelType,
     EpiDataGlobalType,
     OutbreaksType,
-    IndicatorType
+    FilterOptionsType,
+    DataGranularType,
+    DisaggregationType
 )
-from typing import List
-from asgiref.sync import sync_to_async
-from typing import Optional
 
 
 @sync_to_async
@@ -26,18 +32,11 @@ def get_country_profile_object(iso3):
         return None
 
 
-@sync_to_async
-def get_indicators():
-    data = DataCountryLevelMostRecent.objects.all().values_list(
-        'indicator_name',
-        'indicator_description',
-    ).distinct()
-    return [
-        IndicatorType(
-            indicator_name=indicator[0],
-            indicator_description=indicator[1],
-        ) for indicator in data
-    ]
+def get_outbreaks():
+    try:
+        return Outbreaks.objects.filter(active=True)
+    except Outbreaks.DoesNotExist:
+        return None
 
 
 @strawberry.type
@@ -54,16 +53,19 @@ class Query:
 
     # NOTE : Needed for future
     # data_country_level_quantiles: List[DataCountryLevelQuantilesType] = strawberry.django.field()
-    # data_granular: List[DataGranularType] = strawberry.django.field()
+    data_granular: List[DataGranularType] = strawberry.django.field()
     epi_data_global: List[EpiDataGlobalType] = strawberry.django.field()
-    out_breaks: List[OutbreaksType] = strawberry.django.field()
+    out_breaks: List[OutbreaksType] = strawberry.django.field(resolver=get_outbreaks)
     # region_level: List[RegionLevelType] = strawberry.django.field()
-    indicators: List[IndicatorType] = strawberry.django.field()
 
     @strawberry.field
     def country_profile(self, iso3: Optional[str] = None) -> CountryProfileType:
         return get_country_profile_object(iso3)
 
     @strawberry.field
-    def indicators():
-        return get_indicators()
+    async def filter_options(self) -> FilterOptionsType:
+        return FilterOptionsType
+
+    @strawberry.field
+    async def disaggregation(self) -> DisaggregationType:
+        return DisaggregationType
