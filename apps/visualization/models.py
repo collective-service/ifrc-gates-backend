@@ -3,6 +3,8 @@ from django.db import models
 
 class Narratives(models.Model):
     iso3 = models.CharField(primary_key=True, max_length=3)
+    thematic = models.CharField(max_length=50)
+    topic = models.CharField(max_length=50)
     indicator_id = models.CharField(max_length=6)
     narrative = models.TextField()
     insert_date = models.DateTimeField(blank=True, null=True)
@@ -10,7 +12,9 @@ class Narratives(models.Model):
     class Meta:
         managed = False
         db_table = 'narratives'
-        unique_together = (('iso3', 'indicator_id'),)
+        unique_together = (
+            ('iso3', 'thematic', 'topic', 'indicator_id'),
+        )
 
 
 class Countries(models.Model):
@@ -28,6 +32,30 @@ class Countries(models.Model):
     class Meta:
         managed = False
         db_table = 't_countries'
+
+
+class ContextualData(models.Model):
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    context_date = models.DateField()
+    context_indicator_id = models.CharField(max_length=50)
+    context_indicator_value = models.FloatField(blank=True, null=True)
+    context_comment = models.CharField(max_length=1000, blank=True, null=True)
+    insert_date = models.DateTimeField(blank=True, null=True)
+    source = models.CharField(max_length=100, blank=True, null=True)
+    context_subvariable = models.CharField(max_length=100)
+    emergency = models.CharField(max_length=50)
+
+    class Meta:
+        managed = False
+        db_table = 't_contextual_data'
+        unique_together = (
+            (
+                'iso3', 'context_date', 'emergency',
+                'context_indicator_id', 'context_subvariable'
+            ),
+        )
+
+
 
 
 class CountryEmergencyProfile(models.Model):
@@ -51,12 +79,15 @@ class CountryProfile(models.Model):
     internet_access = models.FloatField(blank=True, null=True)
     internet_access_comment = models.CharField(max_length=1000, blank=True, null=True)
     internet_access_source = models.CharField(max_length=100, blank=True, null=True)
+    internet_access_region = models.FloatField(blank=True, null=True)
     literacy_rate = models.FloatField(blank=True, null=True)
     literacy_rate_comment = models.CharField(max_length=1000, blank=True, null=True)
     literacy_rate_source = models.CharField(max_length=100, blank=True, null=True)
+    literacy_rate_region = models.FloatField(blank=True, null=True)
     wash_access_national = models.FloatField(blank=True, null=True)
     wash_access_national_comment = models.CharField(max_length=1000, blank=True, null=True)
     wash_access_national_source = models.CharField(max_length=100, blank=True, null=True)
+    wash_access_national_region = models.FloatField(blank=True, null=True)
     wash_access_rural = models.FloatField(blank=True, null=True)
     wash_access_rural_comment = models.CharField(max_length=1000, blank=True, null=True)
     wash_access_rural_source = models.CharField(max_length=100, blank=True, null=True)
@@ -64,17 +95,20 @@ class CountryProfile(models.Model):
     wash_access_urban_comment = models.CharField(max_length=1000, blank=True, null=True)
     wash_access_urban_source = models.CharField(max_length=100, blank=True, null=True)
     stringency = models.FloatField(blank=True, null=True)
+    stringency_region = models.FloatField(blank=True, null=True)
     mask_policy = models.FloatField(blank=True, null=True)
     stay_at_home_requirements = models.FloatField(blank=True, null=True)
     medical_staff = models.FloatField(blank=True, null=True)
     medical_staff_comment = models.CharField(max_length=1000, blank=True, null=True)
     medical_staff_source = models.CharField(max_length=100, blank=True, null=True)
+    medical_staff_region = models.FloatField(blank=True, null=True)
     covid_risk = models.FloatField(blank=True, null=True)
     covid_risk_comment = models.CharField(max_length=1000, blank=True, null=True)
     covid_risk_source = models.CharField(max_length=100, blank=True, null=True)
     economic_support_index = models.FloatField(blank=True, null=True)
     economic_support_index_comment = models.CharField(max_length=1000, blank=True, null=True)
     economic_support_index_source = models.CharField(max_length=100, blank=True, null=True)
+    economic_support_index_region = models.FloatField(blank=True, null=True)
     vaccination_policy = models.FloatField(blank=True, null=True)
     vaccination_policy_index_comment = models.CharField(max_length=1000, blank=True, null=True)
     vaccination_policy_source = models.CharField(max_length=100, blank=True, null=True)
@@ -115,7 +149,9 @@ class DataCountryLevel(models.Model):
     subvariable = models.CharField(max_length=255)
     indicator_name = models.CharField(max_length=200, blank=True, null=True)
     thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
     topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
     indicator_description = models.CharField(max_length=250, blank=True, null=True)
     type = models.CharField(max_length=50, blank=True, null=True)
     indicator_month = models.DateField()
@@ -131,8 +167,10 @@ class DataCountryLevel(models.Model):
         managed = False
         db_table = 't_data_country_level'
         unique_together = (
-            'emergency', 'iso3', 'indicator_month', 'indicator_id',
-            'subvariable', 'category', 'admin_level_1'
+            (
+                'emergency', 'iso3', 'indicator_month', 'indicator_id',
+                'subvariable', 'category', 'admin_level_1'
+            ),
         )
 
 
@@ -148,7 +186,9 @@ class DataCountryLevelMostRecent(models.Model):
     subvariable = models.CharField(max_length=255)
     indicator_name = models.CharField(max_length=200, blank=True, null=True)
     thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
     topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
     indicator_description = models.CharField(max_length=250, blank=True, null=True)
     type = models.CharField(max_length=50, blank=True, null=True)
     indicator_month = models.DateField()
@@ -165,7 +205,106 @@ class DataCountryLevelMostRecent(models.Model):
     class Meta:
         managed = False
         db_table = 't_data_country_level_most_recent'
-        unique_together = (('emergency', 'iso3', 'indicator_id', 'subvariable', 'indicator_month', 'category'),)
+        unique_together = (
+            (
+                'emergency', 'iso3', 'indicator_id',
+                'subvariable', 'indicator_month', 'category'
+            ),
+        )
+
+
+class DataCountryLevelPublicContext(models.Model):
+    iso3 = models.CharField(max_length=3)
+    context_date = models.DateField()
+    new_cases = models.FloatField(blank=True, null=True)
+    new_cases_comment = models.CharField(max_length=1000, blank=True, null=True)
+    new_cases_source = models.CharField(max_length=100, blank=True, null=True)
+    total_cases = models.FloatField(blank=True, null=True)
+    total_cases_comment = models.CharField(max_length=1000, blank=True, null=True)
+    total_cases_source = models.CharField(max_length=100, blank=True, null=True)
+    new_deaths = models.FloatField(blank=True, null=True)
+    new_deaths_comment = models.CharField(max_length=1000, blank=True, null=True)
+    new_deaths_source = models.CharField(max_length=100, blank=True, null=True)
+    total_deaths = models.FloatField(blank=True, null=True)
+    total_deaths_comment = models.CharField(max_length=1000, blank=True, null=True)
+    total_deaths_source = models.CharField(max_length=100, blank=True, null=True)
+    total_doses = models.FloatField(blank=True, null=True)
+    total_doses_comment = models.CharField(max_length=1000, blank=True, null=True)
+    total_doses_source = models.CharField(max_length=100, blank=True, null=True)
+    fully_vaccinated_rate = models.FloatField(blank=True, null=True)
+    fully_vaccinated_rate_comment = models.CharField(max_length=1000, blank=True, null=True)
+    fully_vaccinated_rate_source = models.CharField(max_length=100, blank=True, null=True)
+    mask_policy = models.FloatField(blank=True, null=True)
+    mask_policy_comment = models.CharField(max_length=1000, blank=True, null=True)
+    mask_policy_source = models.CharField(max_length=100, blank=True, null=True)
+    stay_at_home_requirements = models.FloatField(blank=True, null=True)
+    stay_at_home_requirements_comment = models.CharField(max_length=1000, blank=True, null=True)
+    stay_at_home_requirements_source = models.CharField(max_length=100, blank=True, null=True)
+    stringency = models.FloatField(blank=True, null=True)
+    stringency_comment = models.CharField(max_length=1000, blank=True, null=True)
+    stringency_source = models.CharField(max_length=100, blank=True, null=True)
+    new_cases_per_million = models.FloatField(blank=True, null=True)
+    new_cases_per_million_comment = models.CharField(max_length=1000, blank=True, null=True)
+    new_cases_per_million_source = models.CharField(max_length=100, blank=True, null=True)
+    new_deaths_per_million = models.FloatField(blank=True, null=True)
+    new_deaths_per_million_comment = models.CharField(max_length=1000, blank=True, null=True)
+    new_deaths_per_million_source = models.CharField(max_length=100, blank=True, null=True)
+    economic_support_index = models.FloatField(blank=True, null=True)
+    economic_support_index_comment = models.CharField(max_length=1000, blank=True, null=True)
+    economic_support_index_source = models.CharField(max_length=100, blank=True, null=True)
+    vaccination_policy = models.FloatField(blank=True, null=True)
+    vaccination_policy_comment = models.CharField(max_length=1000, blank=True, null=True)
+    vaccination_policy_source = models.CharField(max_length=100, blank=True, null=True)
+    public_information_campaigns = models.FloatField(blank=True, null=True)
+    public_information_campaigns_comment = models.CharField(max_length=1000, blank=True, null=True)
+    public_information_campaigns_source = models.CharField(max_length=100, blank=True, null=True)
+    vaccinated_rate = models.FloatField(blank=True, null=True)
+    vaccinated_rate_comment = models.CharField(max_length=1000, blank=True, null=True)
+    vaccinated_rate_source = models.CharField(max_length=100, blank=True, null=True)
+    boosters_rate = models.FloatField(blank=True, null=True)
+    boosters_rate_comment = models.CharField(max_length=1000, blank=True, null=True)
+    boosters_rate_source = models.CharField(max_length=100, blank=True, null=True)
+    vaccine_supply = models.FloatField(blank=True, null=True)
+    vaccine_supply_source = models.CharField(max_length=100, blank=True, null=True)
+    hosp_patients = models.FloatField(blank=True, null=True)
+    hosp_patients_comment = models.CharField(max_length=1000, blank=True, null=True)
+    hosp_patients_source = models.CharField(max_length=100, blank=True, null=True)
+    hosp_patients_per_million = models.FloatField(blank=True, null=True)
+    hosp_patients_per_million_comment = models.CharField(max_length=1000, blank=True, null=True)
+    hosp_patients_per_million_source = models.CharField(max_length=100, blank=True, null=True)
+    icu_patients = models.FloatField(blank=True, null=True)
+    icu_patients_comment = models.CharField(max_length=1000, blank=True, null=True)
+    icu_patients_source = models.CharField(max_length=100, blank=True, null=True)
+    icu_patients_per_million = models.FloatField(blank=True, null=True)
+    icu_patients_per_million_comment = models.CharField(max_length=1000, blank=True, null=True)
+    icu_patients_per_million_source = models.CharField(max_length=100, blank=True, null=True)
+    emergency = models.CharField(primary_key=True, max_length=50)
+    country_name = models.CharField(max_length=50, blank=True, null=True)
+    admin_level_1 = models.CharField(max_length=100)
+    region = models.CharField(max_length=15, blank=True, null=True)
+    income_group = models.CharField(max_length=50, blank=True, null=True)
+    fragility_index_fund_for_peace = models.CharField(max_length=50, blank=True, null=True)
+    indicator_id = models.CharField(max_length=6)
+    indicator_name = models.CharField(max_length=200, blank=True, null=True)
+    subvariable = models.CharField(max_length=255)
+    thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
+    topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
+    category = models.CharField(max_length=50)
+    population_size = models.BigIntegerField(blank=True, null=True)
+    indicator_value = models.FloatField(blank=True, null=True)
+    error_margin = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_data_country_level_public_context'
+        unique_together = (
+            (
+                'emergency', 'iso3', 'context_date', 'indicator_id',
+                'subvariable', 'category', 'admin_level_1'
+            ),
+        )
 
 
 class DataCountryLevelQuantiles(models.Model):
@@ -184,7 +323,9 @@ class DataCountryLevelQuantiles(models.Model):
     class Meta:
         managed = False
         db_table = 't_data_country_level_quantiles'
-        unique_together = (('region', 'indicator_id', 'subvariable', 'indicator_month', 'category'),)
+        unique_together = (
+            ('region', 'indicator_id', 'subvariable', 'indicator_month', 'category'),
+        )
 
 
 class DataGranular(models.Model):
@@ -195,7 +336,9 @@ class DataGranular(models.Model):
     subvariable = models.CharField(max_length=255)
     indicator_name = models.CharField(max_length=200, blank=True, null=True)
     thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
     topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
     indicator_description = models.CharField(max_length=250, blank=True, null=True)
     type = models.CharField(max_length=50, blank=True, null=True)
     direction = models.IntegerField(blank=True, null=True)
@@ -249,8 +392,10 @@ class DataGranular(models.Model):
         managed = False
         db_table = 't_data_granular'
         unique_together = (
-            'emergency', 'iso3', 'indicator_month', 'indicator_id',
-            'subvariable', 'category', 'admin_level_1', 'source_id'
+            (
+                'emergency', 'iso3', 'indicator_month', 'indicator_id',
+                'subvariable', 'category', 'admin_level_1', 'source_id'
+            ),
         )
 
 
@@ -344,11 +489,13 @@ class GlobalLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     region = models.TextField()
     indicator_id = models.CharField(max_length=6)
-    subvariable = models.CharField(max_length=255)
     indicator_name = models.CharField(max_length=200, blank=True, null=True)
-    thematic = models.CharField(max_length=50, blank=True, null=True)
-    topic = models.CharField(max_length=50, blank=True, null=True)
     indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    subvariable = models.CharField(max_length=255)
+    thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
+    topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
     type = models.CharField(max_length=50, blank=True, null=True)
     indicator_month = models.DateField()
     category = models.CharField(max_length=50)
@@ -360,7 +507,12 @@ class GlobalLevel(models.Model):
     class Meta:
         managed = False
         db_table = 't_global_level'
-        unique_together = (('emergency', 'region', 'indicator_month', 'indicator_id', 'subvariable', 'category'),)
+        unique_together = (
+            (
+                'emergency', 'region', 'indicator_month',
+                'indicator_id', 'subvariable', 'category'
+            ),
+        )
 
 
 class Outbreaks(models.Model):
@@ -376,11 +528,13 @@ class RegionLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     region = models.CharField(max_length=15)
     indicator_id = models.CharField(max_length=6)
+    indicator_description = models.CharField(max_length=250, blank=True, null=True)
     subvariable = models.CharField(max_length=255)
     indicator_name = models.CharField(max_length=200, blank=True, null=True)
     thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
     topic = models.CharField(max_length=50, blank=True, null=True)
-    indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
     type = models.CharField(max_length=50, blank=True, null=True)
     indicator_month = models.DateField()
     category = models.CharField(max_length=50)
@@ -392,4 +546,9 @@ class RegionLevel(models.Model):
     class Meta:
         managed = False
         db_table = 't_region_level'
-        unique_together = (('emergency', 'region', 'indicator_month', 'indicator_id', 'subvariable', 'category'),)
+        unique_together = (
+            (
+                'emergency', 'region', 'indicator_month', 'indicator_id',
+                'subvariable', 'category'
+            ),
+        )
