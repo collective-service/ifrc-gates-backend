@@ -1,6 +1,6 @@
 from asgiref.sync import sync_to_async
 
-from .models import DataCountryLevelMostRecent
+from .models import DataCountryLevel, DataCountryLevelMostRecent
 
 
 @sync_to_async
@@ -81,30 +81,45 @@ def get_age_disaggregation_data(iso3, indicator_name, subvariable):
 
 
 @sync_to_async
-def get_indicators(iso3, indicator_name):
+def get_indicators(iso3, out_break, indicator_name):
     from .types import IndicatorType
 
-    if iso3 and indicator_name:
-        data = DataCountryLevelMostRecent.objects.filter(
+    if iso3:
+        options = DataCountryLevel.objects.filter(
             iso3=iso3,
-            indicator_name=indicator_name
         ).values_list(
+            'emergency',
             'indicator_name',
             'indicator_description',
             'subvariable',
-        ).distinct('subvariable')
-    else:
-        data = DataCountryLevelMostRecent.objects.filter(
-            iso3=iso3
+        ).distinct('emergency')
+
+    elif iso3 and out_break:
+        options = DataCountryLevel.objects.filter(
+            iso3=iso3,
+            emergency=out_break
         ).values_list(
+            'emergency',
             'indicator_name',
             'indicator_description',
             'subvariable',
         ).distinct('indicator_name')
+    else:
+        options = DataCountryLevel.objects.filter(
+            iso3=iso3,
+            emergency=out_break,
+            indicator_name=indicator_name
+        ).values_list(
+            'emergency',
+            'indicator_name',
+            'indicator_description',
+            'subvariable',
+        ).distinct('subvariable')
     return [
         IndicatorType(
-            indicator_name=indicator[0],
-            indicator_description=indicator[1],
-            subvariable=indicator[2]
-        ) for indicator in data
+            outbreak=option[0],
+            indicator_name=option[1],
+            indicator_description=option[2],
+            subvariable=option[3]
+        ) for option in options
     ]

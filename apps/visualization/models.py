@@ -56,8 +56,6 @@ class ContextualData(models.Model):
         )
 
 
-
-
 class CountryEmergencyProfile(models.Model):
     emergency = models.CharField(max_length=50)
     iso3 = models.CharField(primary_key=True, max_length=3)

@@ -6,7 +6,8 @@ from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
     RegionLevel,
-    DataGranular
+    DataGranular,
+    ContextualData
 )
 
 
@@ -42,21 +43,21 @@ class CountryEmergencyProfileFilter:
 @strawberry.django.filters.filter(DataCountryLevel)
 class DataCountryLevelFilter():
     iso3: str
-    region: str
     emergency: str
-    indicator_description: str
     indicator_name: str
-    category: str
+    subvariable: str
 
 
 @strawberry.django.filters.filter(DataCountryLevelMostRecent)
 class DataCountryLevelMostRecentFilter():
     iso3: str
-    region: str
     emergency: str
-    indicator_description: str
+    indicator_name: str
     subvariable: str
-    category: str
+
+    # @property
+    # def qs(self):
+    #     return super().qs.distinct('indicator_name')
 
 
 @strawberry.django.filters.filter(RegionLevel)
@@ -74,3 +75,10 @@ class DataGranularFilter():
     indicator_name: str
     indicator_discription: str
     subvariable: str
+
+
+@strawberry.django.filters.filter(ContextualData)
+class ContextualDataFilter():
+    iso3: str
+    emergency: str
+    context_indicator_id: str

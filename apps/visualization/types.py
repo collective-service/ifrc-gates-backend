@@ -22,14 +22,16 @@ from .models import (
     DataGranular,
     Outbreaks,
     EpiDataGlobal,
-    RegionLevel
+    RegionLevel,
+    ContextualData
 )
 from .filters import (
     CountryEmergencyProfileFilter,
     DataCountryLevelFilter,
     DataCountryLevelMostRecentFilter,
     RegionLevelFilter,
-    DataGranularFilter
+    DataGranularFilter,
+    ContextualDataFilter
 )
 
 
@@ -56,12 +58,15 @@ class CountryProfileType:
     internet_access: auto
     internet_access_comment: auto
     internet_access_source: auto
+    internet_access_region: auto
     literacy_rate: auto
     literacy_rate_comment: auto
     literacy_rate_source: auto
+    literacy_rate_region: auto
     wash_access_national: auto
     wash_access_national_comment: auto
     wash_access_national_source: auto
+    wash_access_national_region: auto
     wash_access_rural: auto
     wash_access_rural_comment: auto
     wash_access_rural_source: auto
@@ -69,17 +74,20 @@ class CountryProfileType:
     wash_access_urban_comment: auto
     wash_access_urban_source: auto
     stringency: auto
+    stringency_region: auto
     mask_policy: auto
     stay_at_home_requirements: auto
     medical_staff: auto
     medical_staff_comment: auto
     medical_staff_source: auto
+    medical_staff_region: auto
     covid_risk: auto
     covid_risk_comment: auto
     covid_risk_source: auto
     economic_support_index: auto
     economic_support_index_comment: auto
     economic_support_index_source: auto
+    economic_support_index_region: auto
     vaccination_policy: auto
     vaccination_policy_index_comment: auto
     vaccination_policy_source: auto
@@ -122,7 +130,7 @@ class NarrativesType:
 
 
 @strawberry.django.type(DataCountryLevel, filters=DataCountryLevelFilter)
-class DataCountryLevelType:
+class DataCountryLevelType():
     emergency: auto
     country_name: auto
     iso3: auto
@@ -377,6 +385,19 @@ class RegionLevelType:
     std_dev: auto
 
 
+@strawberry.django.type(ContextualData, filters=ContextualDataFilter)
+class ContextualDataType:
+    iso3: auto
+    context_date: auto
+    context_indicator_id: auto
+    context_indicator_value: auto
+    context_comment: auto
+    insert_date: auto
+    source: auto
+    context_subvariable: auto
+    emergency: auto
+
+
 @strawberry.type
 class GenderDisaggregationType:
     category: str
@@ -411,8 +432,9 @@ class DisaggregationType:
         return await get_age_disaggregation_data(iso3, indicator_name, subvariable)
 
 
-@strawberry.django.type(DataCountryLevelMostRecent)
+@strawberry.django.type(DataCountryLevel)
 class IndicatorType:
+    outbreak: str
     indicator_name: auto
     indicator_description: auto
     subvariable: str
@@ -422,9 +444,15 @@ class IndicatorType:
 class FilterOptionsType:
 
     @strawberry.field
-    async def indicators(self, iso3: str, indicator_name: Optional[str] = None) -> List[IndicatorType]:
-        return await get_indicators(iso3, indicator_name)
+    async def indicators(
+        self,
+        iso3: Optional[str],
+        out_break: Optional[str] = None,
+        indicator_name: Optional[str] = None,
+    ) -> List[IndicatorType]:
+
+        return await get_indicators(iso3, out_break, indicator_name)
 
     @strawberry.field
-    async def out_breaks(self, iso3: str) -> List[CountryOutbreaksType]:
+    async def out_breaks(self, iso3: Optional[str]) -> List[CountryOutbreaksType]:
         return await get_outbreaks(iso3)
