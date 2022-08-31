@@ -402,13 +402,13 @@ class ContextualDataType:
 @strawberry.type
 class GenderDisaggregationType:
     category: str
-    indicator_value: float
+    indicator_value: Optional[float]
 
 
 @strawberry.type
 class AgeDisaggregationType:
     category: str
-    indicator_value: float
+    indicator_value: Optional[float]
 
 
 @strawberry.type
@@ -445,8 +445,8 @@ class IndicatorType:
 
 @strawberry.type
 class OverviewIndicatorType:
-    indicator_name: str
-    indicator_description: str
+    indicator_name: Optional[str]
+    indicator_description: Optional[str]
 
 
 @strawberry.type

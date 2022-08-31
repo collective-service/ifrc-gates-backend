@@ -38,24 +38,23 @@ def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
 def get_age_disaggregation_data(iso3, indicator_name, subvariable):
     from .types import GenderDisaggregationType
 
-    gender_category = ['Male', 'Female', 'Global']  # TODO use regex for age category detection
-
     all_filters = {
         'iso3': iso3,
         'indicator_name': indicator_name,
         'subvariable': subvariable
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
-    max_date = DataCountryLevelMostRecent.objects.filter(iso3=iso3).latest('indicator_month').indicator_month
+    max_date = DataCountryLevelMostRecent.objects.filter(**filters).latest('indicator_month').indicator_month
     datas = DataCountryLevelMostRecent.objects.filter(
         **filters,
-        indicator_month=max_date
-    ).exclude(
-        category__in=gender_category
+        indicator_month=max_date,
+        category__regex=r'^((\d+)-(\d+)|(\d+\+))'
     ).values_list(
         'category',
         'indicator_value'
     ).distinct('category')
+
+    print("Data", datas)
 
     return [
         GenderDisaggregationType(
@@ -123,7 +122,6 @@ def get_overview_indicators(out_break, region):
     options = list(
         DataCountryLevel.objects.filter(
             **filters,
-            # indicator_name='Community engagement trust'
         ).exclude(
             indicator_name=None
         ).values_list(
@@ -131,7 +129,6 @@ def get_overview_indicators(out_break, region):
             'indicator_description',
         ).distinct('indicator_name')
     )
-    print("Options:", options)
     return [
         OverviewIndicatorType(
             indicator_name=name,
