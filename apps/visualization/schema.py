@@ -43,14 +43,15 @@ def get_outbreaks():
 
 
 @sync_to_async
-def get_data_country_level(iso3, emergency, indicator, sub_indicator):
+def get_data_country_level(iso3, emergency, indicator, sub_indicator, category):
 
-    date_before_twelve_month = timezone.now() - datetime.timedelta(12 * (365 / 12))
+    date_before_twelve_month = timezone.now() - datetime.timedelta(days=365)
     all_filters = {
         'iso3': iso3,
         'emergency': emergency,
         'indicator_name': indicator,
         'subvariable': sub_indicator,
+        'category': category
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
     return list(
@@ -116,10 +117,11 @@ class Query:
         iso3: Optional[str],
         emergency: Optional[str] = None,
         indicator: Optional[str] = None,
-        sub_indicator: Optional[str] = None
+        sub_indicator: Optional[str] = None,
+        category: Optional[str] = None,
     ) -> List[DataCountryLevelType]:
 
-        return get_data_country_level(iso3, emergency, indicator, sub_indicator)
+        return get_data_country_level(iso3, emergency, indicator, sub_indicator, category)
 
     @strawberry.field
     def contextual_data(

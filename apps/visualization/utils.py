@@ -102,11 +102,11 @@ def get_indicators(iso3, out_break, indicator_name):
         ).distinct('subvariable')
     return [
         IndicatorType(
-            outbreak=option[0],
-            indicator_name=option[1],
-            indicator_description=option[2],
-            subvariable=option[3]
-        ) for option in options
+            outbreak=out_break,
+            indicator_name=indicator_name,
+            indicator_description=indicator_description,
+            subvariable=subvariable,
+        ) for out_break, indicator_name, indicator_description, subvariable in options
     ]
 
 
@@ -122,15 +122,19 @@ def get_overview_indicators(out_break, region):
 
     options = list(
         DataCountryLevel.objects.filter(
-            **filters
+            **filters,
+            # indicator_name='Community engagement trust'
         ).exclude(
             indicator_name=None
         ).values_list(
-            'indicator_name'
+            'indicator_name',
+            'indicator_description',
         ).distinct('indicator_name')
     )
+    print("Options:", options)
     return [
         OverviewIndicatorType(
-            indicator_name=option[0],
-        ) for option in options
+            indicator_name=name,
+            indicator_description=description,
+        ) for name, description in options
     ]

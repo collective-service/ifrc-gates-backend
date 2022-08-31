@@ -441,9 +441,12 @@ class IndicatorType:
     subvariable: str
 
 
-@strawberry.django.type(EpiDataGlobal)
+# @strawberry.django.type(DataCountryLevel)
+
+@strawberry.type
 class OverviewIndicatorType:
     indicator_name: str
+    indicator_description: str
 
 
 @strawberry.type
@@ -467,3 +470,4 @@ class FilterOptionsType:
     ) -> List[OverviewIndicatorType]:
 
         return await get_overview_indicators(out_break, region)
+
