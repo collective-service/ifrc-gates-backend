@@ -9,7 +9,7 @@ from typing import Optional
 from .models import (
     CountryProfile,
     Outbreaks,
-    ContextualData
+    ContextualData,
 )
 from .types import (
     CountryProfileType,
@@ -53,7 +53,12 @@ def get_data_country_level(iso3, emergency, indicator, sub_indicator):
         'subvariable': sub_indicator,
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
-    return list(DataCountryLevel.objects.filter(**filters, indicator_month__gt=date_before_twelve_month))
+    return list(
+        DataCountryLevel.objects.filter(
+            **filters,
+            indicator_month__gt=date_before_twelve_month
+        ).order_by('-indicator_month')
+    )
 
 
 @sync_to_async

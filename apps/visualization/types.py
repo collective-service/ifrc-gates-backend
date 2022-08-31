@@ -5,9 +5,9 @@ from strawberry import auto
 
 from .utils import (
     get_indicators,
-    get_outbreaks,
     get_gender_disaggregation_data,
-    get_age_disaggregation_data
+    get_age_disaggregation_data,
+    get_overview_indicators
 )
 from .models import (
     CountryProfile,
@@ -31,7 +31,8 @@ from .filters import (
     DataCountryLevelMostRecentFilter,
     RegionLevelFilter,
     DataGranularFilter,
-    ContextualDataFilter
+    ContextualDataFilter,
+    EpiDataGlobalFilter
 )
 
 
@@ -345,7 +346,7 @@ class DataGranularType:
     category: auto
 
 
-@strawberry.django.type(EpiDataGlobal)
+@strawberry.django.type(EpiDataGlobal, filters=EpiDataGlobalFilter)
 class EpiDataGlobalType:
     region: auto
     emergency: auto
@@ -440,6 +441,11 @@ class IndicatorType:
     subvariable: str
 
 
+@strawberry.django.type(EpiDataGlobal)
+class OverviewIndicatorType:
+    indicator_name: str
+
+
 @strawberry.type
 class FilterOptionsType:
 
@@ -454,5 +460,10 @@ class FilterOptionsType:
         return await get_indicators(iso3, out_break, indicator_name)
 
     @strawberry.field
-    async def out_breaks(self, iso3: Optional[str]) -> List[CountryOutbreaksType]:
-        return await get_outbreaks(iso3)
+    async def overview_indicators(
+        self,
+        out_break: Optional[str] = None,
+        region: Optional[str] = None,
+    ) -> List[OverviewIndicatorType]:
+
+        return await get_overview_indicators(out_break, region)

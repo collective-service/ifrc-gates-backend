@@ -2,29 +2,14 @@ from asgiref.sync import sync_to_async
 
 from .models import DataCountryLevel, DataCountryLevelMostRecent
 
-
-@sync_to_async
-def get_outbreaks(iso3):
-    from .types import CountryOutbreaksType
-
-    data = DataCountryLevelMostRecent.objects.filter(
-        iso3=iso3
-    ).values_list(
-        'emergency',
-    ).distinct('emergency')
-
-    return [
-        CountryOutbreaksType(
-            outbreak=outbreak[0],
-        ) for outbreak in data
-    ]
+from .filters import disabled_outbreaks
 
 
 @sync_to_async
 def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
     from .types import GenderDisaggregationType
 
-    gender_category = ['Male', 'Female', 'Global']
+    gender_category = ['Male', 'Female']
     all_filters = {
         'iso3': iso3,
         'indicator_name': indicator_name,
@@ -53,7 +38,7 @@ def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
 def get_age_disaggregation_data(iso3, indicator_name, subvariable):
     from .types import GenderDisaggregationType
 
-    gender_category = ['Male', 'Female', 'Global']
+    gender_category = ['Male', 'Female', 'Global']  # TODO use regex for age category detection
 
     all_filters = {
         'iso3': iso3,
@@ -87,7 +72,7 @@ def get_indicators(iso3, out_break, indicator_name):
     if iso3:
         options = DataCountryLevel.objects.filter(
             iso3=iso3,
-        ).values_list(
+        ).exclude(emergency__in=disabled_outbreaks()).values_list(
             'emergency',
             'indicator_name',
             'indicator_description',
@@ -98,7 +83,7 @@ def get_indicators(iso3, out_break, indicator_name):
         options = DataCountryLevel.objects.filter(
             iso3=iso3,
             emergency=out_break
-        ).values_list(
+        ).exclude(emergency__in=disabled_outbreaks()).values_list(
             'emergency',
             'indicator_name',
             'indicator_description',
@@ -109,7 +94,7 @@ def get_indicators(iso3, out_break, indicator_name):
             iso3=iso3,
             emergency=out_break,
             indicator_name=indicator_name
-        ).values_list(
+        ).exclude(emergency__in=disabled_outbreaks()).values_list(
             'emergency',
             'indicator_name',
             'indicator_description',
@@ -121,5 +106,31 @@ def get_indicators(iso3, out_break, indicator_name):
             indicator_name=option[1],
             indicator_description=option[2],
             subvariable=option[3]
+        ) for option in options
+    ]
+
+
+@sync_to_async
+def get_overview_indicators(out_break, region):
+    from .types import OverviewIndicatorType
+
+    all_filters = {
+        'emergency': out_break,
+        'region': region
+    }
+    filters = {k: v for k, v in all_filters.items() if v is not None}
+
+    options = list(
+        DataCountryLevel.objects.filter(
+            **filters
+        ).exclude(
+            indicator_name=None
+        ).values_list(
+            'indicator_name'
+        ).distinct('indicator_name')
+    )
+    return [
+        OverviewIndicatorType(
+            indicator_name=option[0],
         ) for option in options
     ]

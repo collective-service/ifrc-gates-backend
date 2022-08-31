@@ -7,7 +7,8 @@ from .models import (
     DataCountryLevelMostRecent,
     RegionLevel,
     DataGranular,
-    ContextualData
+    ContextualData,
+    EpiDataGlobal
 )
 
 
@@ -38,6 +39,13 @@ class CountryEmergencyProfileFilter:
             Q(context_indicator_id=self.context_indicator_id) &
             ~Q(emergency__in=disabled_outbreaks())
         )
+
+
+@strawberry.django.filters.filter(EpiDataGlobal)
+class EpiDataGlobalFilter():
+    region: str
+    emergency: str
+    context_indicator_id: str
 
 
 @strawberry.django.filters.filter(DataCountryLevel)
