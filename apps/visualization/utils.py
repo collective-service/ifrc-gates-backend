@@ -16,21 +16,23 @@ def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
         'subvariable': subvariable
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
-    max_date = DataCountryLevelMostRecent.objects.filter(iso3=iso3).latest('indicator_month').indicator_month
-    datas = DataCountryLevelMostRecent.objects.filter(
-        **filters,
-        indicator_month=max_date,
-        category__in=gender_category
-    ).values_list(
-        'category',
-        'indicator_value'
-    ).distinct('category')
+    recent_data = DataCountryLevelMostRecent.objects.filter(**filters)
+    if recent_data:
+        datas = recent_data.filter(
+            indicator_month=recent_data.latest('indicator_month').indicator_month,
+            category__in=gender_category
+        ).values_list(
+            'category',
+            'indicator_value'
+        ).distinct('category')
+    else:
+        return []
 
     return [
         GenderDisaggregationType(
-            category=data[0],
-            indicator_value=data[1]
-        ) for data in datas
+            category=category,
+            indicator_value=value
+        ) for category, value in datas
     ]
 
 
@@ -44,23 +46,22 @@ def get_age_disaggregation_data(iso3, indicator_name, subvariable):
         'subvariable': subvariable
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
-    max_date = DataCountryLevelMostRecent.objects.filter(**filters).latest('indicator_month').indicator_month
-    datas = DataCountryLevelMostRecent.objects.filter(
-        **filters,
-        indicator_month=max_date,
-        category__regex=r'^((\d+)-(\d+)|(\d+\+))'
-    ).values_list(
-        'category',
-        'indicator_value'
-    ).distinct('category')
-
-    print("Data", datas)
-
+    recent_data = DataCountryLevelMostRecent.objects.filter(**filters)
+    if recent_data:
+        datas = recent_data.filter(
+            category__regex=r'^((\d+)-(\d+)|(\d+\+))',
+            indicator_month=recent_data.latest('indicator_month').indicator_month,
+        ).values_list(
+            'category',
+            'indicator_value'
+        ).distinct('category')
+    else:
+        return []
     return [
         GenderDisaggregationType(
-            category=data[0],
-            indicator_value=data[1]
-        ) for data in datas
+            category=category,
+            indicator_value=value
+        ) for category, value in datas
     ]
 
 

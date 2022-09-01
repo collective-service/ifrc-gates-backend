@@ -401,13 +401,13 @@ class ContextualDataType:
 
 @strawberry.type
 class GenderDisaggregationType:
-    category: str
+    category: Optional[str]
     indicator_value: Optional[float]
 
 
 @strawberry.type
 class AgeDisaggregationType:
-    category: str
+    category: Optional[str]
     indicator_value: Optional[float]
 
 
@@ -470,4 +470,3 @@ class FilterOptionsType:
     ) -> List[OverviewIndicatorType]:
 
         return await get_overview_indicators(out_break, region)
-
