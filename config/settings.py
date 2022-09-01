@@ -57,7 +57,7 @@ env = environ.Env(
     USE_LOCAL_STORAGE=(bool, True),
 
     # Celery
-    REDIS_URL=(str, 'redis://redis:6379/0'),
+    REDIS_URL=str,
 )
 
 # Quick-start development settings - unsuitable for production
@@ -81,10 +81,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 3rd party
+    'admin_auto_filters',
     'storages',
+    # Local
     'apps.visualization',
     'corsheaders',
     'apps.migrate_csv',
+    'apps.data',
 ]
 
 MIDDLEWARE = [

@@ -82,6 +82,7 @@ class RcceProductionRouter:
     we have read write access on few tables only, we don't create/update any
     tables definitions on production database.
     """
+    route_app_labels = {'data', }
 
     def db_for_read(self, model, **hints):
         """
