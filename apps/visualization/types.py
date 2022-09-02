@@ -439,9 +439,8 @@ class IndicatorType:
     indicator_name: auto
     indicator_description: auto
     subvariable: str
+    indicator_value: str
 
-
-# @strawberry.django.type(DataCountryLevel)
 
 @strawberry.type
 class OverviewIndicatorType:

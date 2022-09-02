@@ -18,7 +18,7 @@ def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
     filters = {k: v for k, v in all_filters.items() if v is not None}
     recent_data = DataCountryLevelMostRecent.objects.filter(**filters)
     if recent_data:
-        datas = recent_data.filter(
+        data = recent_data.filter(
             indicator_month=recent_data.latest('indicator_month').indicator_month,
             category__in=gender_category
         ).values_list(
@@ -32,7 +32,7 @@ def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
         GenderDisaggregationType(
             category=category,
             indicator_value=value
-        ) for category, value in datas
+        ) for category, value in data
     ]
 
 
@@ -48,7 +48,7 @@ def get_age_disaggregation_data(iso3, indicator_name, subvariable):
     filters = {k: v for k, v in all_filters.items() if v is not None}
     recent_data = DataCountryLevelMostRecent.objects.filter(**filters)
     if recent_data:
-        datas = recent_data.filter(
+        data = recent_data.filter(
             category__regex=r'^((\d+)-(\d+)|(\d+\+))',
             indicator_month=recent_data.latest('indicator_month').indicator_month,
         ).values_list(
@@ -61,7 +61,7 @@ def get_age_disaggregation_data(iso3, indicator_name, subvariable):
         GenderDisaggregationType(
             category=category,
             indicator_value=value
-        ) for category, value in datas
+        ) for category, value in data
     ]
 
 
@@ -69,27 +69,7 @@ def get_age_disaggregation_data(iso3, indicator_name, subvariable):
 def get_indicators(iso3, out_break, indicator_name):
     from .types import IndicatorType
 
-    if iso3:
-        options = DataCountryLevel.objects.filter(
-            iso3=iso3,
-        ).exclude(emergency__in=disabled_outbreaks()).values_list(
-            'emergency',
-            'indicator_name',
-            'indicator_description',
-            'subvariable',
-        ).distinct('emergency')
-
-    elif iso3 and out_break:
-        options = DataCountryLevel.objects.filter(
-            iso3=iso3,
-            emergency=out_break
-        ).exclude(emergency__in=disabled_outbreaks()).values_list(
-            'emergency',
-            'indicator_name',
-            'indicator_description',
-            'subvariable',
-        ).distinct('indicator_name')
-    else:
+    if iso3 and out_break and indicator_name:
         options = DataCountryLevel.objects.filter(
             iso3=iso3,
             emergency=out_break,
@@ -99,14 +79,38 @@ def get_indicators(iso3, out_break, indicator_name):
             'indicator_name',
             'indicator_description',
             'subvariable',
+            'indicator_value',
         ).distinct('subvariable')
+    elif iso3 and out_break:
+        options = DataCountryLevel.objects.filter(
+            iso3=iso3,
+            emergency=out_break
+        ).exclude(emergency__in=disabled_outbreaks()).values_list(
+            'emergency',
+            'indicator_name',
+            'indicator_description',
+            'subvariable',
+            'indicator_value',
+        ).distinct('indicator_name')
+    elif iso3:
+        options = DataCountryLevel.objects.filter(
+            iso3=iso3,
+        ).exclude(emergency__in=disabled_outbreaks()).values_list(
+            'emergency',
+            'indicator_name',
+            'indicator_description',
+            'subvariable',
+            'indicator_value',
+        ).distinct('emergency')
+
     return [
         IndicatorType(
             outbreak=out_break,
             indicator_name=indicator_name,
             indicator_description=indicator_description,
             subvariable=subvariable,
-        ) for out_break, indicator_name, indicator_description, subvariable in options
+            indicator_value=indicator_value,
+        ) for out_break, indicator_name, indicator_description, subvariable, indicator_value in options
     ]
 
 

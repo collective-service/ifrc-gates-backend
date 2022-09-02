@@ -58,7 +58,7 @@ def get_data_country_level(iso3, emergency, indicator, sub_indicator, category):
         DataCountryLevel.objects.filter(
             **filters,
             indicator_month__gt=date_before_twelve_month
-        ).order_by('-indicator_month')
+        ).order_by('-indicator_month', '-indicator_value')
     )
 
 
