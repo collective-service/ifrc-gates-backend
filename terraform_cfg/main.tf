@@ -12,12 +12,12 @@ terraform {
     region          = "eu-west-3"
 #   dynamodb_table  = "terraform-lock-integration-db"
     encrypt         = true
-    profile         = "dfs-rcce"
+    #profile         = "dfs-rcce"
   }
 }
 
 provider "aws" {
   region                    = var.aws_region
-  profile                   = var.aws_profile
+  #profile                   = var.aws_profile
   #shared_credentials_files = ["~/.aws/credentials"]
 }
