@@ -9,6 +9,11 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-data:/data
+
   server:
     restart: always
     image: ifrc-gates-server/server
@@ -16,8 +21,10 @@ services:
       context: ./
     tty: true
     environment:
-      DEBUG: True
+      DEBUG: ${DEBUG:-True}
       SECRET_KEY: ${SECRET_KEY:-django-insecure-xxxxxxxx-do-not-use-in-production}
+      CELERY_REDIS_URL: ${CELERY_REDIS_URL:-redis://redis:6379/0}
+      DJANGO_CACHE_REDIS_URL: ${DJANGO_CACHE_REDIS_URL:-redis://redis:6379/0}
       DB_NAME: ${DB_NAME:-postgres}
       DB_USER: ${DB_USER:-postgres}
       DB_PWD: ${DB_PWD:-postgres}
@@ -33,7 +40,9 @@ services:
       - '7020:7020'
     depends_on:
       - db
+      - redis
 
 volumes:
   media:
   postgres-data:
+  redis-data:

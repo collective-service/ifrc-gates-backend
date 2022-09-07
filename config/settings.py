@@ -45,7 +45,7 @@ env = environ.Env(
     # NOTE: For visualization schema is default public
     DJANGO_SCHEMA_NAME=(str, 'django'),
     RCCE_PRODUCTION_SCHEMA_NAME=(str, 'data'),
-    RCCE_VISUALIZATION_SCHEMA_NAME=(str, 'default'),
+    RCCE_VISUALIZATION_SCHEMA_NAME=(str, 'public'),
 
     TIME_ZONE=(str, 'Asia/Kathmandu'),
     CORS_ALLOWED_ORIGINS=(list, ['http://localhost:3050']),
@@ -54,7 +54,11 @@ env = environ.Env(
     DJANGO_MEDIA_URL=(str, '/media/'),
     DJANGO_STATIC_ROOT=(str, os.path.join(BASE_DIR, "staticfiles")),
     DJANGO_MEDIA_ROOT=(str, os.path.join(BASE_DIR, "media")),
-    USE_LOCAL_STORAGE=(bool, True)
+    USE_LOCAL_STORAGE=(bool, True),
+
+    # Celery
+    CELERY_REDIS_URL=str,  # redis://redis:6379/0
+    DJANGO_CACHE_REDIS_URL=str,  # redis://redis:6379/1
 )
 
 # Quick-start development settings - unsuitable for production
@@ -78,9 +82,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 3rd party
+    'admin_auto_filters',
     'storages',
+    # Local
     'apps.visualization',
     'corsheaders',
+    'apps.migrate_csv',
+    'apps.data',
 ]
 
 MIDDLEWARE = [
@@ -116,21 +125,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DJANGO_SCHEMA_NAME = env('DJANGO_SCHEMA_NAME')
-RCCE_PRODUCTION_SCHEMA_NAME = env('RCCE_PRODUCTION_SCHEMA_NAME')
-RCCE_VISUALIZATION_SCHEMA_NAME = env('RCCE_VISUALIZATION_SCHEMA_NAME')
+DJANGO_DB = 'default'
+RCCE_PRODUCTION_DB = 'data'
+RCCE_VISUALIZATION_DB = 'visualization'
 
 DATABASES = {
-    RCCE_VISUALIZATION_SCHEMA_NAME: {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),
-        'USER': env('VISUALIZATION_DB_USER'),
-        'PASSWORD': env('VISUALIZATION_DB_PASSWROD'),
-        'HOST': env('VISUALIZATION_DB_HOST'),
-        'PORT': env('VISUALIZATION_DB_PORT'),
-    },
-    DJANGO_SCHEMA_NAME: {
+    DJANGO_DB: {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME'),
         'USER': env('DJANGO_DB_USER'),
@@ -138,10 +138,21 @@ DATABASES = {
         'HOST': env('DJANGO_DB_HOST'),
         'PORT': env('DJANGO_DB_PORT'),
         'OPTIONS': {
-            'options': f'-c search_path={DJANGO_SCHEMA_NAME}'
+            'options': f"-c search_path={env('DJANGO_SCHEMA_NAME')}"
         },
     },
-    RCCE_PRODUCTION_SCHEMA_NAME: {
+    RCCE_VISUALIZATION_DB: {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME'),
+        'USER': env('VISUALIZATION_DB_USER'),
+        'PASSWORD': env('VISUALIZATION_DB_PASSWROD'),
+        'HOST': env('VISUALIZATION_DB_HOST'),
+        'PORT': env('VISUALIZATION_DB_PORT'),
+        'OPTIONS': {
+            'options': f"-c search_path={env('RCCE_VISUALIZATION_SCHEMA_NAME')}"
+        },
+    },
+    RCCE_PRODUCTION_DB: {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME'),
         'USER': env('PRODUCTION_DB_USER'),
@@ -149,16 +160,15 @@ DATABASES = {
         'HOST': env('PRODUCTION_DB_HOST'),
         'PORT': env('PRODUCTION_DB_PORT'),
         'OPTIONS': {
-            'options': f'-c search_path={RCCE_PRODUCTION_SCHEMA_NAME}'
+            'options': f"-c search_path={env('RCCE_PRODUCTION_SCHEMA_NAME')}"
         },
     },
 }
 
+
 # Database router this auto detects database based on request
 DATABASE_ROUTERS = [
-    'config.database_router.DjangoRouter',
-    'config.database_router.RcceProductionRouter',
-    'config.database_router.RcceVisualizationRouter',
+    'config.database_router.CustomDBRouter',
 ]
 
 # Password validation
@@ -232,3 +242,24 @@ CORS_ALLOW_HEADERS = (
     'sentry-trace',
 )
 CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS')
+
+# Celery settings
+CELERY_BROKER_URL = CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': env('DJANGO_CACHE_REDIS_URL'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'dj_cache-',
+    },
+    'local-memory': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}

@@ -2,12 +2,13 @@ from django.db import models
 
 
 class Narratives(models.Model):
-    iso3 = models.CharField(primary_key=True, max_length=3)
-    thematic = models.CharField(max_length=50)
-    topic = models.CharField(max_length=50)
-    indicator_id = models.CharField(max_length=6)
+    id = models.AutoField(primary_key=True)
+    iso3 = models.CharField(max_length=3)
+    thematic = models.CharField(max_length=50, default='')
+    topic = models.CharField(max_length=50, default='')
+    indicator_id = models.CharField(max_length=6, default='')
     narrative = models.TextField()
-    insert_date = models.DateTimeField(blank=True, null=True)
+    insert_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         managed = False
@@ -15,6 +16,9 @@ class Narratives(models.Model):
         unique_together = (
             ('iso3', 'thematic', 'topic', 'indicator_id'),
         )
+
+    def __str__(self):
+        return f'{self.id}-{self.insert_date}'
 
 
 class Countries(models.Model):
