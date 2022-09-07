@@ -43,26 +43,6 @@ def get_outbreaks():
 
 
 @sync_to_async
-def get_data_country_level(iso3, emergency, indicator, sub_indicator, category):
-
-    date_before_twelve_month = timezone.now() - datetime.timedelta(days=365)
-    all_filters = {
-        'iso3': iso3,
-        'emergency': emergency,
-        'indicator_name': indicator,
-        'subvariable': sub_indicator,
-        'category': category
-    }
-    filters = {k: v for k, v in all_filters.items() if v is not None}
-    return list(
-        DataCountryLevel.objects.filter(
-            **filters,
-            indicator_month__gt=date_before_twelve_month
-        ).order_by('-indicator_month', '-indicator_value')
-    )
-
-
-@sync_to_async
 def get_contextual_data(iso3, emergency, context_indicator_id):
 
     date_before_twelve_month = timezone.now() - datetime.timedelta(12 * (365 / 12))
@@ -99,6 +79,8 @@ class Query:
     # region_level: List[RegionLevelType] = strawberry.django.field()
     contextual_data: List[ContextualDataType] = strawberry.django.field()
 
+    data_country_level: List[DataCountryLevelType] = strawberry.django.field()
+
     @strawberry.field
     def country_profile(self, iso3: Optional[str] = None) -> CountryProfileType:
         return get_country_profile_object(iso3)
@@ -110,18 +92,6 @@ class Query:
     @strawberry.field
     async def disaggregation(self) -> DisaggregationType:
         return DisaggregationType
-
-    @strawberry.field
-    def data_country_level(
-        self,
-        iso3: Optional[str],
-        emergency: Optional[str] = None,
-        indicator: Optional[str] = None,
-        sub_indicator: Optional[str] = None,
-        category: Optional[str] = None,
-    ) -> List[DataCountryLevelType]:
-
-        return get_data_country_level(iso3, emergency, indicator, sub_indicator, category)
 
     @strawberry.field
     def contextual_data(
