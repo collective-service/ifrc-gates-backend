@@ -1,6 +1,11 @@
 from asgiref.sync import sync_to_async
 
-from .models import DataCountryLevel, DataCountryLevelMostRecent, CountryFilterOptions
+from .models import (
+    DataCountryLevel,
+    DataCountryLevelMostRecent,
+    CountryFilterOptions,
+    Sources,
+)
 
 from .filters import disabled_outbreaks
 
@@ -98,6 +103,44 @@ def get_subvariables(iso3, indicator_id):
     return list(
         subvariables.distinct('subvariable').values_list('subvariable', flat=True)
     )
+
+
+@sync_to_async
+def get_types():
+    return list(
+        DataCountryLevelMostRecent.objects.distinct('type').values_list('type', flat=True)
+    )
+
+
+@sync_to_async
+def get_thematics(type):
+    return list(
+        DataCountryLevelMostRecent.objects.filter(
+            type=type
+        ).distinct('thematic').values_list('thematic', flat=True)
+    )
+
+
+@sync_to_async
+def get_topics(thematic):
+    return list(
+        DataCountryLevelMostRecent.objects.filter(
+            thematic=thematic
+        ).distinct('topic').values_list('topic', flat=True)
+    )
+
+
+@sync_to_async
+def get_keywords():
+    from .types import KeywordOptionType
+    return [
+        KeywordOptionType(
+            keyword=keyword['key_words'],
+            source_id=keyword['source_id']
+        ) for keyword in Sources.objects.filter(
+            key_words__isnull=False
+        ).distinct('key_words').values('key_words', 'source_id')
+    ]
 
 
 @sync_to_async

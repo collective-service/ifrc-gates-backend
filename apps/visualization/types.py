@@ -10,6 +10,10 @@ from .utils import (
     get_age_disaggregation_data,
     get_overview_indicators,
     get_subvariables,
+    get_types,
+    get_thematics,
+    get_topics,
+    get_keywords,
 )
 from .models import (
     CountryProfile,
@@ -448,6 +452,12 @@ class OverviewIndicatorType:
 
 
 @strawberry.type
+class KeywordOptionType:
+    keyword: Optional[str]
+    source_id: Optional[str]
+
+
+@strawberry.type
 class FilterOptionsType:
 
     @strawberry.field
@@ -481,3 +491,19 @@ class FilterOptionsType:
     ) -> List[OverviewIndicatorType]:
 
         return await get_overview_indicators(out_break, region)
+
+    @strawberry.field
+    async def types(self) -> List[str]:
+        return await get_types()
+
+    @strawberry.field
+    async def thematics(self, type: str) -> List[str]:
+        return await get_thematics(type)
+
+    @strawberry.field
+    async def topics(self, thematic: str) -> List[str]:
+        return await get_topics(thematic)
+
+    @strawberry.field
+    async def keywords(self) -> List[KeywordOptionType]:
+        return await get_keywords()
