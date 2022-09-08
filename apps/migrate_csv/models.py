@@ -46,7 +46,7 @@ def csv_file_validator(document, required_headers):
             if error_messages:
                 error_messages.append(
                     _(
-                        'NOTE: In backend, columes are lowercased and replaced space are replaced with _. '
+                        'NOTE: In backend, columns are lowercased and spaces are replaced with _. '
                         'Eg: Age info -> age_info'
                     )
                 )
@@ -80,7 +80,7 @@ class DataImportPreviewBase(models.Model):
     reviewed_at = models.DateTimeField(verbose_name=_('Reviewed at'), blank=True, null=True)
 
     # Outlier attributes
-    is_outlier = models.BooleanField(default=False)
+    no_outlier = models.BooleanField(verbose_name=_('No outlier'), default=False)
     outlier_data = models.JSONField(default=list, blank=True)
 
     class Meta:
@@ -352,7 +352,7 @@ class DataImport(models.Model):
         return self.FILE_TYPE_TO_MODEL_MAP[DataImport.FileType(self.file_type)]
 
     def clean(self):
-        if self.pk is None:
+        if self.pk is None and self.file_type is not None:
             # Validate CSV File on creation.
             required_headers = self.preview_model.CSV_HEADERS
             csv_file_validator(self.file, required_headers)

@@ -40,7 +40,7 @@ def process_data_import(pk):
             new_preview_objects.append(
                 PREVIEW_MODEL(
                     importer=data_import,
-                    is_outlier=not not outlier_data,
+                    no_outlier=not outlier_data,
                     outlier_data=outlier_data,
                     **{
                         column: row[column]
