@@ -14,7 +14,6 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 from config.utils import get_admin_url
 
 from .views import CustomAutocompleteJsonView
-from .forms import DataImportForm
 from .models import (
     DataImport,
     ImportUserDataPreview,
@@ -56,7 +55,6 @@ class DataImportAdmin(admin.ModelAdmin):
         'file_type',
         'status',
     ]
-    form = DataImportForm
 
     def get_queryset(self, request):
         reviewed_count_annotate = reduce(
@@ -167,21 +165,21 @@ class ImportUserDataPreviewBaseAdmin(admin.ModelAdmin):
         'id',
         'importer',
         'is_reviewed',
-        'is_outlier',
+        'no_outlier',
         'reviewed_at',
     ]
     readonly_fields = (
         'importer',
         'reviewed_by',
         'reviewed_at',
-        'is_outlier',
+        'no_outlier',
         'outlier_remarks',
     )
     exclude = ('outlier_data',)
     list_filter = [
         AutocompleteFilterFactory('Reviewed by', 'reviewed_by'),
         AutocompleteFilterFactory('CSV', 'importer', 'admin:custom_autocomplete_search', True),
-        'is_outlier',
+        'no_outlier',
         'is_reviewed',
     ]
     actions = [bulk_review_true, bulk_review_false]
