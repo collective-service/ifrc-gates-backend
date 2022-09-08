@@ -4,10 +4,12 @@ from typing import List, Optional
 from strawberry import auto
 
 from .utils import (
-    get_indicators,
+    get_outbreaks,
+    get_country_indicators,
     get_gender_disaggregation_data,
     get_age_disaggregation_data,
-    get_overview_indicators
+    get_overview_indicators,
+    get_subvariables,
 )
 from .models import (
     CountryProfile,
@@ -433,13 +435,10 @@ class DisaggregationType:
         return await get_age_disaggregation_data(iso3, indicator_name, subvariable)
 
 
-@strawberry.django.type(DataCountryLevel)
-class IndicatorType:
-    outbreak: str
-    indicator_name: auto
-    indicator_description: auto
-    subvariable: str
-    indicator_value: str
+@strawberry.type
+class CountryIndicatorType:
+    indicator_id: Optional[str]
+    indicator_description: Optional[str]
 
 
 @strawberry.type
@@ -452,14 +451,27 @@ class OverviewIndicatorType:
 class FilterOptionsType:
 
     @strawberry.field
-    async def indicators(
+    async def outbreaks(
         self,
-        iso3: Optional[str],
-        out_break: Optional[str] = None,
-        indicator_name: Optional[str] = None,
-    ) -> List[IndicatorType]:
+        iso3: str,
+    ) -> List[str]:
+        return await get_outbreaks(iso3)
 
-        return await get_indicators(iso3, out_break, indicator_name)
+    @strawberry.field
+    async def country_indicators(
+        self,
+        iso3: str,
+        outbreak: Optional[str] = None,
+    ) -> List[CountryIndicatorType]:
+        return await get_country_indicators(iso3, outbreak)
+
+    @strawberry.field
+    async def subvariables(
+        self,
+        iso3: str,
+        indicator_id: Optional[str] = None,
+    ) -> List[str]:
+        return await get_subvariables(iso3, indicator_id)
 
     @strawberry.field
     async def overview_indicators(

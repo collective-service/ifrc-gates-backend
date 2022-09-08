@@ -39,7 +39,7 @@ class Countries(models.Model):
 
 
 class ContextualData(models.Model):
-    iso3 = models.CharField(primary_key=True, max_length=3)
+    iso3 = models.CharField(max_length=3)
     context_date = models.DateField()
     context_indicator_id = models.CharField(max_length=50)
     context_indicator_value = models.FloatField(blank=True, null=True)
@@ -554,3 +554,44 @@ class RegionLevel(models.Model):
                 'subvariable', 'category'
             ),
         )
+
+
+class Sources(models.Model):
+    source_id = models.CharField(primary_key=True, max_length=5)
+    organisation = models.CharField(max_length=100, blank=True, null=True)
+    title = models.CharField(max_length=250, blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+    authors = models.CharField(max_length=1000, blank=True, null=True)
+    methodology = models.CharField(max_length=250, blank=True, null=True)
+    sample_size = models.CharField(max_length=250, blank=True, null=True)
+    target_pop = models.CharField(max_length=500, blank=True, null=True)
+    scale = models.CharField(max_length=25, blank=True, null=True)
+    quality_check = models.CharField(max_length=50, blank=True, null=True)
+    impact_factor = models.CharField(max_length=1000, blank=True, null=True)
+    access_type = models.CharField(max_length=25, blank=True, null=True)
+    source_comment = models.CharField(max_length=5000, blank=True, null=True)
+    publication_channel = models.CharField(max_length=100, blank=True, null=True)
+    link = models.CharField(max_length=1000, blank=True, null=True)
+    source_date = models.DateField(blank=True, null=True)
+    key_words = models.CharField(max_length=250, blank=True, null=True)
+    source_status = models.CharField(max_length=15, blank=True, null=True)
+    frequency = models.CharField(max_length=15, blank=True, null=True)
+    sample_type = models.CharField(max_length=25, blank=True, null=True)
+    publish = models.CharField(max_length=25, blank=True, null=True)
+    insert_date = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_sources'
+
+
+class CountryFilterOptions(models.Model):
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    emergency = models.CharField(max_length=50)
+    indicator_id = models.CharField(max_length=6, default='')
+    indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    subvariable = models.CharField(max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 't_country_indicator_options'
