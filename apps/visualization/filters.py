@@ -11,6 +11,7 @@ from .models import (
     ContextualData,
     EpiDataGlobal
 )
+from strawberry import auto
 
 
 def disabled_outbreaks():
@@ -49,13 +50,14 @@ class EpiDataGlobalFilter():
     context_indicator_id: str
 
 
-@strawberry.django.filters.filter(DataCountryLevel)
+@strawberry.django.filters.filter(DataCountryLevel, lookups=True)
 class DataCountryLevelFilter():
     iso3: str
     emergency: str
     indicator_name: str
     subvariable: str
     category: str
+    indicator_month: auto
 
 
 @strawberry.django.filters.filter(DataCountryLevelMostRecent)
