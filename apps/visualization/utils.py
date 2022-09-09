@@ -1,12 +1,11 @@
 from asgiref.sync import sync_to_async
-
+import re
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
     CountryFilterOptions,
     Sources,
 )
-
 from .filters import disabled_outbreaks
 
 
@@ -142,17 +141,19 @@ def get_topics(thematic):
         )
 
 
+def clean_keywords(keywords):
+    data = []
+    for keyword in keywords:
+        splited_keywords = re.split(";|,|\|", keyword.strip())
+        cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
+        data = data + cleaned_keywords
+    return list(set(data))
+
+
 @sync_to_async
 def get_keywords():
-    from .types import KeywordOptionType
-    return [
-        KeywordOptionType(
-            keyword=keyword['key_words'],
-            source_id=keyword['source_id']
-        ) for keyword in Sources.objects.filter(
-            key_words__isnull=False
-        ).distinct('key_words').values('key_words', 'source_id')
-    ]
+    keywords = Sources.objects.filter(key_words__isnull=False).distinct('key_words').values_list('key_words', flat=True)
+    return clean_keywords(keywords)
 
 
 @sync_to_async

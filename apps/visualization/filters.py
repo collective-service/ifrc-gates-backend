@@ -9,7 +9,8 @@ from .models import (
     RegionLevel,
     DataGranular,
     ContextualData,
-    EpiDataGlobal
+    EpiDataGlobal,
+    Sources,
 )
 from strawberry import auto
 
@@ -69,13 +70,15 @@ class DataCountryLevelMostRecentFilter():
     topic: str
     thematic: str
     type: str
-    source_ids: List[str]
+    keywords: List[str]
 
-    def filter_source_ids(self, queryset):
-        if not self.source_ids:
+    def filter_keywords(self, queryset):
+        if not self.keywords:
             return queryset
+        source_ids = Sources.objects.filter(key_words__icontains=''.join(self.keywords)).values_list('source_id', flat=True)
+        print(len(source_ids))
         indicator_ids = DataGranular.objects.filter(
-            source_id__in=self.source_ids
+            source_id__in=source_ids
         ).values_list('indicator_id', flat=True)
         return queryset.filter(indicator_id__in=indicator_ids)
 
