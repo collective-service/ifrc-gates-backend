@@ -30,10 +30,9 @@ from .types import (
 from apps.visualization.models import DataCountryLevel
 
 
-@sync_to_async
-def get_country_profile_object(iso3):
+async def get_country_profile_object(iso3):
     try:
-        return CountryProfile.objects.get(iso3=iso3)
+        return await CountryProfile.objects.aget(iso3=iso3)
     except CountryProfile.DoesNotExist:
         return None
 
@@ -42,8 +41,7 @@ def get_outbreaks():
     return Outbreaks.objects.filter(active=True)
 
 
-@sync_to_async
-def get_contextual_data(iso3, emergency, context_indicator_id):
+async def get_contextual_data(iso3, emergency, context_indicator_id):
 
     date_before_twelve_month = timezone.now() - datetime.timedelta(12 * (365 / 12))
     all_filters = {
@@ -52,12 +50,13 @@ def get_contextual_data(iso3, emergency, context_indicator_id):
         'context_indicator_id': context_indicator_id
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
-    return list(
-        ContextualData.objects.filter(
+    return [
+        contextual_data
+        async for contextual_data in ContextualData.objects.filter(
             **filters,
             context_date__gt=date_before_twelve_month
         ).order_by('-context_date')
-    )
+    ]
 
 
 @strawberry.type
@@ -97,7 +96,7 @@ class Query:
     def contextual_data(
         self,
         context_indicator_id: str,
-        iso3: Optional[str],
+        iso3: Optional[str] = None,
         emergency: Optional[str] = None,
     ) -> List[ContextualDataType]:
 
