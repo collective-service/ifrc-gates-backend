@@ -114,20 +114,32 @@ def get_types():
 
 @sync_to_async
 def get_thematics(type):
-    return list(
-        DataCountryLevelMostRecent.objects.filter(
-            type=type
-        ).distinct('thematic').values_list('thematic', flat=True)
-    )
+    qs = DataCountryLevelMostRecent.objects.all()
+    if type:
+        return list(
+            qs.filter(
+                type=type
+            ).distinct('thematic').values_list('thematic', flat=True)
+        )
+    else:
+        return list(
+            qs.distinct('thematic').values_list('thematic', flat=True)
+        )
 
 
 @sync_to_async
 def get_topics(thematic):
-    return list(
-        DataCountryLevelMostRecent.objects.filter(
-            thematic=thematic
-        ).distinct('topic').values_list('topic', flat=True)
-    )
+    qs = DataCountryLevelMostRecent.objects.all()
+    if thematic:
+        return list(
+            qs.filter(
+                thematic=thematic
+            ).distinct('topic').values_list('topic', flat=True)
+        )
+    else:
+        return list(
+            qs.distinct('topic').values_list('topic', flat=True)
+        )
 
 
 @sync_to_async
