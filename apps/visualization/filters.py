@@ -56,6 +56,7 @@ class DataCountryLevelFilter():
     iso3: str
     emergency: str
     indicator_name: str
+    indicator_id: str
     subvariable: str
     category: str
     indicator_month: auto
