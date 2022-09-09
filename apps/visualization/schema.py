@@ -25,7 +25,8 @@ from .types import (
     FilterOptionsType,
     DataGranularType,
     DisaggregationType,
-    ContextualDataType
+    ContextualDataType,
+    RegionLevelType,
 )
 from apps.visualization.models import DataCountryLevel
 
@@ -75,7 +76,7 @@ class Query:
     data_granular: List[DataGranularType] = strawberry.django.field()
     epi_data_global: List[EpiDataGlobalType] = strawberry.django.field()
     out_breaks: List[OutbreaksType] = strawberry.django.field(resolver=get_outbreaks)
-    # region_level: List[RegionLevelType] = strawberry.django.field()
+    region_level: List[RegionLevelType] = strawberry.django.field()
     contextual_data: List[ContextualDataType] = strawberry.django.field()
 
     data_country_level: List[DataCountryLevelType] = strawberry.django.field()
