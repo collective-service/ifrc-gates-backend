@@ -1,6 +1,11 @@
 from asgiref.sync import sync_to_async
 
-from .models import DataCountryLevel, DataCountryLevelMostRecent
+from .models import (
+    DataCountryLevel,
+    DataCountryLevelMostRecent,
+    CountryFilterOptions,
+    Sources,
+)
 
 from .filters import disabled_outbreaks
 
@@ -66,51 +71,75 @@ def get_age_disaggregation_data(iso3, indicator_name, subvariable):
 
 
 @sync_to_async
-def get_indicators(iso3, out_break, indicator_name):
-    from .types import IndicatorType
+def get_outbreaks(iso3):
+    return list(
+        CountryFilterOptions.objects.filter(iso3=iso3).distinct('emergency').values_list('emergency', flat=True)
+    )
 
-    if iso3 and out_break and indicator_name:
-        options = DataCountryLevel.objects.filter(
-            iso3=iso3,
-            emergency=out_break,
-            indicator_name=indicator_name
-        ).exclude(emergency__in=disabled_outbreaks()).values_list(
-            'emergency',
-            'indicator_name',
-            'indicator_description',
-            'subvariable',
-            'indicator_value',
-        ).distinct('subvariable')
-    elif iso3 and out_break:
-        options = DataCountryLevel.objects.filter(
-            iso3=iso3,
-            emergency=out_break
-        ).exclude(emergency__in=disabled_outbreaks()).values_list(
-            'emergency',
-            'indicator_name',
-            'indicator_description',
-            'subvariable',
-            'indicator_value',
-        ).distinct('indicator_name')
-    elif iso3:
-        options = DataCountryLevel.objects.filter(
-            iso3=iso3,
-        ).exclude(emergency__in=disabled_outbreaks()).values_list(
-            'emergency',
-            'indicator_name',
-            'indicator_description',
-            'subvariable',
-            'indicator_value',
-        ).distinct('emergency')
 
+@sync_to_async
+def get_country_indicators(iso3, outbreak):
+    from .types import CountryIndicatorType
+    indicators = CountryFilterOptions.objects.filter(
+        iso3=iso3,
+    )
+    if outbreak:
+        indicators = indicators.filter(emergency=outbreak)
     return [
-        IndicatorType(
-            outbreak=out_break,
-            indicator_name=indicator_name,
-            indicator_description=indicator_description,
-            subvariable=subvariable,
-            indicator_value=indicator_value,
-        ) for out_break, indicator_name, indicator_description, subvariable, indicator_value in options
+        CountryIndicatorType(
+            indicator_id=indicator['indicator_id'],
+            indicator_description=indicator['indicator_description'],
+        ) for indicator in indicators.distinct().values('indicator_id', 'indicator_description')
+    ]
+
+
+@sync_to_async
+def get_subvariables(iso3, indicator_id):
+    subvariables = CountryFilterOptions.objects.filter(
+        iso3=iso3,
+    ).distinct('subvariable')
+    if indicator_id:
+        subvariables = subvariables.filter(indicator_id=indicator_id)
+    return list(
+        subvariables.distinct('subvariable').values_list('subvariable', flat=True)
+    )
+
+
+@sync_to_async
+def get_types():
+    return list(
+        DataCountryLevelMostRecent.objects.distinct('type').values_list('type', flat=True)
+    )
+
+
+@sync_to_async
+def get_thematics(type):
+    return list(
+        DataCountryLevelMostRecent.objects.filter(
+            type=type
+        ).distinct('thematic').values_list('thematic', flat=True)
+    )
+
+
+@sync_to_async
+def get_topics(thematic):
+    return list(
+        DataCountryLevelMostRecent.objects.filter(
+            thematic=thematic
+        ).distinct('topic').values_list('topic', flat=True)
+    )
+
+
+@sync_to_async
+def get_keywords():
+    from .types import KeywordOptionType
+    return [
+        KeywordOptionType(
+            keyword=keyword['key_words'],
+            source_id=keyword['source_id']
+        ) for keyword in Sources.objects.filter(
+            key_words__isnull=False
+        ).distinct('key_words').values('key_words', 'source_id')
     ]
 
 

@@ -1,5 +1,6 @@
 import strawberry
 from django.db.models import Q
+from typing import List
 from .models import (
     CountryEmergencyProfile,
     Outbreaks,
@@ -63,10 +64,18 @@ class DataCountryLevelMostRecentFilter():
     emergency: str
     indicator_name: str
     subvariable: str
+    topic: str
+    thematic: str
+    type: str
+    source_ids: List[str]
 
-    # @property
-    # def qs(self):
-    #     return super().qs.distinct('indicator_name')
+    def filter_source_ids(self, queryset):
+        if not self.source_ids:
+            return queryset
+        indicator_ids = DataGranular.objects.filter(
+            source_id__in=self.source_ids
+        ).values_list('indicator_id', flat=True)
+        return queryset.filter(indicator_id__in=indicator_ids)
 
 
 @strawberry.django.filters.filter(RegionLevel)
