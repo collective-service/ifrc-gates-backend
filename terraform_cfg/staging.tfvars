@@ -6,7 +6,7 @@ environment = "staging"
 az_count = 2
 
 # app
-app_port = "80"
+app_port = "7020"
 
 # ECS role
 ecs_task_execution_role = "ECSTaskExecutionRole"
