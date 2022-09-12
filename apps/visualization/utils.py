@@ -1,5 +1,5 @@
-from asgiref.sync import sync_to_async
 import re
+from asgiref.sync import sync_to_async
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
@@ -7,6 +7,7 @@ from .models import (
     Sources,
 )
 from .filters import disabled_outbreaks
+from utils import get_async_list_from_queryset
 
 
 @sync_to_async
@@ -111,50 +112,38 @@ def get_types():
     )
 
 
-async def get_thematics(type):
+def get_thematics(type):
     qs = DataCountryLevelMostRecent.objects.all()
     if type:
-        return [
-            thematic
-            async for thematic in qs.filter(type=type).distinct('thematic').values_list('thematic', flat=True)
-        ]
-    else:
-        return [
-            thematic
-            async for thematic in qs.distinct('thematic').values_list('thematic', flat=True)
-        ]
+        qs = qs.filter(type=type)
+    return get_async_list_from_queryset(
+        qs.distinct('thematic').values_list('thematic', flat=True)
+    )
 
 
-async def get_topics(thematic):
+def get_topics(thematic):
     qs = DataCountryLevelMostRecent.objects.all()
     if thematic:
-        return [
-            topic
-            async for topic in qs.afilter(thematic=thematic).distinct('topic').values_list('topic', flat=True)
-        ]
-    else:
-        return [
-            topic
-            async for topic in qs.distinct('topic').values_list('topic', flat=True)
-        ]
+        qs = qs.filter(thematic=thematic)
+    return get_async_list_from_queryset(
+        qs.distinct('topic').values_list('topic', flat=True)
+    )
 
 
-def clean_keywords(keywords):
+async def clean_keywords(keywords_qs):
     data = set()
-    for keyword in keywords:
+    async for keyword in keywords_qs:
         splited_keywords = re.split(";|,|\|", keyword.strip())
         cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
         data.update(set(cleaned_keywords))
     return list(data)
 
 
-async def get_keywords():
-    keywords = Sources.objects.filter(key_words__isnull=False).distinct('key_words').values_list('key_words', flat=True)
-    keywords_qs = [
-        keyword
-        async for keyword in keywords
-    ]
-    return clean_keywords(keywords_qs)
+def get_keywords():
+    qs = Sources.objects.filter(
+        key_words__isnull=False
+    ).distinct('key_words').values_list('key_words', flat=True)
+    return clean_keywords(qs)
 
 
 @sync_to_async
