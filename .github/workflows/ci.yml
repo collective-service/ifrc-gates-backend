@@ -49,7 +49,7 @@ jobs:
     needs: build_image
     defaults:
       run:
-        working-directory: "./terraform_cfg"
+        working-directory: "./terraform"
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
