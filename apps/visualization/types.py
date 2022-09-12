@@ -127,6 +127,10 @@ class CountryEmergencyProfileType:
     context_indicator_value: auto
     context_date: auto
 
+    @strawberry.field
+    def id(self) -> int:
+        return abs(hash(self.iso3)) % (10 ** 8)
+
 
 @strawberry.django.type(Narratives)
 class NarrativesType:
