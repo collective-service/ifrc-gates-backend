@@ -23,7 +23,7 @@ data "template_file" "config" {
     db_port = data.external.postgres_creds.result.db_port
     # Django
     secret_key = data.external.django.result.secret_key
-    debug = data.external.django.result.debug == "False" ? False : True
+    debug = data.external.django.result.debug == "False" ? false : true
   }
 }
 
