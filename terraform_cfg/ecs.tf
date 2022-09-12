@@ -6,12 +6,21 @@ data "template_file" "config" {
   template = file("./templates/ecr_image/image.json")
 
   vars = {
-    app_image      = var.app_image
+    app_image      = data.external.ecr_backend.result.ecr_backend_url # var.app_image
     app_port       = var.app_port
     fargate_cpu    = var.fargate_cpu
     fargate_memory = var.fargate_memory
     aws_region     = var.aws_region
     environment    = var.environment
+    # Redis
+    celery_redis_url = "redis://${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}/0"
+    django_cache_redis_url = "redis://${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}/1"
+    # Postgresql credentials
+    db_name = data.external.postgres_creds.result.db_name
+    db_user = data.external.postgres_creds.result.db_user
+    db_pwd  = data.external.postgres_creds.result.db_pwd
+    db_host = data.external.postgres_creds.result.db_host
+    db_port = data.external.postgres_creds.result.db_port
   }
 }
 
@@ -44,5 +53,8 @@ resource "aws_ecs_service" "service" {
     container_port   = var.app_port
   }
 
-  depends_on = [aws_alb_listener.app_listener, aws_iam_role_policy_attachment.ecs_task_execution_role]
+  depends_on = [
+    aws_alb_listener.app_listener,
+    aws_iam_role_policy_attachment.ecs_task_execution_role
+  ]
 }

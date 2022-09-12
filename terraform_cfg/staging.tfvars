@@ -19,3 +19,15 @@ fargate_cpu = "1024"
 fargate_memory = "2048"
 app_count = 2
 app_image = "nginx:latest"
+
+# Redis
+redis_cluster_name = "redis"
+redis_node_type = "cache.t2.micro"
+redis_num_cache_nodes = 1
+redis_port = 6379
+
+# Secrets
+backend_ecr_secret_name = "ecr/backend"
+
+# Postgres
+postgres_secret_name = "prod/postgres"
