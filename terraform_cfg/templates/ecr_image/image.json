@@ -50,7 +50,7 @@
         },
         {
             "name": "DEBUG",
-            "value": ${debug}
+            "value": "${debug}"
         },
         {
             "name": "SECRET_KEY",
