@@ -19,6 +19,13 @@
           "hostPort": ${app_port}
         }
       ],
+      "entryPoint": [
+        "bash"
+      ],
+      "command": [
+        "-c",
+        "/code/scripts/run_develop.sh"
+      ],
       "environment": [
         {
             "name": "DB_NAME",
