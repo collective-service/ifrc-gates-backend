@@ -47,6 +47,14 @@
         {
             "name": "DJANGO_CACHE_REDIS_URL",
             "value": "${django_cache_redis_url}"
+        },
+        {
+            "name": "DEBUG",
+            "value": ${debug}
+        },
+        {
+            "name": "SECRET_KEY",
+            "value": "${secret_key}"
         }
       ]
     }

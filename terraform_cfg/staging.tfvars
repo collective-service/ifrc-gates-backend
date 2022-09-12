@@ -18,7 +18,6 @@ health_check_path = "/"
 fargate_cpu = "1024"
 fargate_memory = "2048"
 app_count = 2
-app_image = "nginx:latest"
 
 # Redis
 redis_cluster_name = "redis"
@@ -31,3 +30,6 @@ backend_ecr_secret_name = "ecr/backend"
 
 # Postgres
 postgres_secret_name = "prod/postgres"
+
+# Django
+django_secret_name = "prod/django"

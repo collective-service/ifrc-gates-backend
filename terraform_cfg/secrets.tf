@@ -21,3 +21,15 @@ data "aws_secretsmanager_secret_version" "postgres" {
 data "external" "postgres_creds" {
     program = ["echo", "${data.aws_secretsmanager_secret_version.postgres.secret_string}"]
 }
+
+data "aws_secretsmanager_secret" "django" {
+    name = var.django_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "django" {
+    secret_id = data.aws_secretsmanager_secret.django.id
+}
+
+data "external" "django" {
+    program = ["echo", "${data.aws_secretsmanager_secret_version.django.secret_string}"]
+}

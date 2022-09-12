@@ -21,6 +21,9 @@ data "template_file" "config" {
     db_pwd  = data.external.postgres_creds.result.db_pwd
     db_host = data.external.postgres_creds.result.db_host
     db_port = data.external.postgres_creds.result.db_port
+    # Django
+    secret_key = data.external.django.result.secret_key
+    debug = data.external.django.result.debug == "False" ? False : True
   }
 }
 
