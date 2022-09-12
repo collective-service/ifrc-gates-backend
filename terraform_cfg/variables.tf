@@ -19,3 +19,15 @@ variable fargate_memory {}
 variable app_count {}
 
 variable app_image {}
+
+# Redis
+variable redis_cluster_name {}
+variable redis_node_type {}
+variable redis_num_cache_nodes {}
+variable redis_port {}
+
+# Secrets
+variable backend_ecr_secret_name {}
+
+# Postgres
+variable postgres_secret_name {}
