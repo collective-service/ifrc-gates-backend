@@ -21,3 +21,29 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+resource "aws_iam_role_policy" "param_store" {
+  name = "secrets-paramstore"
+  role = aws_iam_role.ecs_task_execution_role.id
+  policy = <<-EOF
+  {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Action": [
+          "ssm:GetParameters"
+        ],
+        "Effect": "Allow",
+        "Resource": [
+          "${data.aws_ssm_parameter.dbname.arn}",
+          "${data.aws_ssm_parameter.dbuser.arn}",
+          "${data.aws_ssm_parameter.dbpwd.arn}",
+          "${data.aws_ssm_parameter.dbhost.arn}",
+          "${data.aws_ssm_parameter.dbport.arn}",
+          "${data.aws_ssm_parameter.secret_key.arn}"
+        ]
+      }
+    ]
+  }
+  EOF
+}

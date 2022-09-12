@@ -16,13 +16,13 @@ data "template_file" "config" {
     celery_redis_url = "redis://${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}/0"
     django_cache_redis_url = "redis://${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}/1"
     # Postgresql credentials
-    db_name = data.external.postgres_creds.result.db_name
-    db_user = data.external.postgres_creds.result.db_user
-    db_pwd  = data.external.postgres_creds.result.db_pwd
-    db_host = data.external.postgres_creds.result.db_host
-    db_port = data.external.postgres_creds.result.db_port
+    db_name = data.aws_ssm_parameter.dbname.arn #data.external.postgres_creds.result.db_name
+    db_user = data.aws_ssm_parameter.dbuser.arn #data.external.postgres_creds.result.db_user
+    db_pwd  = data.aws_ssm_parameter.dbpwd.arn #data.external.postgres_creds.result.db_pwd
+    db_host = data.aws_ssm_parameter.dbhost.arn #data.external.postgres_creds.result.db_host
+    db_port = data.aws_ssm_parameter.dbport.arn #data.external.postgres_creds.result.db_port
     # Django
-    secret_key = data.external.django.result.secret_key
+    secret_key = data.aws_ssm_parameter.secret_key.arn #data.external.django.result.secret_key
     debug = data.external.django.result.debug
   }
 }
