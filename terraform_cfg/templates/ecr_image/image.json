@@ -15,38 +15,38 @@
       },
       "portMappings": [
         {
-          "containerPort": ${app_port},
-          "hostPort": ${app_port}
+          "containerPort": "${app_port}",
+          "hostPort": "${app_port}"
         }
       ],
       "environment": [
         {
             "name": "DB_NAME",
-            "value": ${db_name}
+            "value": "${db_name}"
         },
         {
             "name": "DB_USER",
-            "value": ${db_user}
+            "value": "${db_user}"
         },
         {
             "name": "DB_PWD",
-            "value": ${db_pwd}
+            "value": "${db_pwd}"
         },
         {
             "name": "DB_HOST",
-            "value": ${db_host}
+            "value": "${db_host}"
         },
         {
             "name": "DB_PORT",
-            "value": ${db_port}
+            "value": "${db_port}"
         },
         {
             "name": "CELERY_REDIS_URL",
-            "value": ${celery_redis_url}
+            "value": "${celery_redis_url}"
         },
         {
             "name": "DJANGO_CACHE_REDIS_URL",
-            "value": ${django_cache_redis_url}
+            "value": "${django_cache_redis_url}"
         }
       ]
     }
