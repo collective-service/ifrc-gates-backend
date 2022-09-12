@@ -207,7 +207,7 @@ USE_TZ = True
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
-if DEBUG or env('USE_LOCAL_STORATE'):
+if DEBUG or env('USE_LOCAL_STORAGE'):
     STATIC_URL = env('DJANGO_STATIC_URL')
     MEDIA_URL = env('DJANGO_MEDIA_URL')
     STATIC_ROOT = env('DJANGO_STATIC_ROOT')
