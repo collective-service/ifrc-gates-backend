@@ -50,6 +50,13 @@ class EpiDataGlobalFilter():
     region: str
     emergency: str
     context_indicator_id: str
+    most_recent: auto
+    is_global: bool
+
+    def filter_is_global(self, queryset):
+        if self.is_global == False:
+            return queryset.filter(~Q(region='Global'))
+        return queryset.filter(Q(region='Global'))
 
 
 @strawberry.django.filters.filter(DataCountryLevel, lookups=True)
@@ -87,12 +94,12 @@ class DataCountryLevelMostRecentFilter():
         return queryset.filter(indicator_id__in=indicator_ids)
 
 
-@strawberry.django.filters.filter(RegionLevel)
+@strawberry.django.filters.filter(RegionLevel, lookups=True)
 class RegionLevelFilter():
     region: str
     emergency: str
-    type: str
-    category: str
+    indicator_id: str
+    indicator_month: auto
 
 
 @strawberry.django.filters.filter(DataGranular)
