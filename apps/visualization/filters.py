@@ -1,6 +1,7 @@
 import strawberry
 from django.db.models import Q
 from typing import List
+from functools import reduce
 from .models import (
     CountryEmergencyProfile,
     Outbreaks,
@@ -76,8 +77,10 @@ class DataCountryLevelMostRecentFilter():
     def filter_keywords(self, queryset):
         if not self.keywords:
             return queryset
-        source_ids = Sources.objects.filter(key_words__icontains=''.join(self.keywords)).values_list('source_id', flat=True)
-        print(len(source_ids))
+
+        keywords_filters = reduce( lambda acc, item: acc | item, [Q(key_words__icontains=value) for value in self.keywords])
+
+        source_ids = Sources.objects.filter(keywords_filters).values_list('source_id', flat=True)
         indicator_ids = DataGranular.objects.filter(
             source_id__in=source_ids
         ).values_list('indicator_id', flat=True)

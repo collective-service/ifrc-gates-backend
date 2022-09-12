@@ -111,49 +111,50 @@ def get_types():
     )
 
 
-@sync_to_async
-def get_thematics(type):
+async def get_thematics(type):
     qs = DataCountryLevelMostRecent.objects.all()
     if type:
-        return list(
-            qs.filter(
-                type=type
-            ).distinct('thematic').values_list('thematic', flat=True)
-        )
+        return [
+            thematic
+            async for thematic in qs.filter(type=type).distinct('thematic').values_list('thematic', flat=True)
+        ]
     else:
-        return list(
-            qs.distinct('thematic').values_list('thematic', flat=True)
-        )
+        return [
+            thematic
+            async for thematic in qs.distinct('thematic').values_list('thematic', flat=True)
+        ]
 
 
-@sync_to_async
-def get_topics(thematic):
+async def get_topics(thematic):
     qs = DataCountryLevelMostRecent.objects.all()
     if thematic:
-        return list(
-            qs.filter(
-                thematic=thematic
-            ).distinct('topic').values_list('topic', flat=True)
-        )
+        return [
+            topic
+            async for topic in qs.afilter(thematic=thematic).distinct('topic').values_list('topic', flat=True)
+        ]
     else:
-        return list(
-            qs.distinct('topic').values_list('topic', flat=True)
-        )
+        return [
+            topic
+            async for topic in qs.distinct('topic').values_list('topic', flat=True)
+        ]
 
 
 def clean_keywords(keywords):
-    data = []
+    data = set()
     for keyword in keywords:
         splited_keywords = re.split(";|,|\|", keyword.strip())
         cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
-        data = data + cleaned_keywords
-    return list(set(data))
+        data.update(set(cleaned_keywords))
+    return list(data)
 
 
-@sync_to_async
-def get_keywords():
+async def get_keywords():
     keywords = Sources.objects.filter(key_words__isnull=False).distinct('key_words').values_list('key_words', flat=True)
-    return clean_keywords(keywords)
+    keywords_qs = [
+        keyword
+        async for keyword in keywords
+    ]
+    return clean_keywords(keywords_qs)
 
 
 @sync_to_async
