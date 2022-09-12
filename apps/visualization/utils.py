@@ -1,13 +1,13 @@
+import re
 from asgiref.sync import sync_to_async
-
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
     CountryFilterOptions,
     Sources,
 )
-
 from .filters import disabled_outbreaks
+from utils import get_async_list_from_queryset
 
 
 @sync_to_async
@@ -112,35 +112,38 @@ def get_types():
     )
 
 
-@sync_to_async
 def get_thematics(type):
-    return list(
-        DataCountryLevelMostRecent.objects.filter(
-            type=type
-        ).distinct('thematic').values_list('thematic', flat=True)
+    qs = DataCountryLevelMostRecent.objects.all()
+    if type:
+        qs = qs.filter(type=type)
+    return get_async_list_from_queryset(
+        qs.distinct('thematic').values_list('thematic', flat=True)
     )
 
 
-@sync_to_async
 def get_topics(thematic):
-    return list(
-        DataCountryLevelMostRecent.objects.filter(
-            thematic=thematic
-        ).distinct('topic').values_list('topic', flat=True)
+    qs = DataCountryLevelMostRecent.objects.all()
+    if thematic:
+        qs = qs.filter(thematic=thematic)
+    return get_async_list_from_queryset(
+        qs.distinct('topic').values_list('topic', flat=True)
     )
 
 
-@sync_to_async
+async def clean_keywords(keywords_qs):
+    data = set()
+    async for keyword in keywords_qs:
+        splited_keywords = re.split(";|,|\|", keyword.strip())
+        cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
+        data.update(set(cleaned_keywords))
+    return list(data)
+
+
 def get_keywords():
-    from .types import KeywordOptionType
-    return [
-        KeywordOptionType(
-            keyword=keyword['key_words'],
-            source_id=keyword['source_id']
-        ) for keyword in Sources.objects.filter(
-            key_words__isnull=False
-        ).distinct('key_words').values('key_words', 'source_id')
-    ]
+    qs = Sources.objects.filter(
+        key_words__isnull=False
+    ).distinct('key_words').values_list('key_words', flat=True)
+    return clean_keywords(qs)
 
 
 @sync_to_async

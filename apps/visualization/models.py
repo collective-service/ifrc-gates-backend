@@ -39,7 +39,7 @@ class Countries(models.Model):
 
 
 class ContextualData(models.Model):
-    iso3 = models.CharField(max_length=3)
+    iso3 = models.CharField(max_length=3, primary_key=True)
     context_date = models.DateField()
     context_indicator_id = models.CharField(max_length=50)
     context_indicator_value = models.FloatField(blank=True, null=True)

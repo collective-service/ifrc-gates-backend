@@ -405,6 +405,7 @@ class ContextualDataType:
     emergency: auto
 
 
+
 @strawberry.type
 class GenderDisaggregationType:
     category: Optional[str]
@@ -452,12 +453,6 @@ class OverviewIndicatorType:
 
 
 @strawberry.type
-class KeywordOptionType:
-    keyword: Optional[str]
-    source_id: Optional[str]
-
-
-@strawberry.type
 class FilterOptionsType:
 
     @strawberry.field
@@ -497,13 +492,13 @@ class FilterOptionsType:
         return await get_types()
 
     @strawberry.field
-    async def thematics(self, type: str) -> List[str]:
+    async def thematics(self, type: Optional[str] = None) -> List[str]:
         return await get_thematics(type)
 
     @strawberry.field
-    async def topics(self, thematic: str) -> List[str]:
+    async def topics(self, thematic: Optional[str] = None) -> List[str]:
         return await get_topics(thematic)
 
     @strawberry.field
-    async def keywords(self) -> List[KeywordOptionType]:
+    async def keywords(self) -> List[str]:
         return await get_keywords()
