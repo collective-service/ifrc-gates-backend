@@ -18,4 +18,3 @@ health_check_path = "/"
 fargate_cpu = "1024"
 fargate_memory = "2048"
 app_count = 2
-app_image = "nginx:latest"
