@@ -1,3 +1,5 @@
+import hashlib
+
 async def get_async_list_from_queryset(qs):
     return [
         item async for item in qs
@@ -12,4 +14,4 @@ def generate_id_from_unique_fields(obj):
             ) for item in obj._meta.model._meta.unique_together[0]
         ]
     )
-    return abs(hash(unique_value)) % (10 ** 8)
+    return int(hashlib.sha1(unique_value.encode("utf-8")).hexdigest(), 16) % (10 ** 8)

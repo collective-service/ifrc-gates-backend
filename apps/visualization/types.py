@@ -138,8 +138,7 @@ class CountryEmergencyProfileType:
     @strawberry.field
     def id(self) -> int:
         # Integer type is required by client to populate data on map
-        return abs(hash(self.iso3)) % (10 ** 8)
-
+        return generate_id_from_unique_fields(self)
 
 @strawberry.django.type(Narratives)
 class NarrativesType:
