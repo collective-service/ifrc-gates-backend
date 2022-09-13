@@ -453,7 +453,6 @@ class ContextualDataType:
     def id(self) -> ID:
         return generate_id_from_unique_fields(self)
 
-
 @strawberry.type
 class GenderDisaggregationType:
     category: Optional[str]

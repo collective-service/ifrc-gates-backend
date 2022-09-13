@@ -1,15 +1,10 @@
-import datetime
-from django.utils import timezone
-
 import strawberry
 from typing import List
-from asgiref.sync import sync_to_async
 from typing import Optional
 
 from .models import (
     CountryProfile,
     Outbreaks,
-    ContextualData,
 )
 from .types import (
     CountryProfileType,
@@ -28,7 +23,6 @@ from .types import (
     ContextualDataType,
     RegionLevelType,
 )
-from apps.visualization.models import DataCountryLevel
 
 
 async def get_country_profile_object(iso3):
@@ -40,24 +34,6 @@ async def get_country_profile_object(iso3):
 
 def get_outbreaks():
     return Outbreaks.objects.filter(active=True)
-
-
-async def get_contextual_data(iso3, emergency, context_indicator_id):
-
-    date_before_twelve_month = timezone.now() - datetime.timedelta(12 * (365 / 12))
-    all_filters = {
-        'iso3': iso3,
-        'emergency': emergency,
-        'context_indicator_id': context_indicator_id
-    }
-    filters = {k: v for k, v in all_filters.items() if v is not None}
-    return [
-        contextual_data
-        async for contextual_data in ContextualData.objects.filter(
-            **filters,
-            context_date__gt=date_before_twelve_month
-        ).order_by('-context_date')
-    ]
 
 
 @strawberry.type
@@ -93,12 +69,3 @@ class Query:
     async def disaggregation(self) -> DisaggregationType:
         return DisaggregationType
 
-    @strawberry.field
-    def contextual_data(
-        self,
-        context_indicator_id: str,
-        iso3: Optional[str] = None,
-        emergency: Optional[str] = None,
-    ) -> List[ContextualDataType]:
-
-        return get_contextual_data(iso3, emergency, context_indicator_id)

@@ -52,11 +52,17 @@ class EpiDataGlobalFilter():
     context_indicator_id: str
     most_recent: auto
     is_global: bool
+    is_twelve_month: bool
 
     def filter_is_global(self, queryset):
         if self.is_global == False:
             return queryset.filter(~Q(region='Global'))
         return queryset.filter(Q(region='Global'))
+
+    def filter_is_twelve_month(self, queryset):
+        if self.is_twelve_month:
+            return queryset.order_by('-context_date')[:12]
+        return queryset
 
 
 @strawberry.django.filters.filter(DataCountryLevel, lookups=True)
@@ -85,7 +91,7 @@ class DataCountryLevelMostRecentFilter():
         if not self.keywords:
             return queryset
 
-        keywords_filters = reduce( lambda acc, item: acc | item, [Q(key_words__icontains=value) for value in self.keywords])
+        keywords_filters = reduce(lambda acc, item: acc | item, [Q(key_words__icontains=value) for value in self.keywords])
 
         source_ids = Sources.objects.filter(keywords_filters).values_list('source_id', flat=True)
         indicator_ids = DataGranular.objects.filter(
@@ -116,3 +122,9 @@ class ContextualDataFilter():
     iso3: str
     emergency: str
     context_indicator_id: str
+    is_twelve_month: bool
+
+    def filter_is_twelve_month(self, queryset):
+        if self.is_twelve_month:
+            return queryset.order_by('-context_date')[:12]
+        return queryset
