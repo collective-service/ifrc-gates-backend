@@ -24,6 +24,7 @@ data "template_file" "config" {
     # Django
     secret_key = data.aws_ssm_parameter.secret_key.arn #data.external.django.result.secret_key
     debug = data.external.django.result.debug
+    use_local_storage = "False"
   }
 }
 
