@@ -6,7 +6,6 @@ from .models import (
     CountryFilterOptions,
     Sources,
 )
-from .filters import disabled_outbreaks
 from utils import get_async_list_from_queryset
 
 
