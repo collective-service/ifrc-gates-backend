@@ -36,6 +36,9 @@ class Countries(models.Model):
     class Meta:
         managed = False
         db_table = 't_countries'
+        unique_together = (
+            ('iso3',)
+        )
 
 
 class ContextualData(models.Model):
@@ -137,7 +140,9 @@ class CountryProfile(models.Model):
     class Meta:
         managed = False
         db_table = 't_country_profile'
-
+        unique_together = (
+            ('iso3',)
+        )
 
 class DataCountryLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
