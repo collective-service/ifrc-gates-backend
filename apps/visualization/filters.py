@@ -80,7 +80,7 @@ class DataCountryLevelFilter():
 class DataCountryLevelMostRecentFilter():
     iso3: str
     emergency: str
-    indicator_name: str
+    indicator_id: str
     subvariable: str
     topic: str
     thematic: str
