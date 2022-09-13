@@ -38,7 +38,8 @@ from .filters import (
     RegionLevelFilter,
     DataGranularFilter,
     ContextualDataFilter,
-    EpiDataGlobalFilter
+    EpiDataGlobalFilter,
+    GlobalLevelFilter,
 )
 
 
@@ -282,7 +283,7 @@ class DataCountryLevelMostRecentType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(GlobalLevel)
+@strawberry.django.type(GlobalLevel, filters=GlobalLevelFilter)
 class GlobalLevelType:
     emergency: auto
     region: auto

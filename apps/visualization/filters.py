@@ -12,6 +12,7 @@ from .models import (
     ContextualData,
     EpiDataGlobal,
     Sources,
+    GlobalLevel,
 )
 from strawberry import auto
 
@@ -65,6 +66,25 @@ class EpiDataGlobalFilter():
         return queryset
 
 
+@strawberry.django.filters.filter(GlobalLevel)
+class GlobalLevelFilter():
+    emergency: str
+    indicator_id: str
+    is_twelve_month: bool
+    region: str
+    is_most_recent: bool
+
+    def filter_is_twelve_month(self, queryset):
+        if self.is_twelve_month:
+            return queryset.order_by('-indicator_month')
+        return queryset
+
+    def filter_is_most_recent(self, queryset):
+        if self.is_most_recent:
+            return [queryset.order_by('-indicator_value_global').first()]
+        return queryset
+
+
 @strawberry.django.filters.filter(DataCountryLevel, lookups=True)
 class DataCountryLevelFilter():
     iso3: str
@@ -104,8 +124,20 @@ class DataCountryLevelMostRecentFilter():
 class RegionLevelFilter():
     region: str
     emergency: str
+    category: str
     indicator_id: str
-    indicator_month: auto
+    is_twelve_month: bool
+    is_most_recent: bool
+
+    def filter_is_twelve_month(self, queryset):
+        if self.is_twelve_month:
+            return queryset.order_by('-indicator_month')[:12]
+        return queryset
+
+    def filter_is_most_recent(self, queryset):
+        if self.is_most_recent:
+            return [queryset.order_by('-indicator_value_global').first()]
+        return queryset
 
 
 @strawberry.django.filters.filter(DataGranular)
