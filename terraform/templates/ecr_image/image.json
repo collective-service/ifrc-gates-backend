@@ -38,6 +38,10 @@
             {
                 "name": "DEBUG",
                 "value": "${debug}"
+            },
+            {
+                "name": "USE_LOCAL_STORAGE",
+                "value": "${use_local_storage}"
             }
       ],
       "secrets": [
