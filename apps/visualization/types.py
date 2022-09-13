@@ -1,8 +1,8 @@
 # types.py
 import strawberry
 from typing import List, Optional
-from strawberry import auto
-
+from strawberry import auto, ID
+from utils import generate_id_from_unique_fields
 from .utils import (
     get_outbreaks,
     get_country_indicators,
@@ -54,6 +54,10 @@ class CountryType:
     fragility_index_fund_for_peace: auto
     fragility_index_oecd: auto
     display_in_tableau: auto
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
 
 
 @strawberry.django.type(CountryProfile)
@@ -118,6 +122,10 @@ class CountryProfileType:
     risk: auto
     response: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
 
 @strawberry.django.type(CountryEmergencyProfile, filters=CountryEmergencyProfileFilter)
 class CountryEmergencyProfileType:
@@ -129,6 +137,7 @@ class CountryEmergencyProfileType:
 
     @strawberry.field
     def id(self) -> int:
+        # Integer type is required by client to populate data on map
         return abs(hash(self.iso3)) % (10 ** 8)
 
 
@@ -164,6 +173,10 @@ class DataCountryLevelType():
     indicator_value_gradient: auto
     error_margin: auto
     display_in_tableau: auto
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
 
 
 @strawberry.django.type(EpiData)
@@ -233,6 +246,10 @@ class EpiDataType:
     icu_patients_per_million_comment: auto
     icu_patients_per_million_source: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
 
 @strawberry.django.type(DataCountryLevelMostRecent, filters=DataCountryLevelMostRecentFilter)
 class DataCountryLevelMostRecentType:
@@ -261,6 +278,10 @@ class DataCountryLevelMostRecentType:
     organisations: auto
     indicator_value_prev: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
 
 @strawberry.django.type(GlobalLevel)
 class GlobalLevelType:
@@ -280,6 +301,10 @@ class GlobalLevelType:
     error_margin: auto
     std_dev: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
 
 @strawberry.django.type(DataCountryLevelQuantiles)
 class DataCountryLevelQuantilesType:
@@ -294,6 +319,10 @@ class DataCountryLevelQuantilesType:
     perc75: auto
     max: auto
     min: auto
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
 
 
 @strawberry.django.type(DataGranular, filters=DataGranularFilter)
@@ -355,6 +384,10 @@ class DataGranularType:
     population_size: auto
     category: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
 
 @strawberry.django.type(EpiDataGlobal, filters=EpiDataGlobalFilter)
 class EpiDataGlobalType:
@@ -364,6 +397,10 @@ class EpiDataGlobalType:
     context_indicator_id: auto
     context_indicator_value: auto
     most_recent: auto
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
 
 
 @strawberry.django.type(Outbreaks)
@@ -395,6 +432,10 @@ class RegionLevelType:
     error_margin: auto
     std_dev: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
 
 @strawberry.django.type(ContextualData, filters=ContextualDataFilter)
 class ContextualDataType:
@@ -408,12 +449,19 @@ class ContextualDataType:
     context_subvariable: auto
     emergency: auto
 
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
 
 
 @strawberry.type
 class GenderDisaggregationType:
     category: Optional[str]
     indicator_value: Optional[float]
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
 
 
 @strawberry.type
