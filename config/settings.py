@@ -85,6 +85,8 @@ INSTALLED_APPS = [
     # 3rd party
     'admin_auto_filters',
     'storages',
+    'rest_framework',
+    'drf_yasg',
     # Local
     'apps.visualization',
     'corsheaders',
@@ -262,4 +264,9 @@ CACHES = {
     'local-memory': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
 }
