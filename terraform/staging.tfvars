@@ -10,6 +10,7 @@ app_port = "7020"
 
 # ECS role
 ecs_task_execution_role = "ECSTaskExecutionRole"
+ecs_task_role = "ECSTaskRole"
 
 # alb
 health_check_path = "/"
