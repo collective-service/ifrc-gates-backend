@@ -49,7 +49,8 @@ env = environ.Env(
 
     TIME_ZONE=(str, 'Asia/Kathmandu'),
     CORS_ALLOWED_ORIGINS=(list, ['http://localhost:3050']),
-    # Static, Media configs
+
+    # Static, Media configs for develop
     DJANGO_STATIC_URL=(str, '/static/'),
     DJANGO_MEDIA_URL=(str, '/media/'),
     DJANGO_STATIC_ROOT=(str, os.path.join(BASE_DIR, "staticfiles")),
@@ -59,6 +60,12 @@ env = environ.Env(
     # Celery
     CELERY_REDIS_URL=str,  # redis://redis:6379/0
     DJANGO_CACHE_REDIS_URL=str,  # redis://redis:6379/1
+
+    # S3 related settings for production
+    AWS_STORAGE_BUCKET_NAME=str,
+    AWS_STATIC_LOCATION=(str, 'static'),
+    AWS_MEDIA_LOCATION=(str, 'media'),
+
 )
 
 # Quick-start development settings - unsuitable for production
@@ -215,6 +222,21 @@ if DEBUG or env('USE_LOCAL_STORAGE'):
     MEDIA_URL = env('DJANGO_MEDIA_URL')
     STATIC_ROOT = env('DJANGO_STATIC_ROOT')
     MEDIA_ROOT = env('DJANGO_MEDIA_ROOT')
+else:
+    AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400",
+    }
+    AWS_STATIC_LOCATION = env('AWS_STATIC_LOCATION')
+    AWS_MEDIA_LOCATION = env('AWS_MEDIA_LOCATION')
+
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/"
+    TINYMCE_JS_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/tinymce/tinymce.min.js"
+
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    DEFAULT_FILE_STORAGE = "config.storage_backends.MediaStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
