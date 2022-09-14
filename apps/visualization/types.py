@@ -31,16 +31,6 @@ from .models import (
     RegionLevel,
     ContextualData
 )
-from .filters import (
-    CountryEmergencyProfileFilter,
-    DataCountryLevelFilter,
-    DataCountryLevelMostRecentFilter,
-    RegionLevelFilter,
-    DataGranularFilter,
-    ContextualDataFilter,
-    EpiDataGlobalFilter,
-    GlobalLevelFilter,
-)
 
 
 @strawberry.django.type(Countries)
@@ -128,7 +118,7 @@ class CountryProfileType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(CountryEmergencyProfile, filters=CountryEmergencyProfileFilter)
+@strawberry.django.type(CountryEmergencyProfile)
 class CountryEmergencyProfileType:
     emergency: auto
     iso3: auto
@@ -149,7 +139,7 @@ class NarrativesType:
     insert_date: auto
 
 
-@strawberry.django.type(DataCountryLevel, filters=DataCountryLevelFilter)
+@strawberry.django.type(DataCountryLevel)
 class DataCountryLevelType():
     emergency: auto
     country_name: auto
@@ -251,7 +241,7 @@ class EpiDataType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(DataCountryLevelMostRecent, filters=DataCountryLevelMostRecentFilter)
+@strawberry.django.type(DataCountryLevelMostRecent)
 class DataCountryLevelMostRecentType:
     emergency: auto
     country_name: auto
@@ -283,7 +273,7 @@ class DataCountryLevelMostRecentType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(GlobalLevel, filters=GlobalLevelFilter)
+@strawberry.django.type(GlobalLevel)
 class GlobalLevelType:
     emergency: auto
     region: auto
@@ -325,7 +315,7 @@ class DataCountryLevelQuantilesType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(DataGranular, filters=DataGranularFilter)
+@strawberry.django.type(DataGranular)
 class DataGranularType:
     emergency: auto
     iso3: auto
@@ -389,7 +379,7 @@ class DataGranularType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(EpiDataGlobal, filters=EpiDataGlobalFilter)
+@strawberry.django.type(EpiDataGlobal)
 class EpiDataGlobalType:
     region: auto
     emergency: auto
@@ -414,7 +404,9 @@ class CountryOutbreaksType:
     outbreak: str
 
 
-@strawberry.django.type(RegionLevel, filters=RegionLevelFilter)
+
+
+@strawberry.django.type(RegionLevel)
 class RegionLevelType:
     emergency: auto
     region: auto
@@ -437,7 +429,7 @@ class RegionLevelType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(ContextualData, filters=ContextualDataFilter)
+@strawberry.django.type(ContextualData)
 class ContextualDataType:
     iso3: auto
     context_date: auto

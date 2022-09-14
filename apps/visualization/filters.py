@@ -2,6 +2,7 @@ import strawberry
 from django.db.models import Q
 from typing import List
 from functools import reduce
+from django.db.models import Max
 from .models import (
     CountryEmergencyProfile,
     Outbreaks,
@@ -35,7 +36,7 @@ class CountryEmergencyProfileFilter:
         return queryset.filter(
             Q(emergency=self.emergency) &
             ~Q(emergency__in=disabled_outbreaks())
-        )
+        ).distinct()
 
     def filter_context_indicator_id(self, queryset):
         if not self.context_indicator_id:
@@ -43,7 +44,7 @@ class CountryEmergencyProfileFilter:
         return queryset.filter(
             Q(context_indicator_id=self.context_indicator_id) &
             ~Q(emergency__in=disabled_outbreaks())
-        )
+        ).distinct()
 
 
 @strawberry.django.filters.filter(EpiDataGlobal)
@@ -62,26 +63,27 @@ class EpiDataGlobalFilter():
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
-            return queryset.order_by('-context_date')[:12]
-        return queryset
+            return queryset.order_by('-context_date')
 
 
 @strawberry.django.filters.filter(GlobalLevel)
 class GlobalLevelFilter():
     emergency: str
+    category: str
     indicator_id: str
     is_twelve_month: bool
-    region: str
-    is_most_recent: bool
+    topic: str
+    thematic: str
+    type: str
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
-            return queryset.order_by('-indicator_month')
-        return queryset
-
-    def filter_is_most_recent(self, queryset):
-        if self.is_most_recent:
-            return [queryset.order_by('-indicator_value_global').first()]
+            greatest_subvariable_last_month = queryset.order_by(
+                '-indicator_month', '-indicator_value_global'
+            ).first()
+            return queryset.filter(
+                subvariable=greatest_subvariable_last_month.subvariable
+            )
         return queryset
 
 
@@ -127,16 +129,20 @@ class RegionLevelFilter():
     category: str
     indicator_id: str
     is_twelve_month: bool
-    is_most_recent: bool
+    subvariable: str
+    topic: str
+    thematic: str
+    type: str
+
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
-            return queryset.order_by('-indicator_month')[:12]
-        return queryset
-
-    def filter_is_most_recent(self, queryset):
-        if self.is_most_recent:
-            return [queryset.order_by('-indicator_value_global').first()]
+            greatest_subvariable_last_month = queryset.order_by(
+                '-indicator_month', '-indicator_value_regional'
+            ).first()
+            return queryset.filter(
+                subvariable=greatest_subvariable_last_month.subvariable
+            )
         return queryset
 
 
@@ -158,5 +164,10 @@ class ContextualDataFilter():
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
-            return queryset.order_by('-context_date')[:12]
+            greatest_context_indicator_value = queryset.order_by(
+                '-context_date', '-context_indicator_value'
+            ).first()
+            return queryset.filter(
+                context_indicator_value=greatest_context_indicator_value.context_indicator_value
+            )
         return queryset
