@@ -492,7 +492,7 @@ class CountryIndicatorType:
 
 @strawberry.type
 class OverviewIndicatorType:
-    indicator_name: Optional[str]
+    indicator_id: Optional[str]
     indicator_description: Optional[str]
 
 

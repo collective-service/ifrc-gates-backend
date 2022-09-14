@@ -161,13 +161,13 @@ def get_overview_indicators(out_break, region):
         ).exclude(
             indicator_name=None
         ).values_list(
-            'indicator_name',
+            'indicator_id',
             'indicator_description',
-        ).distinct('indicator_name')
+        ).distinct('indicator_id')
     )
     return [
         OverviewIndicatorType(
-            indicator_name=name,
+            indicator_id=name,
             indicator_description=description,
         ) for name, description in options
     ]
