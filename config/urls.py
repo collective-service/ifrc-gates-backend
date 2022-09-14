@@ -23,7 +23,12 @@ from rest_framework import routers
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
 
+from apps.visualization import views
+
 router = routers.DefaultRouter()
+router.register(
+    r'data_country_level_most_recent', views.DataCountryLevelMostRecentViewset, basename='data-country-level-most-recent'
+)
 
 schema_view = swagger_get_schema_view(
     openapi.Info(
