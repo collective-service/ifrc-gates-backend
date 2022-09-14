@@ -10,6 +10,8 @@ variable app_port {}
 
 variable "ecs_task_execution_role" {}
 
+variable "ecs_task_role" {}
+
 variable health_check_path {}
 
 variable fargate_cpu {}
