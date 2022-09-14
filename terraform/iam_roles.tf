@@ -47,3 +47,30 @@ resource "aws_iam_role_policy" "param_store" {
   }
   EOF
 }
+
+resource "aws_iam_role" "ecs_task" {
+    name = "${var.ecs_task_role}-${var.environment}"
+    assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_role.json
+}
+
+resource "aws_iam_role_policy" "ecs-role-policy" {
+    name = "ecs-role-policy-${var.environment}"
+    role = aws_iam_role.ecs_task.id
+    policy = <<-EOF
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ssmmessages:CreateControlChannel",
+                    "ssmmessages:CreateDataChannel",
+                    "ssmmessages:OpenControlChannel",
+                    "ssmmessages:OpenDataChannel"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+    EOF
+}
