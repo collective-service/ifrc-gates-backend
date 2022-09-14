@@ -6,7 +6,7 @@ resource "aws_alb" "alb" {
 
 resource "aws_alb_target_group" "tg" {
   name        = "target-group-${var.environment}"
-  port        = 80
+  port        = 7020
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.vpc.id
@@ -14,7 +14,7 @@ resource "aws_alb_target_group" "tg" {
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 2
-    timeout             = 3
+    timeout             = 20
     protocol            = "HTTP"
     matcher             = "200"
     path                = var.health_check_path
