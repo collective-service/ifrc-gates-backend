@@ -13,6 +13,7 @@ from .models import (
     EpiDataGlobal,
     Sources,
     GlobalLevel,
+    Countries,
 )
 from strawberry import auto
 
@@ -28,6 +29,7 @@ class CountryEmergencyProfileFilter:
     iso3: str
     emergency: str
     context_indicator_id: str
+    region: str
 
     def filter_emergency(self, queryset):
         if not self.emergency:
@@ -44,6 +46,13 @@ class CountryEmergencyProfileFilter:
             Q(context_indicator_id=self.context_indicator_id) &
             ~Q(emergency__in=disabled_outbreaks())
         ).distinct()
+
+    def filter_region(self, queryset):
+        if not self.region:
+            return queryset
+        return queryset.filter(
+            iso3__in=Countries.objects.filter(region=self.region).values_list('iso3', flat=True)
+        )
 
 
 @strawberry.django.filters.filter(EpiDataGlobal)
