@@ -1,8 +1,7 @@
 import strawberry
-from django.db.models import Q
+from django.db.models import Q, Max, F
 from typing import List
 from functools import reduce
-from django.db.models import Max
 from .models import (
     CountryEmergencyProfile,
     Outbreaks,
@@ -55,6 +54,7 @@ class EpiDataGlobalFilter():
     most_recent: auto
     is_global: bool
     is_twelve_month: bool
+    is_regional_chart: bool
 
     def filter_is_global(self, queryset):
         if self.is_global == False:
@@ -64,6 +64,29 @@ class EpiDataGlobalFilter():
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
             return queryset.order_by('-context_date')
+
+    def filter_is_regional_chart(self, queryset):
+        if self.is_regional_chart:
+            most_recent_reginal_data = queryset.filter(most_recent=True).exclude(region='Global').values('region').annotate(
+                recent_context_date=Max('context_date'),
+                max_context_indicator_value=Max('context_indicator_value')
+            ).order_by('region')
+            if most_recent_reginal_data:
+                filters = reduce(
+                    lambda acc,
+                    item: acc | item,
+                    [
+                        Q(
+                            region=value['region'],
+                            context_date=value['recent_context_date'],
+                            context_indicator_value=value['max_context_indicator_value']
+                        ) for value in most_recent_reginal_data
+                    ]
+                )
+                return queryset.filter(most_recent=True).filter(filters).annotate(
+                    max_context_indicator_value=Max('context_indicator_value')
+                ).filter(context_indicator_value=F('max_context_indicator_value'))
+        return queryset
 
 
 @strawberry.django.filters.filter(GlobalLevel)
@@ -133,7 +156,7 @@ class RegionLevelFilter():
     topic: str
     thematic: str
     type: str
-
+    is_regional_chart: bool
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
@@ -143,6 +166,41 @@ class RegionLevelFilter():
             return queryset.filter(
                 subvariable=greatest_subvariable_last_month.subvariable
             )
+        return queryset
+
+    def filter_is_regional_chart(self, queryset):
+        if self.is_regional_chart:
+            regions_with_highest_indicator_month = queryset.values('region').annotate(
+                latest_indicator_month=Max('indicator_month')
+            ).order_by('region')
+            if regions_with_highest_indicator_month:
+                regions_with_highest_indicator_month_filter = reduce(
+                    lambda acc, item: acc | item,
+                    [
+                        Q(
+                            region=value['region'],
+                            indicator_month=value['latest_indicator_month'],
+                        ) for value in regions_with_highest_indicator_month
+                    ]
+                )
+                regions_with_highest_indicator_month_highest_indicator_value_regional = queryset.filter(
+                    regions_with_highest_indicator_month_filter
+                ).values('region').annotate(
+                    highest_indicator_value_regional=Max('indicator_value_regional'),
+                    highest_indicator_month=Max('indicator_month'),
+                )
+                filters = reduce(
+                    lambda acc,
+                    item: acc | item,
+                    [
+                        Q(
+                            region=value['region'],
+                            indicator_value_regional=value['highest_indicator_value_regional'],
+                            indicator_month=value['highest_indicator_month'],
+                        ) for value in regions_with_highest_indicator_month_highest_indicator_value_regional
+                    ]
+                )
+                return queryset.filter(filters)
         return queryset
 
 
@@ -165,9 +223,9 @@ class ContextualDataFilter():
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
             greatest_context_indicator_value = queryset.order_by(
-                '-context_date', '-context_indicator_value'
+                '-context_date'
             ).first()
             return queryset.filter(
-                context_indicator_value=greatest_context_indicator_value.context_indicator_value
+                context_subvariable=greatest_context_indicator_value.context_subvariable
             )
         return queryset
