@@ -14,6 +14,7 @@ from .utils import (
     get_thematics,
     get_topics,
     get_keywords,
+    get_indicator_value_regional,
 )
 from .models import (
     CountryProfile,
@@ -272,6 +273,11 @@ class DataCountryLevelMostRecentType:
     def id(self) -> ID:
         return generate_id_from_unique_fields(self)
 
+    @strawberry.field
+    def indicator_value_regional(self) -> float:
+        # NOTE: Add dataloader for this
+        return get_indicator_value_regional(self)
+
 
 @strawberry.django.type(GlobalLevel)
 class GlobalLevelType:
@@ -402,8 +408,6 @@ class OutbreaksType:
 @strawberry.type
 class CountryOutbreaksType:
     outbreak: str
-
-
 
 
 @strawberry.django.type(RegionLevel)

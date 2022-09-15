@@ -5,6 +5,7 @@ from .models import (
     DataCountryLevelMostRecent,
     CountryFilterOptions,
     Sources,
+    RegionLevel,
 )
 from utils import get_async_list_from_queryset
 
@@ -74,6 +75,13 @@ def get_outbreaks(iso3):
     return list(
         CountryFilterOptions.objects.filter(iso3=iso3).distinct('emergency').values_list('emergency', flat=True)
     )
+
+
+@sync_to_async
+def get_indicator_value_regional(obj):
+    return RegionLevel.objects.filter(
+        indicator_id=obj.indicator_id
+    ).order_by('-indicator_month').first().indicator_value_regional
 
 
 @sync_to_async
