@@ -6,15 +6,15 @@ data "template_file" "config" {
   template = file("./templates/ecr_image/image.json")
 
   vars = {
-    app_image      = "${data.external.ecr_backend.result.ecr_backend_url}:latest"
+    app_image      = "${data.aws_ssm_parameter.ecr_backend_image_url.value}:latest"
     app_port       = var.app_port
     fargate_cpu    = var.fargate_cpu
     fargate_memory = var.fargate_memory
     aws_region     = var.aws_region
     environment    = var.environment
     # Redis
-    celery_redis_url = "redis://${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}/0"
-    django_cache_redis_url = "redis://${aws_elasticache_cluster.redis.cache_nodes[0].address}:${aws_elasticache_cluster.redis.cache_nodes[0].port}/1"
+    celery_redis_url = aws_ssm_parameter.celery_redis_url.arn
+    django_cache_redis_url = aws_ssm_parameter.django_cache_redis_url.arn
     # Postgresql credentials
     db_name = data.aws_ssm_parameter.dbname.arn
     db_user = data.aws_ssm_parameter.dbuser.arn
@@ -25,6 +25,7 @@ data "template_file" "config" {
     secret_key = data.aws_ssm_parameter.secret_key.arn
     debug = "False"
     use_local_storage = "False"
+    s3_bucket_name = data.aws_ssm_parameter.s3_bucket_name.arn
   }
 }
 
@@ -37,6 +38,11 @@ resource "aws_ecs_task_definition" "task-def" {
   cpu                      = var.fargate_cpu
   memory                   = var.fargate_memory
   container_definitions    = data.template_file.config.rendered
+
+  depends_on = [
+    aws_ssm_parameter.celery_redis_url,
+    aws_ssm_parameter.django_cache_redis_url
+  ]
 }
 
 resource "aws_ecs_service" "service" {
