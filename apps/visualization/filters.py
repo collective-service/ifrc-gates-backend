@@ -98,6 +98,7 @@ class GlobalLevelFilter():
     topic: str
     thematic: str
     type: str
+    is_combined_indicators: bool
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
@@ -108,6 +109,27 @@ class GlobalLevelFilter():
                 subvariable=greatest_subvariable_last_month.subvariable
             )
         return queryset
+
+    def filter_is_combined_indicators(self, queryset):
+        if self.is_combined_indicators:
+            latest_subvariables = queryset.filter(category='Global').values('subvariable').annotate(
+                latest_subvariable_month=Max('indicator_month'),
+            )
+            if latest_subvariables:
+                filters = reduce(
+                    lambda acc,
+                    item: acc | item,
+                    [
+                        Q(
+                            subvariable=value['subvariable'],
+                            indicator_month=value['latest_subvariable_month'],
+                        ) for value in latest_subvariables
+                    ]
+                )
+                result = queryset.filter(filters).distinct('subvariable')
+                return result
+        return queryset
+
 
 
 @strawberry.django.filters.filter(DataCountryLevel, lookups=True)
@@ -157,6 +179,7 @@ class RegionLevelFilter():
     thematic: str
     type: str
     is_regional_chart: bool
+    is_combined_indicators: bool
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
@@ -201,6 +224,26 @@ class RegionLevelFilter():
                     ]
                 )
                 return queryset.filter(filters)
+        return queryset
+
+    def filter_is_combined_indicators(self, queryset):
+        if self.is_combined_indicators:
+            latest_subvariables = queryset.filter(category='Global').values('subvariable').annotate(
+                latest_subvariable_month=Max('indicator_month'),
+            )
+            if latest_subvariables:
+                filters = reduce(
+                    lambda acc,
+                    item: acc | item,
+                    [
+                        Q(
+                            subvariable=value['subvariable'],
+                            indicator_month=value['latest_subvariable_month'],
+                        ) for value in latest_subvariables
+                    ]
+                )
+                result = queryset.filter(filters).distinct('subvariable')
+                return result
         return queryset
 
 
