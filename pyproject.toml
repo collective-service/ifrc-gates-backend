@@ -23,7 +23,7 @@ djangorestframework = "^3.13.1"
 drf-yasg = "^1.21.3"
 django-filter = "^22.1"
 gunicorn = "^20.1.0"
-boto = "*"
+boto3 = "*"
 
 [tool.poetry.dev-dependencies]
 factory-boy = "^3.2.1"
