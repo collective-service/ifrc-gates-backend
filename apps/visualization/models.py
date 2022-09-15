@@ -144,6 +144,7 @@ class CountryProfile(models.Model):
             ('iso3',)
         )
 
+
 class DataCountryLevel(models.Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     country_name = models.CharField(max_length=50, blank=True, null=True)

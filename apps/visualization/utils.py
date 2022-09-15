@@ -140,7 +140,7 @@ def get_topics(thematic):
 async def clean_keywords(keywords_qs):
     data = set()
     async for keyword in keywords_qs:
-        splited_keywords = re.split(";|,|\|", keyword.strip())
+        splited_keywords = re.split(";|,|\|", keyword.strip()) # noqa W605
         cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
         data.update(set(cleaned_keywords))
     return list(data)

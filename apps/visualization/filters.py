@@ -57,9 +57,9 @@ class EpiDataGlobalFilter():
     is_regional_chart: bool
 
     def filter_is_global(self, queryset):
-        if self.is_global == False:
-            return queryset.filter(~Q(region='Global'))
-        return queryset.filter(Q(region='Global'))
+        if self.is_global:
+            return queryset.filter(Q(region='Global'))
+        return queryset.filter(~Q(region='Global'))
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
@@ -129,7 +129,6 @@ class GlobalLevelFilter():
                 result = queryset.filter(filters).distinct('subvariable')
                 return result
         return queryset
-
 
 
 @strawberry.django.filters.filter(DataCountryLevel, lookups=True)
