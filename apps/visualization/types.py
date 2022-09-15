@@ -15,6 +15,7 @@ from .utils import (
     get_topics,
     get_keywords,
     get_indicator_value_regional,
+    get_country_name,
 )
 from .models import (
     CountryProfile,
@@ -131,6 +132,12 @@ class CountryEmergencyProfileType:
     def id(self) -> int:
         # Integer type is required by client to populate data on map
         return generate_id_from_unique_fields(self)
+
+    @strawberry.field
+    def country_name(self) -> str:
+        # NOTE: Use dataloader for this
+        return get_country_name(self.iso3)
+
 
 @strawberry.django.type(Narratives)
 class NarrativesType:

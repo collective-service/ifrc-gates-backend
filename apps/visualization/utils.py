@@ -6,8 +6,17 @@ from .models import (
     CountryFilterOptions,
     Sources,
     RegionLevel,
+    Countries,
 )
 from utils import get_async_list_from_queryset
+
+
+@sync_to_async
+def get_country_name(iso3):
+    try:
+        return Countries.objects.get(iso3=iso3).country_name
+    except Countries.DoesNotExist:
+        return None
 
 
 @sync_to_async
