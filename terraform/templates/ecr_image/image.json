@@ -28,14 +28,6 @@
       ],
       "environment": [
             {
-                "name": "CELERY_REDIS_URL",
-                "value": "${celery_redis_url}"
-            },
-            {
-                "name": "DJANGO_CACHE_REDIS_URL",
-                "value": "${django_cache_redis_url}"
-            },
-            {
                 "name": "DEBUG",
                 "value": "${debug}"
             },
@@ -68,6 +60,18 @@
             {
                 "name": "SECRET_KEY",
                 "valueFrom": "${secret_key}"
+            },
+            {
+                "name": "AWS_STORAGE_BUCKET_NAME",
+                "valueFrom": "${s3_bucket_name}"
+            },
+            {
+                "name": "CELERY_REDIS_URL",
+                "valueFrom": "${celery_redis_url}"
+            },
+            {
+                "name": "DJANGO_CACHE_REDIS_URL",
+                "valueFrom": "${django_cache_redis_url}"
             }
         ]
     }
