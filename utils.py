@@ -6,6 +6,10 @@ async def get_async_list_from_queryset(qs):
     ]
 
 
+def generate_id_from_unique_field(unique_value):
+    return abs(hash(unique_value)) % (10 ** 8)
+
+
 def generate_id_from_unique_fields(obj):
     unique_value = ''.join(
         [

@@ -2,7 +2,11 @@
 import strawberry
 from typing import List, Optional
 from strawberry import auto, ID
-from utils import generate_id_from_unique_fields
+from utils import (
+    generate_id_from_unique_fields,
+    generate_id_from_unique_field,
+)
+
 from .utils import (
     get_outbreaks,
     get_country_indicators,
@@ -132,6 +136,11 @@ class CountryEmergencyProfileType:
     def id(self) -> int:
         # Integer type is required by client to populate data on map
         return generate_id_from_unique_fields(self)
+
+    @strawberry.field
+    def country_id(self) -> ID:
+        # NOTE: Use data loader for this
+        return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
     def country_name(self) -> str:
