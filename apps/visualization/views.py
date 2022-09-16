@@ -1,33 +1,54 @@
-from django.db.models import Q
+from django.db.models import Max, F
 from rest_framework import (
-    viewsets,
+    views,
 )
 
 from .models import DataCountryLevelMostRecent
 from .serializers import DataCountryLevelMostRecentSerializer
-from .rest_filters import DataCountryLevelMostRecentFilter
+from rest_framework.pagination import LimitOffsetPagination
 
 
-class DataCountryLevelMostRecentViewset(viewsets.ReadOnlyModelViewSet):
-    queryset = DataCountryLevelMostRecent.objects.filter(category='Global').order_by('-indicator_month')
-    serializer_class = DataCountryLevelMostRecentSerializer
-    filterset_class = DataCountryLevelMostRecentFilter
+class ContextIndicatorsViews(views.APIView, LimitOffsetPagination):
+    default_limit = 10
 
-    def get_queryset(self):
-        search_params = self.request.query_params.get('search', None)
-        if search_params:
-            search_list = search_params.replace(" ", "").split(',')
-            return self.queryset.filter(
-                Q(emergency__in=search_list) |
-                Q(iso3__in=search_list) |
-                Q(type__in=search_list) |
-                Q(thematic__in=search_list) |
-                Q(topic__in=search_list) |
-                Q(iso3__in=search_list) |
-                Q(country_name__in=search_list) |
-                Q(indicator_id__in=search_list) |
-                Q(subvariable__in=search_list) |
-                Q(indicator_name__in=search_list)
-            )
-        else:
-            return self.queryset
+    def get(self, request):
+
+        emergency = request.query_params.get('emergency', None)
+        region = request.query_params.get('region', None)
+        iso3 = request.query_params.get('iso3', None)
+        type = request.query_params.get('type', None)
+        thematic = request.query_params.get('thematic', None)
+        topic = request.query_params.get('topic', None)
+        all_filters = {
+            'emergency': emergency,
+            'region': region,
+            'iso3': iso3,
+            'type': type,
+            'thematic': thematic,
+            'topic': topic,
+        }
+        data_country_filters = {k: v for k, v in all_filters.items() if v is not None}
+
+        result = DataCountryLevelMostRecent.objects.filter(
+            category='Global',
+            **data_country_filters
+        ).order_by(
+            '-indicator_month'
+        ).values(
+            'subvariable'
+        ).annotate(
+            indicator_name=F('indicator_name'),
+            indicator_month=Max('indicator_month'),
+            category=F('category'),
+            emergency=F('emergency'),
+            indicator_value=F('indicator_value'),
+            iso3=F('iso3'),
+            type=F('type'),
+            thematic=F('thematic'),
+            topic=F('topic')
+        )
+
+        results = self.paginate_queryset(result, request, view=self)
+
+        serializer = DataCountryLevelMostRecentSerializer(results, many=True)
+        return self.get_paginated_response(serializer.data)

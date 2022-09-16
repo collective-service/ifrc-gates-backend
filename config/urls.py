@@ -26,9 +26,6 @@ from drf_yasg.views import get_schema_view as swagger_get_schema_view
 from apps.visualization import views
 
 router = routers.DefaultRouter()
-router.register(
-    r'data_country_level_most_recent', views.DataCountryLevelMostRecentViewset, basename='data-country-level-most-recent'
-)
 
 schema_view = swagger_get_schema_view(
     openapi.Info(
@@ -49,6 +46,8 @@ urlpatterns = [
     path('api/v1/', include([
         # swagger url
         path('swagger/schema/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
+
+        path('context_indicators/', views.ContextIndicatorsViews.as_view()),
     ])
     ),
 ]

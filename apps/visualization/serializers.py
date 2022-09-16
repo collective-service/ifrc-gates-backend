@@ -8,6 +8,5 @@ class DataCountryLevelMostRecentSerializer(serializers.ModelSerializer):
         model = DataCountryLevelMostRecent
         fields = [
             'emergency', 'iso3', 'country_name', 'region', 'indicator_name',
-            'indicator_value', 'indicator_month', 'type', 'thematic', 'topic',
-            'subvariable',
+            'indicator_value', 'indicator_month', 'type', 'thematic', 'topic', 'subvariable', 'category'
             ]
