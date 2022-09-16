@@ -557,3 +557,21 @@ class FilterOptionsType:
     @strawberry.field
     async def keywords(self) -> List[str]:
         return await get_keywords()
+
+
+@strawberry.type
+class ContexualDataMultipleType:
+    iso3: str
+    context_date: str
+    context_indicator_value: Optional[str]
+    context_indicator_id: Optional[str]
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
+
+@strawberry.type
+class ContextualDataWithMultipleEmergencyType:
+    emergency: str
+    data: List[ContexualDataMultipleType]

@@ -22,6 +22,7 @@ from .types import (
     DisaggregationType,
     ContextualDataType,
     RegionLevelType,
+    ContextualDataWithMultipleEmergencyType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -40,6 +41,7 @@ from .ordering import (
     EpiDataGlobalOrder,
     CountryEmergencyProfileOrder,
 )
+from .utils import get_contextual_data_with_multiple_emergency
 
 
 async def get_country_profile_object(iso3):
@@ -114,3 +116,13 @@ class Query:
     @strawberry.field
     async def disaggregation(self) -> DisaggregationType:
         return DisaggregationType
+
+    @strawberry.field
+    async def ContextualDataWithMultipleEmergency(
+        self,
+        iso3: Optional[str] = None,
+        emergency: Optional['str'] = None,
+    ) -> List[ContextualDataWithMultipleEmergencyType]:
+        return await get_contextual_data_with_multiple_emergency(
+            iso3, emergency
+        )

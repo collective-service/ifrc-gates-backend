@@ -7,6 +7,7 @@ from .models import (
     Sources,
     RegionLevel,
     Countries,
+    ContextualData,
 )
 from utils import get_async_list_from_queryset
 
@@ -187,4 +188,33 @@ def get_overview_indicators(out_break, region):
             indicator_id=name,
             indicator_description=description,
         ) for name, description in options
+    ]
+
+
+@sync_to_async
+def get_contextual_data_with_multiple_emergency(
+    iso3,
+    emergency
+):
+    from .types import ContextualDataWithMultipleEmergencyType
+    all_filters = {
+        'iso3': iso3,
+        'context_indicator_id': 'total_cases',
+        'emergency': emergency,
+    }
+    filters = {k: v for k, v in all_filters.items() if v is not None}
+    contexual_data = ContextualData.objects.filter(
+        **filters
+    ).distinct('emergency').values('emergency')
+    return [
+        ContextualDataWithMultipleEmergencyType(
+            emergency=emergency['emergency'],
+            data=get_async_list_from_queryset(
+                ContextualData.objects.filter(
+                    **filters
+                ).filter(
+                    emergency=emergency['emergency']
+                ).order_by('-context_date')[:12]
+            )
+        ) for emergency in contexual_data
     ]
