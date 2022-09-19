@@ -150,7 +150,10 @@ class CountryEmergencyProfileType:
 
 @strawberry.django.type(Narratives)
 class NarrativesType:
+    id: auto
     iso3: auto
+    thematic: auto
+    topic: auto
     indicator_id: auto
     narrative: auto
     insert_date: auto

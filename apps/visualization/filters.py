@@ -14,6 +14,7 @@ from .models import (
     Sources,
     GlobalLevel,
     Countries,
+    Narratives,
 )
 from strawberry import auto
 
@@ -281,3 +282,20 @@ class ContextualDataFilter():
                 context_subvariable=greatest_context_indicator_value.context_subvariable
             )
         return queryset
+
+
+@strawberry.django.filters.filter(Narratives, lookups=True)
+class NarrativesFilter():
+    iso3: str
+    indicator_id: str
+    topic: str
+    thematic: str
+
+    def filter_indicator_id(self, queryset):
+        if not self.indicator_id:
+            return queryset
+        topic = DataCountryLevel.objects.filter(
+            indicator_id=self.indicator_id
+        ).first().topic
+        print(topic)
+        return queryset.filter(topic=topic)
