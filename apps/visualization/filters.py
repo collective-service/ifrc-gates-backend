@@ -114,9 +114,10 @@ class GlobalLevelFilter():
             greatest_subvariable_last_month = queryset.order_by(
                 '-indicator_month', '-indicator_value_global'
             ).first()
-            return queryset.filter(
-                subvariable=greatest_subvariable_last_month.subvariable
-            )
+            if greatest_subvariable_last_month:
+                return queryset.filter(
+                    subvariable=greatest_subvariable_last_month.subvariable
+                )
         return queryset
 
     def filter_is_combined_indicators(self, queryset):
