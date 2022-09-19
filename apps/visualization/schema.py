@@ -22,7 +22,26 @@ from .types import (
     DisaggregationType,
     ContextualDataType,
     RegionLevelType,
+    ContextualDataWithMultipleEmergencyType,
 )
+from .filters import (
+    CountryEmergencyProfileFilter,
+    DataCountryLevelFilter,
+    DataCountryLevelMostRecentFilter,
+    RegionLevelFilter,
+    DataGranularFilter,
+    ContextualDataFilter,
+    EpiDataGlobalFilter,
+    GlobalLevelFilter,
+)
+from .ordering import (
+    RegionLevelOrder,
+    GlobalLevelOrder,
+    ContextualDataOrder,
+    EpiDataGlobalOrder,
+    CountryEmergencyProfileOrder,
+)
+from .utils import get_contextual_data_with_multiple_emergency
 
 
 async def get_country_profile_object(iso3):
@@ -39,23 +58,52 @@ def get_outbreaks():
 @strawberry.type
 class Query:
     country_profiles: List[CountryProfileType] = strawberry.django.field()
-    country_emergency_profile: List[CountryEmergencyProfileType] = strawberry.django.field()
+    country_emergency_profile: List[CountryEmergencyProfileType] = strawberry.django.field(
+        filters=CountryEmergencyProfileFilter,
+        order=CountryEmergencyProfileOrder,
+        pagination=True,
+    )
     naratives: List[NarrativesType] = strawberry.django.field()
     countries: List[CountryType] = strawberry.django.field()
     # NOTE : Needed for future
     epi_data: List[EpiDataType] = strawberry.django.field()
-    data_country_level_most_recent: List[DataCountryLevelMostRecentType] = strawberry.django.field()
-    global_level: List[GlobalLevelType] = strawberry.django.field()
+    data_country_level_most_recent: List[DataCountryLevelMostRecentType] = strawberry.django.field(
+        filters=DataCountryLevelMostRecentFilter,
+        pagination=True,
+    )
+    global_level: List[GlobalLevelType] = strawberry.django.field(
+        filters=GlobalLevelFilter,
+        order=GlobalLevelOrder,
+        pagination=True,
+    )
 
     # NOTE : Needed for future
     # data_country_level_quantiles: List[DataCountryLevelQuantilesType] = strawberry.django.field()
-    data_granular: List[DataGranularType] = strawberry.django.field()
-    epi_data_global: List[EpiDataGlobalType] = strawberry.django.field()
+    data_granular: List[DataGranularType] = strawberry.django.field(
+        filters=DataGranularFilter,
+        pagination=True,
+    )
+    epi_data_global: List[EpiDataGlobalType] = strawberry.django.field(
+        filters=EpiDataGlobalFilter,
+        order=EpiDataGlobalOrder,
+        pagination=True,
+    )
     out_breaks: List[OutbreaksType] = strawberry.django.field(resolver=get_outbreaks)
-    region_level: List[RegionLevelType] = strawberry.django.field()
-    contextual_data: List[ContextualDataType] = strawberry.django.field()
+    region_level: List[RegionLevelType] = strawberry.django.field(
+        filters=RegionLevelFilter,
+        order=RegionLevelOrder,
+        pagination=True,
+    )
+    contextual_data: List[ContextualDataType] = strawberry.django.field(
+        filters=ContextualDataFilter,
+        order=ContextualDataOrder,
+        pagination=True,
+    )
 
-    data_country_level: List[DataCountryLevelType] = strawberry.django.field()
+    data_country_level: List[DataCountryLevelType] = strawberry.django.field(
+        filters=DataCountryLevelFilter,
+        pagination=True
+    )
 
     @strawberry.field
     def country_profile(self, iso3: Optional[str] = None) -> CountryProfileType:
@@ -69,3 +117,12 @@ class Query:
     async def disaggregation(self) -> DisaggregationType:
         return DisaggregationType
 
+    @strawberry.field
+    async def ContextualDataWithMultipleEmergency(
+        self,
+        iso3: Optional[str] = None,
+        emergency: Optional['str'] = None,
+    ) -> List[ContextualDataWithMultipleEmergencyType]:
+        return await get_contextual_data_with_multiple_emergency(
+            iso3, emergency
+        )

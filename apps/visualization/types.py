@@ -2,7 +2,11 @@
 import strawberry
 from typing import List, Optional
 from strawberry import auto, ID
-from utils import generate_id_from_unique_fields
+from utils import (
+    generate_id_from_unique_fields,
+    generate_id_from_unique_field,
+)
+
 from .utils import (
     get_outbreaks,
     get_country_indicators,
@@ -14,6 +18,8 @@ from .utils import (
     get_thematics,
     get_topics,
     get_keywords,
+    get_indicator_value_regional,
+    get_country_name,
 )
 from .models import (
     CountryProfile,
@@ -30,15 +36,6 @@ from .models import (
     EpiDataGlobal,
     RegionLevel,
     ContextualData
-)
-from .filters import (
-    CountryEmergencyProfileFilter,
-    DataCountryLevelFilter,
-    DataCountryLevelMostRecentFilter,
-    RegionLevelFilter,
-    DataGranularFilter,
-    ContextualDataFilter,
-    EpiDataGlobalFilter
 )
 
 
@@ -127,7 +124,7 @@ class CountryProfileType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(CountryEmergencyProfile, filters=CountryEmergencyProfileFilter)
+@strawberry.django.type(CountryEmergencyProfile)
 class CountryEmergencyProfileType:
     emergency: auto
     iso3: auto
@@ -140,6 +137,17 @@ class CountryEmergencyProfileType:
         # Integer type is required by client to populate data on map
         return generate_id_from_unique_fields(self)
 
+    @strawberry.field
+    def country_id(self) -> ID:
+        # NOTE: Use data loader for this
+        return generate_id_from_unique_field(self.iso3)
+
+    @strawberry.field
+    def country_name(self) -> str:
+        # NOTE: Use dataloader for this
+        return get_country_name(self.iso3)
+
+
 @strawberry.django.type(Narratives)
 class NarrativesType:
     iso3: auto
@@ -148,7 +156,7 @@ class NarrativesType:
     insert_date: auto
 
 
-@strawberry.django.type(DataCountryLevel, filters=DataCountryLevelFilter)
+@strawberry.django.type(DataCountryLevel)
 class DataCountryLevelType():
     emergency: auto
     country_name: auto
@@ -250,7 +258,7 @@ class EpiDataType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(DataCountryLevelMostRecent, filters=DataCountryLevelMostRecentFilter)
+@strawberry.django.type(DataCountryLevelMostRecent)
 class DataCountryLevelMostRecentType:
     emergency: auto
     country_name: auto
@@ -280,6 +288,11 @@ class DataCountryLevelMostRecentType:
     @strawberry.field
     def id(self) -> ID:
         return generate_id_from_unique_fields(self)
+
+    @strawberry.field
+    def indicator_value_regional(self) -> float:
+        # NOTE: Add dataloader for this
+        return get_indicator_value_regional(self)
 
 
 @strawberry.django.type(GlobalLevel)
@@ -324,7 +337,7 @@ class DataCountryLevelQuantilesType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(DataGranular, filters=DataGranularFilter)
+@strawberry.django.type(DataGranular)
 class DataGranularType:
     emergency: auto
     iso3: auto
@@ -388,7 +401,7 @@ class DataGranularType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(EpiDataGlobal, filters=EpiDataGlobalFilter)
+@strawberry.django.type(EpiDataGlobal)
 class EpiDataGlobalType:
     region: auto
     emergency: auto
@@ -413,7 +426,7 @@ class CountryOutbreaksType:
     outbreak: str
 
 
-@strawberry.django.type(RegionLevel, filters=RegionLevelFilter)
+@strawberry.django.type(RegionLevel)
 class RegionLevelType:
     emergency: auto
     region: auto
@@ -436,7 +449,7 @@ class RegionLevelType:
         return generate_id_from_unique_fields(self)
 
 
-@strawberry.django.type(ContextualData, filters=ContextualDataFilter)
+@strawberry.django.type(ContextualData)
 class ContextualDataType:
     iso3: auto
     context_date: auto
@@ -499,7 +512,7 @@ class CountryIndicatorType:
 
 @strawberry.type
 class OverviewIndicatorType:
-    indicator_name: Optional[str]
+    indicator_id: Optional[str]
     indicator_description: Optional[str]
 
 
@@ -553,3 +566,21 @@ class FilterOptionsType:
     @strawberry.field
     async def keywords(self) -> List[str]:
         return await get_keywords()
+
+
+@strawberry.type
+class ContexualDataMultipleType:
+    iso3: str
+    context_date: str
+    context_indicator_value: Optional[str]
+    context_indicator_id: Optional[str]
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
+
+@strawberry.type
+class ContextualDataWithMultipleEmergencyType:
+    emergency: str
+    data: List[ContexualDataMultipleType]

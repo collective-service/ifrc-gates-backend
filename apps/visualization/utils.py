@@ -5,8 +5,19 @@ from .models import (
     DataCountryLevelMostRecent,
     CountryFilterOptions,
     Sources,
+    RegionLevel,
+    Countries,
+    ContextualData,
 )
 from utils import get_async_list_from_queryset
+
+
+@sync_to_async
+def get_country_name(iso3):
+    try:
+        return Countries.objects.get(iso3=iso3).country_name
+    except Countries.DoesNotExist:
+        return None
 
 
 @sync_to_async
@@ -77,6 +88,13 @@ def get_outbreaks(iso3):
 
 
 @sync_to_async
+def get_indicator_value_regional(obj):
+    return RegionLevel.objects.filter(
+        indicator_id=obj.indicator_id
+    ).order_by('-indicator_month').first().indicator_value_regional
+
+
+@sync_to_async
 def get_country_indicators(iso3, outbreak):
     from .types import CountryIndicatorType
     indicators = CountryFilterOptions.objects.filter(
@@ -132,7 +150,7 @@ def get_topics(thematic):
 async def clean_keywords(keywords_qs):
     data = set()
     async for keyword in keywords_qs:
-        splited_keywords = re.split(";|,|\|", keyword.strip())
+        splited_keywords = re.split(";|,|\|", keyword.strip()) # noqa W605
         cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
         data.update(set(cleaned_keywords))
     return list(data)
@@ -161,13 +179,42 @@ def get_overview_indicators(out_break, region):
         ).exclude(
             indicator_name=None
         ).values_list(
-            'indicator_name',
+            'indicator_id',
             'indicator_description',
-        ).distinct('indicator_name')
+        ).distinct('indicator_id')
     )
     return [
         OverviewIndicatorType(
-            indicator_name=name,
+            indicator_id=name,
             indicator_description=description,
         ) for name, description in options
+    ]
+
+
+@sync_to_async
+def get_contextual_data_with_multiple_emergency(
+    iso3,
+    emergency
+):
+    from .types import ContextualDataWithMultipleEmergencyType
+    all_filters = {
+        'iso3': iso3,
+        'context_indicator_id': 'total_cases',
+        'emergency': emergency,
+    }
+    filters = {k: v for k, v in all_filters.items() if v is not None}
+    contexual_data = ContextualData.objects.filter(
+        **filters
+    ).distinct('emergency').values('emergency')
+    return [
+        ContextualDataWithMultipleEmergencyType(
+            emergency=emergency['emergency'],
+            data=get_async_list_from_queryset(
+                ContextualData.objects.filter(
+                    **filters
+                ).filter(
+                    emergency=emergency['emergency']
+                ).order_by('-context_date')[:12]
+            )
+        ) for emergency in contexual_data
     ]
