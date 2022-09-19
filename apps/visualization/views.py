@@ -1,4 +1,6 @@
-from django.db.models import Max, F
+from django.conf import settings
+from django.db.models import Max, Q
+from functools import reduce
 from rest_framework.exceptions import ValidationError
 from .models import DataCountryLevelMostRecent
 from .serializers import DataCountryLevelMostRecentSerializer
@@ -25,9 +27,10 @@ class ContextIndicatorsViews(ListAPIView):
     def get_queryset(self):
         if self.request.query_params.get('limit'):
             limit = int(self.request.query_params.get('limit'))
-            if limit >= 100:
-                raise ValidationError({"error": "Limit must be less or equal to 100"})
-
+            if limit > settings.OPEN_API_MAX_PAGE_LIMIT:
+                raise ValidationError(
+                    {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
+                )
         result = DataCountryLevelMostRecent.objects.filter(
             category='Global',
         ).order_by(
@@ -35,16 +38,12 @@ class ContextIndicatorsViews(ListAPIView):
         ).values(
             'subvariable'
         ).annotate(
-            indicator_name=F('indicator_name'),
-            indicator_month=Max('indicator_month'),
-            category=F('category'),
-            emergency=F('emergency'),
-            indicator_value=F('indicator_value'),
-            iso3=F('iso3'),
-            type=F('type'),
-            thematic=F('thematic'),
-            topic=F('topic')
+            max_indicator_month=Max('indicator_month'),
         )
-
-        return result
-
+        filters = reduce(lambda acc, item: acc | item, [
+            Q(
+                subvariable=value['subvariable'],
+                indicator_month=value['max_indicator_month'],
+            ) for value in result
+        ])
+        return DataCountryLevelMostRecent.objects.filter(filters).distinct('subvariable')

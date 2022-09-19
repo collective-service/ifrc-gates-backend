@@ -41,15 +41,9 @@ urlpatterns = [
     path("graphql/", CustomAsyncGraphQLView.as_view(schema=schema, graphiql=False)),
 
     # rest api urls
-    path('api/v1/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('api/v1/', include([
-        # swagger url
-        path('swagger/schema/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
-
-        path('context_indicators/', views.ContextIndicatorsViews.as_view()),
-    ])
-    ),
+    path('api/v1/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
+    path('api/v1/context_indicators/', views.ContextIndicatorsViews.as_view()),
 ]
 
 admin.site.site_header = "IFRC-Gates administration"

@@ -274,3 +274,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
 }
+
+# Set max page limit to 50 in open api
+OPEN_API_MAX_PAGE_LIMIT = 50
