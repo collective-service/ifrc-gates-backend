@@ -85,6 +85,9 @@ INSTALLED_APPS = [
     # 3rd party
     'admin_auto_filters',
     'storages',
+    'rest_framework',
+    'django_filters',
+    'drf_yasg',
     # Local
     'apps.visualization',
     'corsheaders',
@@ -263,3 +266,14 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+}
+
+# Set max page limit to 50 in open api
+OPEN_API_MAX_PAGE_LIMIT = 50
