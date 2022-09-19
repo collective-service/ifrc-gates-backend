@@ -1,37 +1,35 @@
 from django.db.models import Max, F
-from rest_framework import (
-    views,
-)
-
+from rest_framework.exceptions import ValidationError
 from .models import DataCountryLevelMostRecent
 from .serializers import DataCountryLevelMostRecentSerializer
+from .rest_filters import DataCountryLevelMostRecentFilter
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.generics import ListAPIView
 
 
-class ContextIndicatorsViews(views.APIView, LimitOffsetPagination):
+class ContextIndicatorsViews(ListAPIView):
+    '''
+    Returns most recent inidcator values for a country level.
+    It accepts String query parameters such as emergency, region, iso3, type, thematic,
+    topic as filter.
+    It also accepts query parameters such as limit and offset to request number of objects
+    in a page.
+    Comma separated string query parameters can be given for topic to filter according
+    to multiple topic.
+    '''
     default_limit = 10
+    serializer_class = DataCountryLevelMostRecentSerializer
+    filterset_class = DataCountryLevelMostRecentFilter
+    pagination_class = LimitOffsetPagination
 
-    def get(self, request):
-
-        emergency = request.query_params.get('emergency', None)
-        region = request.query_params.get('region', None)
-        iso3 = request.query_params.get('iso3', None)
-        type = request.query_params.get('type', None)
-        thematic = request.query_params.get('thematic', None)
-        topic = request.query_params.get('topic', None)
-        all_filters = {
-            'emergency': emergency,
-            'region': region,
-            'iso3': iso3,
-            'type': type,
-            'thematic': thematic,
-            'topic': topic,
-        }
-        data_country_filters = {k: v for k, v in all_filters.items() if v is not None}
+    def get_queryset(self):
+        if self.request.query_params.get('limit'):
+            limit = int(self.request.query_params.get('limit'))
+            if limit >= 100:
+                raise ValidationError({"error": "Limit must be less or equal to 100"})
 
         result = DataCountryLevelMostRecent.objects.filter(
             category='Global',
-            **data_country_filters
         ).order_by(
             '-indicator_month'
         ).values(
@@ -48,7 +46,5 @@ class ContextIndicatorsViews(views.APIView, LimitOffsetPagination):
             topic=F('topic')
         )
 
-        results = self.paginate_queryset(result, request, view=self)
+        return result
 
-        serializer = DataCountryLevelMostRecentSerializer(results, many=True)
-        return self.get_paginated_response(serializer.data)
