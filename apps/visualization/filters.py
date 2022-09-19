@@ -76,11 +76,11 @@ class EpiDataGlobalFilter():
 
     def filter_is_regional_chart(self, queryset):
         if self.is_regional_chart:
-            most_recent_reginal_data = queryset.filter(most_recent=True).exclude(region='Global').values('region').annotate(
+            most_recent_regional_data = queryset.filter(most_recent=True).exclude(region='Global').values('region').annotate(
                 recent_context_date=Max('context_date'),
                 max_context_indicator_value=Max('context_indicator_value')
             ).order_by('region')
-            if most_recent_reginal_data:
+            if most_recent_regional_data:
                 filters = reduce(
                     lambda acc,
                     item: acc | item,
@@ -89,7 +89,7 @@ class EpiDataGlobalFilter():
                             region=value['region'],
                             context_date=value['recent_context_date'],
                             context_indicator_value=value['max_context_indicator_value']
-                        ) for value in most_recent_reginal_data
+                        ) for value in most_recent_regional_data
                     ]
                 )
                 return queryset.filter(most_recent=True).filter(filters).annotate(
