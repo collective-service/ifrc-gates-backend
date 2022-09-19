@@ -33,6 +33,7 @@ from .filters import (
     ContextualDataFilter,
     EpiDataGlobalFilter,
     GlobalLevelFilter,
+    NarrativesFilter,
 )
 from .ordering import (
     RegionLevelOrder,
@@ -63,7 +64,9 @@ class Query:
         order=CountryEmergencyProfileOrder,
         pagination=True,
     )
-    naratives: List[NarrativesType] = strawberry.django.field()
+    naratives: List[NarrativesType] = strawberry.django.field(
+        filters=NarrativesFilter
+    )
     countries: List[CountryType] = strawberry.django.field()
     # NOTE : Needed for future
     epi_data: List[EpiDataType] = strawberry.django.field()
