@@ -11,15 +11,15 @@ resource "aws_alb_target_group" "tg" {
   target_type = "ip"
   vpc_id      = aws_vpc.vpc.id
 
-  health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 20
-    protocol            = "HTTP"
-    matcher             = "200"
-    path                = var.health_check_path
-    interval            = 30
-  }
+#   health_check {
+#     healthy_threshold   = 2
+#     unhealthy_threshold = 2
+#     timeout             = 20
+#     protocol            = "HTTP"
+#     matcher             = "200"
+#     path                = var.health_check_path
+#     interval            = 30
+#   }
 }
 
 # Redirecting all incomming traffic from ALB to the target group
