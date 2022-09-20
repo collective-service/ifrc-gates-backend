@@ -1,5 +1,6 @@
 import re
 from asgiref.sync import sync_to_async
+from django.db.models import Max, F
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
@@ -8,6 +9,7 @@ from .models import (
     RegionLevel,
     Countries,
     ContextualData,
+    CountryEmergencyProfile,
 )
 from utils import get_async_list_from_queryset
 
@@ -218,3 +220,69 @@ def get_contextual_data_with_multiple_emergency(
             )
         ) for emergency in contexual_data
     ]
+
+
+def get_overview_map_data(
+    emergency,
+    region,
+    indicator_id,
+):
+    if emergency and not (indicator_id or region):
+        return CountryEmergencyProfile.objects.filter(
+            emergency=emergency,
+            context_indicator_value='total_cases', 
+        ).values('iso3').annotate(
+            max_indicator_month=Max('context_indicator_month'),
+            indicator_value=F('context_indicator_value'),
+        )
+
+    elif (indicator_id or region) and not emergency:
+        all_filters = {
+            'region': region,
+            'indicator_id': indicator_id,
+        }
+        filters = {k: v for k, v in all_filters.items() if v is not None}
+        qs = DataCountryLevelMostRecent.objects.filter(**filters)
+        return qs.values('iso3').annotate(
+            max_indicator_month=Max('indicator_month'),
+            indicator_value=F('indicator_value'),
+        ).order_by('-max_indicator_month').distinct('iso3')
+    return CountryEmergencyProfile.objects.filter(
+        context_indicator_value='total_cases', 
+    ).values('iso3').annotate(
+        max_indicator_month=Max('context_indicator_month'),
+        indicator_value=F('context_indicator_value'),
+    )
+
+
+def get_overview_table_data(
+    emergency,
+    region,
+    indicator_id,
+):
+    if emergency and not (indicator_id or region):
+        return CountryEmergencyProfile.objects.filter(
+            emergency=emergency,
+            context_indicator_value='total_cases', 
+        ).values('iso3').annotate(
+            max_indicator_month=Max('context_indicator_month'),
+            indicator_value=F('context_indicator_value'),
+        )
+
+    elif (indicator_id or region) and not emergency:
+        all_filters = {
+            'region': region,
+            'indicator_id': indicator_id,
+        }
+        filters = {k: v for k, v in all_filters.items() if v is not None}
+        qs = DataCountryLevelMostRecent.objects.filter(**filters)
+        return qs.values('iso3').annotate(
+            max_indicator_month=Max('indicator_month'),
+            indicator_value=F('indicator_value'),
+        ).order_by('-max_indicator_month').distinct('iso3')
+    return CountryEmergencyProfile.objects.filter(
+        context_indicator_value='total_cases', 
+    ).values('iso3').annotate(
+        max_indicator_month=Max('context_indicator_month'),
+        indicator_value=F('context_indicator_value'),
+    )

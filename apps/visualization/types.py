@@ -587,3 +587,43 @@ class ContexualDataMultipleType:
 class ContextualDataWithMultipleEmergencyType:
     emergency: str
     data: List[ContexualDataMultipleType]
+
+
+@strawberry.type
+class OverviewMapType:
+    indicator_value: float
+    iso3: str
+
+    @strawberry.field
+    def country_id(self) -> ID:
+        return generate_id_from_unique_field(self.iso3)
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
+
+@strawberry.type
+class OverviewTableDataType:
+    month: str
+    indicator_value: float
+
+
+@strawberry.type
+class OverviewTableType:
+    indicator_value: float
+    iso3: str
+    # data: List[OverviewTableDataType]
+
+    @strawberry.field
+    def country_id(self) -> ID:
+        return generate_id_from_unique_field(self.iso3)
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_fields(self)
+
+    @strawberry.field
+    def country_name(self) -> str:
+        # NOTE: Use dataloader for this
+        return get_country_name(self.iso3)
