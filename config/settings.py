@@ -24,20 +24,20 @@ env = environ.Env(
 
     # Django default schema for auth and django stuffs, we have all access in production
     DJANGO_DB_USER=(str, 'postgres'),
-    DJANGO_DB_PASSWROD=(str, 'postgres'),
+    DJANGO_DB_PASSWORD=(str, 'postgres'),
     DJANGO_DB_HOST=(str, 'db'),
     DJANGO_DB_PORT=(int, 5432),
 
     # Visualiztion schema we have read only permission in production
     VISUALIZATION_DB_USER=(str, 'postgres'),
-    VISUALIZATION_DB_PASSWROD=(str, 'postgres'),
+    VISUALIZATION_DB_PASSWORD=(str, 'postgres'),
     VISUALIZATION_DB_HOST=(str, 'db'),
     VISUALIZATION_DB_PORT=(int, 5432),
 
     # Production schema, we have read write acess in few tables only,
     # Used for csv migrate from django to production database
     PRODUCTION_DB_USER=(str, 'postgres'),
-    PRODUCTION_DB_PASSWROD=(str, 'postgres'),
+    PRODUCTION_DB_PASSWORD=(str, 'postgres'),
     PRODUCTION_DB_HOST=(str, 'db'),
     PRODUCTION_DB_PORT=(int, 5432),
 
@@ -49,7 +49,8 @@ env = environ.Env(
 
     TIME_ZONE=(str, 'Asia/Kathmandu'),
     CORS_ALLOWED_ORIGINS=(list, ['http://localhost:3050']),
-    # Static, Media configs
+
+    # Static, Media configs for develop
     DJANGO_STATIC_URL=(str, '/static/'),
     DJANGO_MEDIA_URL=(str, '/media/'),
     DJANGO_STATIC_ROOT=(str, os.path.join(BASE_DIR, "staticfiles")),
@@ -59,6 +60,12 @@ env = environ.Env(
     # Celery
     CELERY_REDIS_URL=str,  # redis://redis:6379/0
     DJANGO_CACHE_REDIS_URL=str,  # redis://redis:6379/1
+
+    # S3 related settings for production
+    AWS_STORAGE_BUCKET_NAME=str,
+    AWS_STATIC_LOCATION=(str, 'static'),
+    AWS_MEDIA_LOCATION=(str, 'media'),
+
 )
 
 # Quick-start development settings - unsuitable for production
@@ -137,7 +144,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME'),
         'USER': env('DJANGO_DB_USER'),
-        'PASSWORD': env('DJANGO_DB_PASSWROD'),
+        'PASSWORD': env('DJANGO_DB_PASSWORD'),
         'HOST': env('DJANGO_DB_HOST'),
         'PORT': env('DJANGO_DB_PORT'),
         'OPTIONS': {
@@ -148,7 +155,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME'),
         'USER': env('VISUALIZATION_DB_USER'),
-        'PASSWORD': env('VISUALIZATION_DB_PASSWROD'),
+        'PASSWORD': env('VISUALIZATION_DB_PASSWORD'),
         'HOST': env('VISUALIZATION_DB_HOST'),
         'PORT': env('VISUALIZATION_DB_PORT'),
         'OPTIONS': {
@@ -159,7 +166,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DB_NAME'),
         'USER': env('PRODUCTION_DB_USER'),
-        'PASSWORD': env('PRODUCTION_DB_PASSWROD'),
+        'PASSWORD': env('PRODUCTION_DB_PASSWORD'),
         'HOST': env('PRODUCTION_DB_HOST'),
         'PORT': env('PRODUCTION_DB_PORT'),
         'OPTIONS': {
@@ -215,6 +222,21 @@ if DEBUG or env('USE_LOCAL_STORAGE'):
     MEDIA_URL = env('DJANGO_MEDIA_URL')
     STATIC_ROOT = env('DJANGO_STATIC_ROOT')
     MEDIA_ROOT = env('DJANGO_MEDIA_ROOT')
+else:
+    AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_S3_OBJECT_PARAMETERS = {
+        "CacheControl": "max-age=86400",
+    }
+    AWS_STATIC_LOCATION = env('AWS_STATIC_LOCATION')
+    AWS_MEDIA_LOCATION = env('AWS_MEDIA_LOCATION')
+
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/"
+    TINYMCE_JS_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/tinymce/tinymce.min.js"
+
+    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+    DEFAULT_FILE_STORAGE = "config.storage_backends.MediaStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
