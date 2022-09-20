@@ -24,7 +24,7 @@
       ],
       "command": [
         "-c",
-        "/code/scripts/run_develop.sh"
+        "/code/scripts/run_prod.sh"
       ],
       "environment": [
             {
@@ -42,19 +42,51 @@
                 "valueFrom": "${db_name}"
             },
             {
-                "name": "DB_USER",
+                "name": "DJANGO_DB_USER",
                 "valueFrom": "${db_user}"
             },
             {
-                "name": "DB_PWD",
+                "name": "DJANGO_DB_PASSWORD",
                 "valueFrom": "${db_pwd}"
             },
             {
-                "name": "DB_HOST",
+                "name": "DJANGO_DB_HOST",
                 "valueFrom": "${db_host}"
+            },       
+            {
+                "name": "DJANGO_DB_PORT",
+                "valueFrom": "${db_port}"
             },
             {
-                "name": "DB_PORT",
+                "name": "VISUALIZATION_DB_USER",
+                "valueFrom": "${db_user}"
+            },
+            {
+                "name": "VISUALIZATION_DB_PASSWORD",
+                "valueFrom": "${db_pwd}"
+            },
+            {
+                "name": "VISUALIZATION_DB_HOST",
+                "valueFrom": "${db_host}"
+            },       
+            {
+                "name": "VISUALIZATION_DB_PORT",
+                "valueFrom": "${db_port}"
+            },
+            {
+                "name": "PRODUCTION_DB_USER",
+                "valueFrom": "${db_user}"
+            },
+            {
+                "name": "PRODUCTION_DB_PASSWORD",
+                "valueFrom": "${db_pwd}"
+            },
+            {
+                "name": "PRODUCTION_DB_HOST",
+                "valueFrom": "${db_host}"
+            },       
+            {
+                "name": "PRODUCTION_DB_PORT",
                 "valueFrom": "${db_port}"
             },
             {
