@@ -69,7 +69,11 @@ resource "aws_iam_role_policy" "ecs-role-policy" {
                     "ssmmessages:CreateControlChannel",
                     "ssmmessages:CreateDataChannel",
                     "ssmmessages:OpenControlChannel",
-                    "ssmmessages:OpenDataChannel"
+                    "ssmmessages:OpenDataChannel",
+                    "s3:*",
+                    "rds:*",
+                    "elasticache:*",
+                    "rds-db:connect"
                 ],
                 "Resource": "*"
             }
