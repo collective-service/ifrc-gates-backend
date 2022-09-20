@@ -66,6 +66,8 @@ env = environ.Env(
     AWS_STATIC_LOCATION=(str, 'static'),
     AWS_MEDIA_LOCATION=(str, 'media'),
 
+    # Http protocol settings
+    HTTP_PROTOCOL=(str, 'http')
 )
 
 # Quick-start development settings - unsuitable for production
@@ -299,3 +301,13 @@ REST_FRAMEWORK = {
 
 # Set max page limit to 50 in open api
 OPEN_API_MAX_PAGE_LIMIT = 50
+
+HTTP_PROTOCOL = env('HTTP_PROTOCOL')
+
+if HTTP_PROTOCOL == 'https':
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SECURE_HSTS_SECONDS = 30  # TODO: Increase this slowly
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
