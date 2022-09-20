@@ -37,3 +37,23 @@ resource "aws_security_group" "ecs_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_security_group" "allow_redis" {
+  name        = "redis-sec-group-${var.environment}"
+  description = "Allow Redis access from ECS"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port        = 6379
+    to_port          = 6379
+    protocol         = "tcp"
+    security_groups = [aws_security_group.ecs_sg.id]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+}
