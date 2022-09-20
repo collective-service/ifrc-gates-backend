@@ -490,21 +490,21 @@ class DisaggregationType:
     @strawberry.field
     async def gender_disaggregation(
         self, iso3: str,
-        indicator_name: Optional[str] = None,
+        indicator_id: Optional[str] = None,
         subvariable: Optional[str] = None
     ) -> List[GenderDisaggregationType]:
 
-        return await get_gender_disaggregation_data(iso3, indicator_name, subvariable)
+        return await get_gender_disaggregation_data(iso3, indicator_id, subvariable)
 
     @strawberry.field
     async def age_disaggregation(
         self,
         iso3: str,
-        indicator_name: Optional[str] = None,
+        indicator_id: Optional[str] = None,
         subvariable: Optional[str] = None
     ) -> List[AgeDisaggregationType]:
 
-        return await get_age_disaggregation_data(iso3, indicator_name, subvariable)
+        return await get_age_disaggregation_data(iso3, indicator_id, subvariable)
 
 
 @strawberry.type

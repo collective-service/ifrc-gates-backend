@@ -21,13 +21,13 @@ def get_country_name(iso3):
 
 
 @sync_to_async
-def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
+def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
     from .types import GenderDisaggregationType
 
     gender_category = ['Male', 'Female']
     all_filters = {
         'iso3': iso3,
-        'indicator_name': indicator_name,
+        'indicator_id': indicator_id,
         'subvariable': subvariable
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
@@ -52,12 +52,12 @@ def get_gender_disaggregation_data(iso3, indicator_name, subvariable):
 
 
 @sync_to_async
-def get_age_disaggregation_data(iso3, indicator_name, subvariable):
+def get_age_disaggregation_data(iso3, indicator_id, subvariable):
     from .types import GenderDisaggregationType
 
     all_filters = {
         'iso3': iso3,
-        'indicator_name': indicator_name,
+        'indicator_id': indicator_id,
         'subvariable': subvariable
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
