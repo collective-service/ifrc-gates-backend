@@ -26,6 +26,8 @@ data "template_file" "config" {
     debug = "False"
     use_local_storage = "False"
     s3_bucket_name = data.aws_ssm_parameter.s3_bucket_name.arn
+    http_protocol = data.aws_ssm_parameter.http_protocol.arn
+    cors_allowed_origins = data.aws_ssm_parameter.cors_allowed_origins.arn
   }
 }
 
