@@ -98,6 +98,14 @@
                 "valueFrom": "${s3_bucket_name}"
             },
             {
+                "name": "HTTP_PROTOCOL",
+                "valueFrom": "${http_protocol}"
+            },
+            {
+                "name": "CORS_ALLOWED_ORIGINS",
+                "valueFrom": "${cors_allowed_origins}"
+            },
+            {
                 "name": "CELERY_REDIS_URL",
                 "valueFrom": "${celery_redis_url}"
             },
