@@ -43,7 +43,9 @@ resource "aws_iam_role_policy" "param_store" {
           "${data.aws_ssm_parameter.secret_key.arn}",
           "${data.aws_ssm_parameter.s3_bucket_name.arn}",
           "${aws_ssm_parameter.celery_redis_url.arn}",
-          "${aws_ssm_parameter.django_cache_redis_url.arn}"
+          "${aws_ssm_parameter.django_cache_redis_url.arn}",
+          "${data.aws_ssm_parameter.http_protocol.arn}",
+          "${data.aws_ssm_parameter.cors_allowed_origins.arn}"
         ]
       }
     ]
