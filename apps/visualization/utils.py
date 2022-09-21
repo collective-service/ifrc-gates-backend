@@ -231,6 +231,25 @@ def get_overview_map_data(
     indicator_id,
 ):
     from .types import OverviewMapType
+
+    def get_unique_countries_data(qs):
+        # TODO: Improve this logic
+        data_country_map = {}
+        for item in qs:
+            if data_country_map:
+                if data_country_map.get(item['iso3'], None):
+                    pass
+                else:
+                    data_country_map[item['iso3']] = item['indicator_value']
+            else:
+                data_country_map[item['iso3']] = item['indicator_value']
+        return [
+            OverviewMapType(
+                iso3=iso3,
+                indicator_value=indicator_value
+            ) for iso3, indicator_value in data_country_map.items()
+        ]
+
     qs = CountryEmergencyProfile.objects.filter(
         context_indicator_id='total_cases',
     ).values('iso3').annotate(
@@ -259,11 +278,7 @@ def get_overview_map_data(
             indicator_value=F('indicator_value'),
         ).order_by('subvariable', '-max_indicator_month')
 
-    return [
-        OverviewMapType(
-            **item
-        ) for item in qs
-    ]
+    return get_unique_countries_data(qs)
 
 
 @sync_to_async

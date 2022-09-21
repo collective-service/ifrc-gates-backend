@@ -593,7 +593,6 @@ class ContextualDataWithMultipleEmergencyType:
 @strawberry.type
 class OverviewMapType:
     indicator_value: float
-    max_indicator_month: datetime.date
     iso3: str
 
     @strawberry.field
