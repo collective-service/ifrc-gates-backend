@@ -1,6 +1,8 @@
 import re
+from datetime import datetime, timedelta
 from asgiref.sync import sync_to_async
-from django.db.models import Max, F
+from django.db.models import Max, F, OuterRef, Subquery
+from django.db.models.functions import TruncMonth
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
@@ -270,44 +272,94 @@ def get_overview_table_data(
     region,
     indicator_id,
 ):
-    from .types import OverviewMapType
-    qs = CountryEmergencyProfile.objects.filter(
-        context_indicator_id='total_cases',
-    ).values('iso3').annotate(
-        max_indicator_month=Max('context_date'),
-        indicator_value=F('context_indicator_value'),
-    )
+    from .types import OverviewTableType, OverviewTableDataType
+
+    def format_indicator_value(iso3, qs_map):
+        # TODO: Find alternative for this
+        twelve_month_data = qs_map.get(iso3)
+        month_data_sorted_by_subvariable = {}
+        for item in twelve_month_data:
+            if month_data_sorted_by_subvariable:
+                if month_data_sorted_by_subvariable.get(item['month'], None):
+                    pass
+                else:
+                    month_data_sorted_by_subvariable[item['month']] = item['indicator_value']
+            else:
+                month_data_sorted_by_subvariable[item['month']] = item['indicator_value']
+        return [
+            OverviewTableDataType(
+                month=month,
+                indicator_value=indicator_value,
+            ) for month, indicator_value in month_data_sorted_by_subvariable.items()
+        ]
+
     if emergency and not (indicator_id or region):
-        qs = CountryEmergencyProfile.objects.filter(
+        emergency_profile_qs = CountryEmergencyProfile.objects.filter(
             emergency=emergency,
             context_indicator_id='total_cases',
-        ).values('iso3').annotate(
+            context_date__lte=TruncMonth(datetime.today()),
+            context_date__gte=TruncMonth(datetime.today() - timedelta(days=365)),
+        ).annotate(
+            month=Max(TruncMonth('context_date'))
+        ).values('iso3', 'month').annotate(
+            max_indicator_month=Max('context_date'),
+            indicator_value=F('context_indicator_value'),
+        )
+        emergency_profile_qs_iso3_map = {}
+        for item in emergency_profile_qs:
+            if emergency_profile_qs_iso3_map.get(item['iso3']):
+                emergency_profile_qs_iso3_map[item['iso3']].append(
+                    {'month': item['month'], 'indicator_value': item['indicator_value']}
+                )
+            else:
+                emergency_profile_qs_iso3_map[item['iso3']] = [
+                    {'month': item['month'], 'indicator_value': item['indicator_value']}
+                ]
+
+        qs = emergency_profile_qs.values('iso3').annotate(
             max_indicator_month=Max('context_date'),
             indicator_value=F('context_indicator_value'),
         )
 
-    elif indicator_id or region or emergency:
+        return [
+            OverviewTableType(
+                iso3=item['iso3'],
+                data=format_indicator_value(item['iso3'], emergency_profile_qs_iso3_map)
+            ) for item in qs
+        ]
+
+    else:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
             'emergency': emergency,
+            'indicator_month__lte': TruncMonth(datetime.today()),
+            'indicator_month__gte': TruncMonth(datetime.today() - timedelta(days=365)),
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
-        qs = DataCountryLevelMostRecent.objects.filter(**filters).values('iso3').annotate(
-            max_indicator_month=Max('indicator_month'),
+        country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(**filters).values(
+            'iso3', 'indicator_month'
+        ).annotate(
+            month=Max('indicator_month'),
             indicator_value=F('indicator_value'),
-        ).order_by('subvariable', '-max_indicator_month')
+        ).order_by('subvariable', '-month')
+        country_most_recent_qs_iso3_map = {}
+        for item in country_most_recent_qs:
+            if country_most_recent_qs_iso3_map.get(item['iso3']):
+                country_most_recent_qs_iso3_map[item['iso3']].append(
+                    {'month': item['month'], 'indicator_value': item['indicator_value']}
+                )
+            else:
+                country_most_recent_qs_iso3_map[item['iso3']] = [
+                    {'month': item['month'], 'indicator_value': item['indicator_value']}
+                ]
 
-    return [
-        OverviewMapType(
-            indicator_value=item['indicator_value'],
-            iso3=item['iso3'],
-            max_indicator_month=item['max_indicator_month'],
-            data=[],
-        ) for item in qs
-    ]
-
-
-@sync_to_async()
-def get_overview_table_month_data(iso3):
-    return []
+        qs = country_most_recent_qs.values('iso3').order_by('subvariable').annotate(
+            max_indicator_month=Max('indicator_month'),
+        )
+        return [
+            OverviewTableType(
+                iso3=item['iso3'],
+                data=format_indicator_value(item['iso3'], country_most_recent_qs_iso3_map)
+            ) for item in qs
+        ]

@@ -21,7 +21,6 @@ from .utils import (
     get_keywords,
     get_indicator_value_regional,
     get_country_name,
-    get_overview_table_month_data,
 )
 from .models import (
     CountryProfile,
@@ -610,9 +609,7 @@ class OverviewTableDataType:
 
 @strawberry.type
 class OverviewTableType:
-    indicator_value: float
     iso3: str
-    max_indicator_month: datetime.date
     data: List[OverviewTableDataType]
 
     @strawberry.field
