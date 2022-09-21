@@ -30,6 +30,14 @@ data "aws_ssm_parameter" "s3_bucket_name" {
     name = "s3_backend_bucket_name"
 }
 
+data "aws_ssm_parameter" "http_protocol" {
+    name = "http_protocol"
+}
+
+data "aws_ssm_parameter" "cors_allowed_origins" {
+    name = "cors_allowed_origins"
+}
+
 resource "aws_ssm_parameter" "celery_redis_url" {
     name    = "celery_redis_url"
     type    = "SecureString"
