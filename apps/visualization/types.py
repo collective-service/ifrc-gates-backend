@@ -1,5 +1,6 @@
 # types.py
 import strawberry
+import datetime
 from typing import List, Optional
 from strawberry import auto, ID
 from utils import (
@@ -20,6 +21,7 @@ from .utils import (
     get_keywords,
     get_indicator_value_regional,
     get_country_name,
+    get_overview_table_month_data,
 )
 from .models import (
     CountryProfile,
@@ -592,15 +594,12 @@ class ContextualDataWithMultipleEmergencyType:
 @strawberry.type
 class OverviewMapType:
     indicator_value: float
+    max_indicator_month: datetime.date
     iso3: str
 
     @strawberry.field
     def country_id(self) -> ID:
         return generate_id_from_unique_field(self.iso3)
-
-    @strawberry.field
-    def id(self) -> ID:
-        return generate_id_from_unique_fields(self)
 
 
 @strawberry.type
@@ -613,15 +612,12 @@ class OverviewTableDataType:
 class OverviewTableType:
     indicator_value: float
     iso3: str
-    # data: List[OverviewTableDataType]
+    max_indicator_month: datetime.date
+    data: List[OverviewTableDataType]
 
     @strawberry.field
     def country_id(self) -> ID:
         return generate_id_from_unique_field(self.iso3)
-
-    @strawberry.field
-    def id(self) -> ID:
-        return generate_id_from_unique_fields(self)
 
     @strawberry.field
     def country_name(self) -> str:

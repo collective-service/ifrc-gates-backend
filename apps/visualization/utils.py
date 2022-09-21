@@ -222,67 +222,92 @@ def get_contextual_data_with_multiple_emergency(
     ]
 
 
+@sync_to_async
 def get_overview_map_data(
     emergency,
     region,
     indicator_id,
 ):
-    if emergency and not (indicator_id or region):
-        return CountryEmergencyProfile.objects.filter(
-            emergency=emergency,
-            context_indicator_value='total_cases', 
-        ).values('iso3').annotate(
-            max_indicator_month=Max('context_indicator_month'),
-            indicator_value=F('context_indicator_value'),
-        )
-
-    elif (indicator_id or region) and not emergency:
-        all_filters = {
-            'region': region,
-            'indicator_id': indicator_id,
-        }
-        filters = {k: v for k, v in all_filters.items() if v is not None}
-        qs = DataCountryLevelMostRecent.objects.filter(**filters)
-        return qs.values('iso3').annotate(
-            max_indicator_month=Max('indicator_month'),
-            indicator_value=F('indicator_value'),
-        ).order_by('-max_indicator_month').distinct('iso3')
-    return CountryEmergencyProfile.objects.filter(
-        context_indicator_value='total_cases', 
+    from .types import OverviewMapType
+    qs = CountryEmergencyProfile.objects.filter(
+        context_indicator_id='total_cases',
     ).values('iso3').annotate(
-        max_indicator_month=Max('context_indicator_month'),
+        max_indicator_month=Max('context_date'),
         indicator_value=F('context_indicator_value'),
     )
 
+    if emergency and not (indicator_id or region):
+        qs = CountryEmergencyProfile.objects.filter(
+            emergency=emergency,
+            context_indicator_id='total_cases',
+        ).values('iso3').annotate(
+            max_indicator_month=Max('context_date'),
+            indicator_value=F('context_indicator_value'),
+        )
 
+    elif indicator_id or region or emergency:
+        all_filters = {
+            'region': region,
+            'indicator_id': indicator_id,
+            'emergency': emergency,
+        }
+        filters = {k: v for k, v in all_filters.items() if v is not None}
+        qs = DataCountryLevelMostRecent.objects.filter(**filters).values('iso3').annotate(
+            max_indicator_month=Max('indicator_month'),
+            indicator_value=F('indicator_value'),
+        ).order_by('subvariable', '-max_indicator_month')
+
+    return [
+        OverviewMapType(
+            **item
+        ) for item in qs
+    ]
+
+
+@sync_to_async
 def get_overview_table_data(
     emergency,
     region,
     indicator_id,
 ):
+    from .types import OverviewMapType
+    qs = CountryEmergencyProfile.objects.filter(
+        context_indicator_id='total_cases',
+    ).values('iso3').annotate(
+        max_indicator_month=Max('context_date'),
+        indicator_value=F('context_indicator_value'),
+    )
     if emergency and not (indicator_id or region):
-        return CountryEmergencyProfile.objects.filter(
+        qs = CountryEmergencyProfile.objects.filter(
             emergency=emergency,
-            context_indicator_value='total_cases', 
+            context_indicator_id='total_cases',
         ).values('iso3').annotate(
-            max_indicator_month=Max('context_indicator_month'),
+            max_indicator_month=Max('context_date'),
             indicator_value=F('context_indicator_value'),
         )
 
-    elif (indicator_id or region) and not emergency:
+    elif indicator_id or region or emergency:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
+            'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
-        qs = DataCountryLevelMostRecent.objects.filter(**filters)
-        return qs.values('iso3').annotate(
+        qs = DataCountryLevelMostRecent.objects.filter(**filters).values('iso3').annotate(
             max_indicator_month=Max('indicator_month'),
             indicator_value=F('indicator_value'),
-        ).order_by('-max_indicator_month').distinct('iso3')
-    return CountryEmergencyProfile.objects.filter(
-        context_indicator_value='total_cases', 
-    ).values('iso3').annotate(
-        max_indicator_month=Max('context_indicator_month'),
-        indicator_value=F('context_indicator_value'),
-    )
+        ).order_by('subvariable', '-max_indicator_month')
+
+    return [
+        OverviewMapType(
+            indicator_value=item['indicator_value'],
+            iso3=item['iso3'],
+            max_indicator_month=item['max_indicator_month'],
+            data=[],
+        ) for item in qs
+    ]
+
+
+@sync_to_async()
+def get_overview_table_month_data(iso3):
+    return []
