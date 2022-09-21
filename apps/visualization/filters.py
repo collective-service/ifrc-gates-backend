@@ -162,6 +162,7 @@ class DataCountryLevelMostRecentFilter():
     topic: str
     thematic: str
     type: str
+    region: str
     keywords: List[str]
 
     def filter_keywords(self, queryset):
