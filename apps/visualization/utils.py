@@ -1,7 +1,8 @@
 import re
 from datetime import datetime, timedelta
 from asgiref.sync import sync_to_async
-from django.db.models import Max, F, OuterRef, Subquery
+from django.db.models import Max, F, OuterRef, Subquery, BigIntegerField
+from django.db.models.functions import Cast
 from django.db.models.functions import TruncMonth
 from .models import (
     DataCountryLevel,
@@ -314,11 +315,10 @@ def get_overview_table_data(
             context_indicator_id='total_cases',
             context_date__lte=TruncMonth(datetime.today()),
             context_date__gte=TruncMonth(datetime.today() - timedelta(days=365)),
-        ).annotate(
-            month=Max(TruncMonth('context_date'))
-        ).values('iso3', 'month').annotate(
+        ).values('iso3').annotate(
             max_indicator_month=Max('context_date'),
             indicator_value=F('context_indicator_value'),
+            month=F('context_date'),
         )
         emergency_profile_qs_iso3_map = {}
         for item in emergency_profile_qs:
@@ -331,16 +331,11 @@ def get_overview_table_data(
                     {'month': item['month'], 'indicator_value': item['indicator_value']}
                 ]
 
-        qs = emergency_profile_qs.values('iso3').annotate(
-            max_indicator_month=Max('context_date'),
-            indicator_value=F('context_indicator_value'),
-        )
-
         return [
             OverviewTableType(
                 iso3=item['iso3'],
                 data=format_indicator_value(item['iso3'], emergency_profile_qs_iso3_map)
-            ) for item in qs
+            ) for item in emergency_profile_qs
         ]
 
     else:
@@ -352,12 +347,13 @@ def get_overview_table_data(
             'indicator_month__gte': TruncMonth(datetime.today() - timedelta(days=365)),
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
-        country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(**filters).values(
-            'iso3', 'indicator_month'
-        ).annotate(
-            month=Max('indicator_month'),
-            indicator_value=F('indicator_value'),
-        ).order_by('subvariable', '-month')
+
+        country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(
+            **filters
+        ).values('iso3').annotate(
+            indicator_value=Max('indicator_value'),
+            month=F('indicator_month'),
+        ).order_by('month')
         country_most_recent_qs_iso3_map = {}
         for item in country_most_recent_qs:
             if country_most_recent_qs_iso3_map.get(item['iso3']):
@@ -368,13 +364,9 @@ def get_overview_table_data(
                 country_most_recent_qs_iso3_map[item['iso3']] = [
                     {'month': item['month'], 'indicator_value': item['indicator_value']}
                 ]
-
-        qs = country_most_recent_qs.values('iso3').order_by('subvariable').annotate(
-            max_indicator_month=Max('indicator_month'),
-        )
         return [
             OverviewTableType(
                 iso3=item['iso3'],
                 data=format_indicator_value(item['iso3'], country_most_recent_qs_iso3_map)
-            ) for item in qs
+            ) for item in country_most_recent_qs
         ]
