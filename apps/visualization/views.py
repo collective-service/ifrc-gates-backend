@@ -31,9 +31,7 @@ class ContextIndicatorsViews(ListAPIView):
                 raise ValidationError(
                     {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
                 )
-        result = DataCountryLevelMostRecent.objects.filter(
-            category='Global',
-        ).order_by(
+        result = DataCountryLevelMostRecent.objects.order_by(
             '-indicator_month'
         ).values(
             'subvariable'
