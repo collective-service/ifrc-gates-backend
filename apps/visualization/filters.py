@@ -164,6 +164,7 @@ class DataCountryLevelMostRecentFilter():
     type: str
     region: str
     keywords: List[str]
+    category: str
 
     def filter_keywords(self, queryset):
         if not self.keywords:
