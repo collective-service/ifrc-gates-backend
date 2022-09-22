@@ -287,6 +287,8 @@ class DataCountryLevelMostRecentType:
     display_in_tableau: auto
     organisations: auto
     indicator_value_prev: auto
+    topic_description: auto
+    thematic_description: auto
 
     @strawberry.field
     def id(self) -> ID:
