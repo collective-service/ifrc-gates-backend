@@ -144,7 +144,7 @@ class CountryEmergencyProfileType:
         return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
-    def country_name(self) -> str:
+    def country_name(self) -> Optional[str]:
         # NOTE: Use dataloader for this
         return get_country_name(self.iso3)
 
@@ -616,6 +616,6 @@ class OverviewTableType:
         return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
-    def country_name(self) -> str:
+    def country_name(self) -> Optional[str]:
         # NOTE: Use dataloader for this
         return get_country_name(self.iso3)
