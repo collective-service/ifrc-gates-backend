@@ -232,6 +232,7 @@ def get_overview_map_data(
 ):
     from .types import OverviewMapType
 
+    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
         data_country_map = {}
@@ -257,7 +258,10 @@ def get_overview_map_data(
             'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
-        qs = DataCountryLevelMostRecent.objects.filter(**filters).values('iso3').annotate(
+        qs = DataCountryLevelMostRecent.objects.filter(
+            **filters,
+            iso3__in=existing_iso3,
+        ).values('iso3').annotate(
             max_indicator_month=Max('indicator_month'),
             indicator_value=F('indicator_value'),
         ).order_by('subvariable', '-max_indicator_month')
@@ -267,7 +271,6 @@ def get_overview_map_data(
             'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
-        existing_iso3 = Countries.objects.values_list('iso3', flat=True)
         qs = CountryEmergencyProfile.objects.filter(
             **filters,
             iso3__in=existing_iso3,
@@ -287,6 +290,7 @@ def get_overview_table_data(
 ):
     from .types import OverviewTableType, OverviewTableDataType
 
+    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
     def format_indicator_value(iso3, qs_map):
         # TODO: Find alternative for this
         twelve_month_data = qs_map.get(iso3)
@@ -317,7 +321,8 @@ def get_overview_table_data(
         filters = {k: v for k, v in all_filters.items() if v is not None}
 
         country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(
-            **filters
+            **filters,
+            iso3__in=existing_iso3,
         ).values('iso3').annotate(
             indicator_value=Max('indicator_value'),
             month=F('indicator_month'),
@@ -344,7 +349,6 @@ def get_overview_table_data(
             'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
-        existing_iso3 = Countries.objects.values_list('iso3', flat=True)
         emergency_profile_qs = CountryEmergencyProfile.objects.filter(
             iso3__in=existing_iso3,
             **filters,
