@@ -1,9 +1,0 @@
-Handle too many request in rest api
-# Please enter the commit message for your changes. Lines starting
-# with '#' will be ignored, and an empty message aborts the commit.
-#
-# On branch feature/handle-too-many-request
-# Changes to be committed:
-#	modified:   config/settings.py
-#	new file:   pytest.ini
-#
