@@ -23,6 +23,8 @@ from .types import (
     ContextualDataType,
     RegionLevelType,
     ContextualDataWithMultipleEmergencyType,
+    OverviewMapType,
+    OverviewTableType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -41,8 +43,13 @@ from .ordering import (
     ContextualDataOrder,
     EpiDataGlobalOrder,
     CountryEmergencyProfileOrder,
+    DataCountryLevelMostRecentOrder,
 )
-from .utils import get_contextual_data_with_multiple_emergency
+from .utils import (
+    get_contextual_data_with_multiple_emergency,
+    get_overview_map_data,
+    get_overview_table_data,
+)
 
 
 async def get_country_profile_object(iso3):
@@ -72,6 +79,7 @@ class Query:
     epi_data: List[EpiDataType] = strawberry.django.field()
     data_country_level_most_recent: List[DataCountryLevelMostRecentType] = strawberry.django.field(
         filters=DataCountryLevelMostRecentFilter,
+        order=DataCountryLevelMostRecentOrder,
         pagination=True,
     )
     global_level: List[GlobalLevelType] = strawberry.django.field(
@@ -121,11 +129,37 @@ class Query:
         return DisaggregationType
 
     @strawberry.field
-    async def ContextualDataWithMultipleEmergency(
+    async def contextualDataWithMultipleEmergency(
         self,
         iso3: Optional[str] = None,
-        emergency: Optional['str'] = None,
+        emergency: Optional[str] = None,
     ) -> List[ContextualDataWithMultipleEmergencyType]:
         return await get_contextual_data_with_multiple_emergency(
             iso3, emergency
+        )
+
+    @strawberry.field
+    async def overview_map(
+        self,
+        emergency: Optional[str] = None,
+        region: Optional[str] = None,
+        indicator_id: Optional[str] = None,
+    ) -> List[OverviewMapType]:
+        return await get_overview_map_data(
+            emergency,
+            region,
+            indicator_id,
+        )
+
+    @strawberry.field
+    async def overview_table(
+        self,
+        emergency: Optional[str] = None,
+        region: Optional[str] = None,
+        indicator_id: Optional[str] = None,
+    ) -> List[OverviewTableType]:
+        return await get_overview_table_data(
+            emergency,
+            region,
+            indicator_id,
         )

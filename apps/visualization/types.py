@@ -143,7 +143,7 @@ class CountryEmergencyProfileType:
         return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
-    def country_name(self) -> str:
+    def country_name(self) -> Optional[str]:
         # NOTE: Use dataloader for this
         return get_country_name(self.iso3)
 
@@ -587,3 +587,34 @@ class ContexualDataMultipleType:
 class ContextualDataWithMultipleEmergencyType:
     emergency: str
     data: List[ContexualDataMultipleType]
+
+
+@strawberry.type
+class OverviewMapType:
+    indicator_value: float
+    iso3: str
+
+    @strawberry.field
+    def country_id(self) -> ID:
+        return generate_id_from_unique_field(self.iso3)
+
+
+@strawberry.type
+class OverviewTableDataType:
+    month: str
+    indicator_value: float
+
+
+@strawberry.type
+class OverviewTableType:
+    iso3: str
+    data: List[OverviewTableDataType]
+
+    @strawberry.field
+    def country_id(self) -> ID:
+        return generate_id_from_unique_field(self.iso3)
+
+    @strawberry.field
+    def country_name(self) -> Optional[str]:
+        # NOTE: Use dataloader for this
+        return get_country_name(self.iso3)
