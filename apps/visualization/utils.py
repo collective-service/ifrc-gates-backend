@@ -1,8 +1,7 @@
 import re
 from datetime import datetime, timedelta
 from asgiref.sync import sync_to_async
-from django.db.models import Max, F, OuterRef, Subquery, BigIntegerField
-from django.db.models.functions import Cast
+from django.db.models import Max, F
 from django.db.models.functions import TruncMonth
 from .models import (
     DataCountryLevel,
@@ -322,7 +321,7 @@ def get_overview_table_data(
         ).values('iso3').annotate(
             indicator_value=Max('indicator_value'),
             month=F('indicator_month'),
-        ).order_by('month')
+        ).order_by('subvariable')
         country_most_recent_qs_iso3_map = {}
         for item in country_most_recent_qs:
             if country_most_recent_qs_iso3_map.get(item['iso3']):

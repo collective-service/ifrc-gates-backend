@@ -1,6 +1,5 @@
 # types.py
 import strawberry
-import datetime
 from typing import List, Optional
 from strawberry import auto, ID
 from utils import (
