@@ -616,6 +616,5 @@ class OverviewTableType:
         return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
-    def country_name(self) -> Optional[str]:
-        # NOTE: Use dataloader for this
-        return get_country_name(self.iso3)
+    async def country_name(self, info: Info) -> str:
+        return await info.context["country_name_loader"].load(self.iso3)

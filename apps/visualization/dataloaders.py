@@ -1,5 +1,6 @@
 from typing import List
 from asgiref.sync import sync_to_async
+from collections import defaultdict
 
 from apps.visualization.models import (
     Countries,
@@ -8,15 +9,22 @@ from apps.visualization.models import (
 
 
 def country_name_load(keys: List[str]):
-    return [Countries.objects.get(iso3=key).country_name for key in keys]
+    countries = Countries.objects.filter(iso3__in=keys).values('iso3', 'country_name')
+    _map = defaultdict(str)
+    for country in countries:
+        _map[country['iso3']] = country['country_name']
+    return [_map[key] for key in keys]
 
 
 def indicator_value_regional_load(keys: List[int]):
-    return [
-        RegionLevel.objects.filter(
-            indicator_id=key.indicator_id
-        ).order_by('-indicator_month').first().indicator_value_regional for key in keys
-    ]
+    indicator_id_list = [key.indicator_id for key in keys]
+    indicator_value_regional = RegionLevel.objects.filter(
+        indicator_id__in=indicator_id_list
+    ).values('indicator_id', 'indicator_value_regional').order_by('-indicator_month')
+    _map = defaultdict()
+    for value in indicator_value_regional:
+        _map[value['indicator_id']] = value['indicator_value_regional']
+    return [_map[key] for key in indicator_id_list]
 
 
 load_country_name = sync_to_async(country_name_load)
