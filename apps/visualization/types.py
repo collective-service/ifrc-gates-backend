@@ -317,6 +317,8 @@ class GlobalLevelType:
     population_coverage: auto
     error_margin: auto
     std_dev: auto
+    topic_description: auto
+    thematic_description: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -448,6 +450,8 @@ class RegionLevelType:
     population_coverage: auto
     error_margin: auto
     std_dev: auto
+    topic_description: auto
+    thematic_description: auto
 
     @strawberry.field
     def id(self) -> ID:
