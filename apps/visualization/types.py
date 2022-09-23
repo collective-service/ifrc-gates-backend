@@ -2,6 +2,7 @@
 import strawberry
 from typing import List, Optional
 from strawberry import auto, ID
+from strawberry.types import Info
 from utils import (
     generate_id_from_unique_fields,
     generate_id_from_unique_field,
@@ -18,8 +19,6 @@ from .utils import (
     get_thematics,
     get_topics,
     get_keywords,
-    get_indicator_value_regional,
-    get_country_name,
 )
 from .models import (
     CountryProfile,
@@ -134,18 +133,15 @@ class CountryEmergencyProfileType:
 
     @strawberry.field
     def id(self) -> int:
-        # Integer type is required by client to populate data on map
         return generate_id_from_unique_fields(self)
 
     @strawberry.field
     def country_id(self) -> ID:
-        # NOTE: Use data loader for this
         return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
-    def country_name(self) -> Optional[str]:
-        # NOTE: Use dataloader for this
-        return get_country_name(self.iso3)
+    async def country_name(self, info: Info) -> str:
+        return await info.context["country_name_loader"].load(self.iso3)
 
 
 @strawberry.django.type(Narratives)
@@ -295,9 +291,8 @@ class DataCountryLevelMostRecentType:
         return generate_id_from_unique_fields(self)
 
     @strawberry.field
-    def indicator_value_regional(self) -> float:
-        # NOTE: Add dataloader for this
-        return get_indicator_value_regional(self)
+    async def indicator_value_regional(self, info: Info) -> float:
+        return await info.context["indicator_value_regional_loader"].load(self)
 
 
 @strawberry.django.type(GlobalLevel)
@@ -621,6 +616,5 @@ class OverviewTableType:
         return generate_id_from_unique_field(self.iso3)
 
     @strawberry.field
-    def country_name(self) -> Optional[str]:
-        # NOTE: Use dataloader for this
-        return get_country_name(self.iso3)
+    async def country_name(self, info: Info) -> str:
+        return await info.context["country_name_loader"].load(self.iso3)
