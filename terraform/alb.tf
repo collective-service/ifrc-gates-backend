@@ -28,8 +28,8 @@ resource "aws_alb_listener" "app_listener" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.acm_certificate.arn #"arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
-  #enable above 2 if you are using HTTPS listner and change protocal from HTTPS to HTTPS
+  certificate_arn   = aws_acm_certificate.acm_certificate.arn
+
   default_action {
     type             = "forward"
     target_group_arn = aws_alb_target_group.tg.arn
@@ -37,18 +37,18 @@ resource "aws_alb_listener" "app_listener" {
 }
 
 data "aws_route53_zone" "zone" {
-  name         = "backend.rjstharcce.cloudns.ph"
+  name         = var.domain_name
   private_zone = false
 }
 
 # Add a record set in Route 53
 resource "aws_route53_record" "terraform" {
   zone_id = "${data.aws_route53_zone.zone.zone_id}"
-  name    = "backend.rjstharcce.cloudns.ph"
+  name    = "server.${var.domain_name}"
   type    = "A"
   alias {
     name                   = "${aws_alb.alb.dns_name}"
     zone_id                = "${aws_alb.alb.zone_id}"
     evaluate_target_health = true
   }
-}
+} 

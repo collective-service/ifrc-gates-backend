@@ -34,3 +34,6 @@ variable postgres_secret_name {}
 
 # Django
 variable django_secret_name {}
+
+# Route 53
+variable domain_name {}

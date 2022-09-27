@@ -34,3 +34,6 @@ postgres_secret_name = "prod/postgres"
 
 # Django
 django_secret_name = "prod/django"
+
+# Route 53
+domain_name = "ifrc-gates.dev.datafriendlyspace.org"
