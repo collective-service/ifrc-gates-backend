@@ -1,24 +1,7 @@
-provider "aws" {
-  alias = "virginia"
-  region = "us-east-1"
-  profile = var.aws_profile
-}
-
-# resource "aws_acm_certificate" "acm_certificate1" {
-#   domain_name               = "backend.rjstharcce.cloudns.ph"
-#   subject_alternative_names = ["*.backend.rjstharcce.cloudns.ph"]
-#   validation_method         = "DNS"
-
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-
 # request public certificates from the amazon certificate manager.
 resource "aws_acm_certificate" "acm_certificate" {
-  #provider                  = aws.virginia
-  domain_name               = "backend.rjstharcce.cloudns.ph"
-  subject_alternative_names = ["*.backend.rjstharcce.cloudns.ph"]
+  domain_name               = var.domain_name
+  subject_alternative_names = ["*.${var.domain_name}"]
   validation_method         = "DNS"
 
   lifecycle {
@@ -28,7 +11,7 @@ resource "aws_acm_certificate" "acm_certificate" {
 
 # get details about a route 53 hosted zone
 data "aws_route53_zone" "route53_zone" {
-  name         = "backend.rjstharcce.cloudns.ph"
+  name         = var.domain_name
   private_zone = false
 }
 
@@ -52,7 +35,6 @@ resource "aws_route53_record" "route53_record" {
 
 # validate acm certificates
 resource "aws_acm_certificate_validation" "acm_certificate_validation" {
-  #provider                = aws.virginia
   certificate_arn         = aws_acm_certificate.acm_certificate.arn
   validation_record_fqdns = [for record in aws_route53_record.route53_record : record.fqdn]
 }
