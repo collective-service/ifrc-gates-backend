@@ -130,7 +130,7 @@ class CountryEmergencyProfileType:
     context_indicator_id: auto
     context_indicator_value: auto
     context_date: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> int:
@@ -147,6 +147,7 @@ class CountryEmergencyProfileType:
     @strawberry.field
     async def population_size(self, info: Info) -> Optional[int]:
         return await info.context["population_size_loader"].load(self.iso3)
+
 
 @strawberry.django.type(Narratives)
 class NarrativesType:
@@ -183,7 +184,7 @@ class DataCountryLevelType():
     indicator_value_gradient: auto
     error_margin: auto
     display_in_tableau: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -290,7 +291,7 @@ class DataCountryLevelMostRecentType:
     indicator_value_prev: auto
     topic_description: auto
     thematic_description: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -320,7 +321,7 @@ class GlobalLevelType:
     std_dev: auto
     topic_description: auto
     thematic_description: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -404,7 +405,7 @@ class DataGranularType:
     sample_type: auto
     population_size: auto
     category: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -419,7 +420,7 @@ class EpiDataGlobalType:
     context_indicator_id: auto
     context_indicator_value: auto
     most_recent: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -456,7 +457,7 @@ class RegionLevelType:
     std_dev: auto
     topic_description: auto
     thematic_description: auto
-    format : auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:

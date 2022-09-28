@@ -10,6 +10,7 @@ from .models import (
     Sources,
     ContextualData,
     CountryEmergencyProfile,
+    Countries,
 )
 from utils import get_async_list_from_queryset
 
@@ -216,6 +217,7 @@ def get_overview_map_data(
     from .types import OverviewMapType
 
     existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
         data_country_map = {}
@@ -274,7 +276,9 @@ def get_overview_table_data(
     from .types import OverviewTableType, OverviewTableDataType
 
     existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+
     def format_indicator_value(iso3, qs_map):
+
         # TODO: Find alternative for this
         twelve_month_data = qs_map.get(iso3)
         month_data_sorted_by_subvariable = {}
