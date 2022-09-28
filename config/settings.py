@@ -15,6 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
     DEBUG=(bool, True),
+    DOCKER_HOST_IP=(str, None),
     SECRET_KEY=(str),
     ALLOWED_HOSTS=(str, '*'),
 
@@ -97,6 +98,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'drf_yasg',
+    'debug_toolbar',
     # Local
     'apps.visualization',
     'corsheaders',
@@ -113,6 +115,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -317,3 +320,13 @@ if HTTP_PROTOCOL == 'https':
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+INTERNAL_IPS = ['127.0.0.1']
+if env('DOCKER_HOST_IP'):
+    INTERNAL_IPS.append(env('DOCKER_HOST_IP'))
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': lambda _request: DEBUG,
+}

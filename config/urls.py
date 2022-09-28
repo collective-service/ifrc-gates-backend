@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from config.graphql import CustomAsyncGraphQLView
@@ -49,7 +49,8 @@ admin.site.site_header = "IFRC-Gates administration"
 
 # Enable graphiql in local only
 if settings.DEBUG:
-    urlpatterns.append(path("graphiql/", CustomAsyncGraphQLView.as_view(schema=schema)))
+    urlpatterns.append(path("graphiql/", CustomAsyncGraphQLView.as_view(schema=schema))),
+    urlpatterns.append(path('__debug__/', include('debug_toolbar.urls')),)
 
 # Static and media file urls
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
