@@ -69,6 +69,7 @@ class CountryEmergencyProfile(models.Model):
     context_indicator_id = models.CharField(max_length=255)
     context_indicator_value = models.FloatField(blank=True, null=True)
     context_date = models.DateField(blank=True, null=True)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
@@ -170,6 +171,7 @@ class DataCountryLevel(models.Model):
     indicator_value_gradient = models.FloatField(blank=True, null=True)
     error_margin = models.FloatField(blank=True, null=True)
     display_in_tableau = models.BooleanField(blank=True, null=True)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
@@ -209,6 +211,7 @@ class DataCountryLevelMostRecent(models.Model):
     display_in_tableau = models.BooleanField(blank=True, null=True)
     organisations = models.TextField(blank=True, null=True)
     indicator_value_prev = models.TextField(blank=True, null=True)
+    format = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -395,6 +398,7 @@ class DataGranular(models.Model):
     sample_type = models.CharField(max_length=25, blank=True, null=True)
     population_size = models.BigIntegerField(blank=True, null=True)
     category = models.CharField(max_length=50)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
@@ -486,6 +490,7 @@ class EpiDataGlobal(models.Model):
     context_indicator_id = models.CharField(max_length=50)
     context_indicator_value = models.FloatField(blank=True, null=True)
     most_recent = models.BooleanField(blank=True, null=True)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
@@ -511,6 +516,7 @@ class GlobalLevel(models.Model):
     population_coverage = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     error_margin = models.FloatField(blank=True, null=True)
     std_dev = models.FloatField(blank=True, null=True)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
@@ -550,6 +556,7 @@ class RegionLevel(models.Model):
     population_coverage = models.DecimalField(max_digits=65535, decimal_places=65535, blank=True, null=True)
     error_margin = models.FloatField(blank=True, null=True)
     std_dev = models.FloatField(blank=True, null=True)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
