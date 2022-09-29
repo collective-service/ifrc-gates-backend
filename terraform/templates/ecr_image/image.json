@@ -1,0 +1,118 @@
+[
+    {
+      "name": "backend-app-${environment}",
+      "image": "${app_image}",
+      "cpu": ${fargate_cpu},
+      "memory": ${fargate_memory},
+      "networkMode": "awsvpc",
+      "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": "/ecs/backend-${environment}",
+            "awslogs-region": "${aws_region}",
+            "awslogs-stream-prefix": "ecs"
+          }
+      },
+      "portMappings": [
+        {
+          "containerPort": ${app_port},
+          "hostPort": ${app_port}
+        }
+      ],
+      "entryPoint": [
+        "bash"
+      ],
+      "command": [
+        "-c",
+        "/code/scripts/run_prod.sh"
+      ],
+      "environment": [
+            {
+                "name": "DEBUG",
+                "value": "${debug}"
+            },
+            {
+                "name": "USE_LOCAL_STORAGE",
+                "value": "${use_local_storage}"
+            }
+      ],
+      "secrets": [
+            {
+                "name": "DB_NAME",
+                "valueFrom": "${db_name}"
+            },
+            {
+                "name": "DJANGO_DB_USER",
+                "valueFrom": "${db_user}"
+            },
+            {
+                "name": "DJANGO_DB_PASSWORD",
+                "valueFrom": "${db_pwd}"
+            },
+            {
+                "name": "DJANGO_DB_HOST",
+                "valueFrom": "${db_host}"
+            },       
+            {
+                "name": "DJANGO_DB_PORT",
+                "valueFrom": "${db_port}"
+            },
+            {
+                "name": "VISUALIZATION_DB_USER",
+                "valueFrom": "${db_user}"
+            },
+            {
+                "name": "VISUALIZATION_DB_PASSWORD",
+                "valueFrom": "${db_pwd}"
+            },
+            {
+                "name": "VISUALIZATION_DB_HOST",
+                "valueFrom": "${db_host}"
+            },       
+            {
+                "name": "VISUALIZATION_DB_PORT",
+                "valueFrom": "${db_port}"
+            },
+            {
+                "name": "PRODUCTION_DB_USER",
+                "valueFrom": "${db_user}"
+            },
+            {
+                "name": "PRODUCTION_DB_PASSWORD",
+                "valueFrom": "${db_pwd}"
+            },
+            {
+                "name": "PRODUCTION_DB_HOST",
+                "valueFrom": "${db_host}"
+            },       
+            {
+                "name": "PRODUCTION_DB_PORT",
+                "valueFrom": "${db_port}"
+            },
+            {
+                "name": "SECRET_KEY",
+                "valueFrom": "${secret_key}"
+            },
+            {
+                "name": "AWS_STORAGE_BUCKET_NAME",
+                "valueFrom": "${s3_bucket_name}"
+            },
+            {
+                "name": "HTTP_PROTOCOL",
+                "valueFrom": "${http_protocol}"
+            },
+            {
+                "name": "CORS_ALLOWED_ORIGINS",
+                "valueFrom": "${cors_allowed_origins}"
+            },
+            {
+                "name": "CELERY_REDIS_URL",
+                "valueFrom": "${celery_redis_url}"
+            },
+            {
+                "name": "DJANGO_CACHE_REDIS_URL",
+                "valueFrom": "${django_cache_redis_url}"
+            }
+        ]
+    }
+]
