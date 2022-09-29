@@ -632,3 +632,24 @@ class OverviewTableType:
     @strawberry.field
     async def country_name(self, info: Info) -> str:
         return await info.context["country_name_loader"].load(self.iso3)
+
+
+@strawberry.type
+class IndicatorType:
+    indicator_name: str
+    indicator_value: Optional[float]
+    indicator_value_regional: Optional[float]
+    subvariable: Optional[str]
+
+
+@strawberry.type
+class CombinedIndicatorTopicType:
+    topic_name: str
+    topic_description: Optional[str]
+    indicators: Optional[List[IndicatorType]]
+
+
+@strawberry.type
+class CombinedIndicatorType:
+    thematic: str
+    topics: Optional[List[CombinedIndicatorTopicType]]
