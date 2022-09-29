@@ -6,6 +6,7 @@ from django.db.models import Max
 from apps.visualization.models import (
     Countries,
     RegionLevel,
+    CountryProfile,
 )
 
 
@@ -32,5 +33,14 @@ def indicator_value_regional_load(keys: List[int]):
     return [_map[key] for key in indicator_id_list]
 
 
+def population_size_load(keys: List[str]):
+    qs = CountryProfile.objects.filter(iso3__in=keys).values('iso3', 'population_size')
+    _map = defaultdict(str)
+    for country_profile in qs:
+        _map[country_profile['iso3']] = country_profile['population_size']
+    return [_map[key] for key in keys]
+
+
 load_country_name = sync_to_async(country_name_load)
 load_indicator_value_regional = sync_to_async(indicator_value_regional_load)
+load_population_size = sync_to_async(population_size_load)

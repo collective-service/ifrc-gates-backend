@@ -7,6 +7,7 @@ from strawberry.dataloader import DataLoader
 from apps.visualization.dataloaders import (
     load_country_name,
     load_indicator_value_regional,
+    load_population_size,
 )
 
 
@@ -16,5 +17,6 @@ class CustomAsyncGraphQLView(AsyncGraphQLView):
         return {
             'request': request,
             'country_name_loader': DataLoader(load_fn=load_country_name),
-            'indicator_value_regional_loader': DataLoader(load_fn=load_indicator_value_regional)
+            'indicator_value_regional_loader': DataLoader(load_fn=load_indicator_value_regional),
+            'population_size_loader': DataLoader(load_fn=load_population_size),
         }
