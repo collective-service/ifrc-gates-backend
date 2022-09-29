@@ -25,6 +25,7 @@ from .types import (
     ContextualDataWithMultipleEmergencyType,
     OverviewMapType,
     OverviewTableType,
+    CombinedIndicatorType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -49,6 +50,11 @@ from .utils import (
     get_contextual_data_with_multiple_emergency,
     get_overview_map_data,
     get_overview_table_data,
+    get_combined_indicators,
+)
+from utils import (
+    get_redis_cache_data,
+    set_redis_cache_data,
 )
 
 
@@ -145,11 +151,17 @@ class Query:
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
     ) -> List[OverviewMapType]:
-        return await get_overview_map_data(
+        prefix_key = 'overview-map'
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        if cached_data:
+            return cached_data
+        data = await get_overview_map_data(
             emergency,
             region,
             indicator_id,
         )
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        return data
 
     @strawberry.field
     async def overview_table(
@@ -158,8 +170,25 @@ class Query:
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
     ) -> List[OverviewTableType]:
-        return await get_overview_table_data(
+        prefix_key = 'overview-table'
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        if cached_data:
+            return cached_data
+        data = await get_overview_table_data(
             emergency,
             region,
             indicator_id,
         )
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        return data
+
+    @strawberry.field
+    async def combined_indicator(
+        filters: Optional[DataCountryLevelMostRecentFilter] = None,
+    ) -> List[CombinedIndicatorType]:
+        prefix_key = 'combined_indicators'
+        cached_data = get_redis_cache_data(prefix_key)
+        if not filters and cached_data:
+            return cached_data
+        set_redis_cache_data(prefix_key)
+        return await get_combined_indicators(filters)
