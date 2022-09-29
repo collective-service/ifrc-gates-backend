@@ -24,6 +24,7 @@ drf-yasg = "^1.21.3"
 django-filter = "^22.1"
 gunicorn = "^20.1.0"
 boto3 = "*"
+django-tinymce = "^3.5.0"
 
 [tool.poetry.dev-dependencies]
 factory-boy = "^3.2.1"

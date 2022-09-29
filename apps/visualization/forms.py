@@ -3,7 +3,9 @@ from typing import List, Tuple
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from tinymce.widgets import TinyMCE
 from config.caches import redis_cache_func, CacheKey
+
 from .models import Narratives, DataCountryLevel
 
 
@@ -39,6 +41,7 @@ class NarrativesForm(forms.ModelForm):
     thematic = forms.ChoiceField(choices=[], required=False)
     topic = forms.ChoiceField(choices=[], required=False)
     indicator_id = forms.ChoiceField(choices=[], required=False)
+    narrative = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}), label=_("Narrative"))
 
     class Meta:
         model = Narratives

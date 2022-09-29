@@ -4,6 +4,7 @@ from asgiref.sync import sync_to_async
 from django.db.models import Max, F
 from django.db.models.functions import TruncMonth
 from .models import (
+    Countries,
     DataCountryLevel,
     DataCountryLevelMostRecent,
     CountryFilterOptions,
@@ -216,6 +217,7 @@ def get_overview_map_data(
     from .types import OverviewMapType
 
     existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
         data_country_map = {}
@@ -274,6 +276,7 @@ def get_overview_table_data(
     from .types import OverviewTableType, OverviewTableDataType
 
     existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+
     def format_indicator_value(iso3, qs_map):
         # TODO: Find alternative for this
         twelve_month_data = qs_map.get(iso3)
@@ -321,7 +324,7 @@ def get_overview_table_data(
                     {'month': item['month'], 'indicator_value': item['indicator_value']}
                 ]
         unique_iso3 = set(list(country_most_recent_qs.values_list('iso3', flat=True)))
-        return[
+        return [
             OverviewTableType(
                 iso3=iso3,
                 data=format_indicator_value(iso3, country_most_recent_qs_iso3_map)
