@@ -81,8 +81,3 @@ jobs:
       - name: Terraform apply
         id: apply
         run: terraform apply -var-file=staging.tfvars -auto-approve -no-color
-      
-      - name: Terraform destroy
-        id: destroy
-        run: terraform destroy -var-file=staging.tfvars -auto-approve -no-color
-
