@@ -17,7 +17,7 @@ resource "aws_alb_target_group" "tg" {
     unhealthy_threshold = 2
     timeout             = 15
     protocol            = "HTTP"
-    matcher             = "200"
+    matcher             = "200,301,302"
     path                = var.health_check_path
     interval            = 30
   }
