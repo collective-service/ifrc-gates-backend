@@ -41,7 +41,10 @@ resource "aws_security_group" "ecs_sg" {
     protocol        = "tcp"
     from_port       = var.app_port
     to_port         = var.app_port
-    security_groups = [aws_security_group.alb_sg.id]
+    security_groups = [
+        aws_security_group.alb_sg.id,
+        "0.0.0.0/0"
+    ]
   }
 
   egress {
