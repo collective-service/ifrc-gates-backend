@@ -12,10 +12,11 @@ resource "aws_alb_target_group" "tg" {
   vpc_id      = aws_vpc.vpc.id
 
   health_check {
+    port                = 7020
     healthy_threshold   = 2
     unhealthy_threshold = 2
     timeout             = 15
-    protocol            = "HTTPS"
+    protocol            = "HTTP"
     matcher             = "200"
     path                = var.health_check_path
     interval            = 30
