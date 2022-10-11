@@ -372,7 +372,7 @@ def get_overview_table_data(
         ]
 
 
-async def get_combined_indicators(filters):
+async def get_country_combined_indicators(filters):
     from .types import (
         CombinedIndicatorType,
         CombinedIndicatorTopicType,
@@ -421,13 +421,11 @@ async def get_combined_indicators(filters):
     )
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
-        indicator_name_max_indicator_value_map[item['indicator_name']].append(
-            {
-                'indicator_value': item['max_indicator_value'],
-                'indicator_value_regional': item['max_indicator_value_regional'],
-                'subvariable': item['subvariable'],
-            }
-        )
+        indicator_name_max_indicator_value_map[item['indicator_name']] = {
+            'indicator_value': item['max_indicator_value'],
+            'indicator_value_regional': item['max_indicator_value_regional'],
+            'subvariable': item['subvariable'],
+        }
 
     data = []
     for thematic in thematics:
@@ -443,13 +441,13 @@ async def get_combined_indicators(filters):
                                 'indicator_name': indicator_name,
                                 'indicator_value': indicator_name_max_indicator_value_map.get(
                                     indicator_name
-                                )[0]['indicator_value'],
+                                )['indicator_value'],
                                 'indicator_value_regional': indicator_name_max_indicator_value_map.get(
                                     indicator_name
-                                )[0]['indicator_value_regional'],
+                                )['indicator_value_regional'],
                                 'subvariable': indicator_name_max_indicator_value_map.get(
                                     indicator_name
-                                )[0]['subvariable'],
+                                )['subvariable'],
                             } if indicator_name else None for indicator_name in topic_indicator_name_map.get(topic['topic'])
                         ]
                     } if topic else None for topic in thematic_topic_map.get(thematic)
