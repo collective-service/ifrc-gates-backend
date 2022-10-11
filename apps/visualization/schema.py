@@ -50,7 +50,7 @@ from .utils import (
     get_contextual_data_with_multiple_emergency,
     get_overview_map_data,
     get_overview_table_data,
-    get_combined_indicators,
+    get_country_combined_indicators,
 )
 from utils import (
     get_redis_cache_data,
@@ -183,12 +183,12 @@ class Query:
         return data
 
     @strawberry.field
-    async def combined_indicator(
+    async def country_combined_indicators(
         filters: Optional[DataCountryLevelMostRecentFilter] = None,
     ) -> List[CombinedIndicatorType]:
-        prefix_key = 'combined_indicators'
+        prefix_key = 'country_combined_indicators'
         cached_data = get_redis_cache_data(prefix_key)
         if not filters and cached_data:
             return cached_data
         set_redis_cache_data(prefix_key)
-        return await get_combined_indicators(filters)
+        return await get_country_combined_indicators(filters)
