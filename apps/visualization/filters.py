@@ -263,6 +263,7 @@ class RegionLevelFilter():
 class DataGranularFilter():
     iso3: str
     emergency: str
+    indicator_id: str
     indicator_name: str
     indicator_discription: str
     subvariable: str
