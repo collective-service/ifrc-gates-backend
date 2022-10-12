@@ -636,6 +636,7 @@ class IndicatorType:
     indicator_name: str
     indicator_value: Optional[float]
     indicator_value_regional: Optional[float]
+    # indicator_value_global: Optional[float]
     subvariable: Optional[str]
 
 
@@ -649,4 +650,5 @@ class CombinedIndicatorTopicType:
 @strawberry.type
 class CombinedIndicatorType:
     thematic: str
+    thematic_description: Optional[str]
     topics: Optional[List[CombinedIndicatorTopicType]]

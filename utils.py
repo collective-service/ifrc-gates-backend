@@ -1,7 +1,7 @@
 import hashlib
 from django.core.cache import cache
 
-REDIS_TTL = 86400 # Seconds
+REDIS_TTL = 86400  # Seconds
 
 
 async def get_async_list_from_queryset(qs):
