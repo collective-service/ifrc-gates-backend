@@ -37,6 +37,8 @@ from .filters import (
     EpiDataGlobalFilter,
     GlobalLevelFilter,
     NarrativesFilter,
+    ContextIndicatorRegionLevelFilter,
+    ContextIndicatorGlobalLevelFilter,
 )
 from .ordering import (
     RegionLevelOrder,
@@ -51,6 +53,8 @@ from .utils import (
     get_overview_map_data,
     get_overview_table_data,
     get_country_combined_indicators,
+    get_region_combined_indicators,
+    get_global_combined_indicators,
 )
 from utils import (
     get_redis_cache_data,
@@ -192,3 +196,25 @@ class Query:
             return cached_data
         set_redis_cache_data(prefix_key)
         return await get_country_combined_indicators(filters)
+
+    @strawberry.field
+    async def region_combined_indicators(
+        filters: Optional[ContextIndicatorRegionLevelFilter] = None,
+    ) -> List[CombinedIndicatorType]:
+        prefix_key = 'region_combined_indicators'
+        cached_data = get_redis_cache_data(prefix_key)
+        if not filters and cached_data:
+            return cached_data
+        set_redis_cache_data(prefix_key)
+        return await get_region_combined_indicators(filters)
+
+    @strawberry.field
+    async def global_combined_indicators(
+        filters: Optional[ContextIndicatorGlobalLevelFilter] = None,
+    ) -> List[CombinedIndicatorType]:
+        prefix_key = 'global_combined_indicators'
+        cached_data = get_redis_cache_data(prefix_key)
+        if not filters and cached_data:
+            return cached_data
+        set_redis_cache_data(prefix_key)
+        return await get_global_combined_indicators(filters)
