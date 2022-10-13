@@ -25,6 +25,7 @@ COUNTRY_LEVEL = 'country_level'
 REGIONAL_LEVEL = 'region_level'
 GLOBAL_LEVEL = 'global_level'
 
+
 @sync_to_async
 def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
     from .types import GenderDisaggregationType
@@ -409,7 +410,6 @@ async def process_combined_indicators(qs, type):
             }
         return {}
 
-
     thematics = await get_async_list_from_queryset(
         qs.values('thematic', 'thematic_description').distinct('thematic')
     )
@@ -549,6 +549,3 @@ async def get_global_combined_indicators(filters):
     if filters:
         qs = filter_apply(filters, qs)
     return await process_combined_indicators(qs, type=GLOBAL_LEVEL)
-
-
-

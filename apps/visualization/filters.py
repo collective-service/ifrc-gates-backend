@@ -1,4 +1,5 @@
 import strawberry
+from datetime import timedelta
 from django.db.models import Q, Max, F
 from typing import List
 from functools import reduce
@@ -142,7 +143,7 @@ class GlobalLevelFilter():
         return queryset
 
 
-@strawberry.django.filters.filter(DataCountryLevel, lookups=True)
+@strawberry.django.filters.filter(DataCountryLevel)
 class DataCountryLevelFilter():
     iso3: str
     emergency: str
@@ -150,7 +151,14 @@ class DataCountryLevelFilter():
     indicator_id: str
     subvariable: str
     category: str
-    indicator_month: auto
+    is_twelve_month: bool
+
+    def filter_is_twelve_month(self, queryset):
+        if self.is_twelve_month:
+            max_indicator_date = queryset.aggregate(max_date=Max('indicator_month')).get('max_date')
+            return queryset.filter(
+                indicator_month__gte=max_indicator_date - timedelta(days=365)
+            ).order_by('-indicator_month')
 
 
 @strawberry.django.filters.filter(DataCountryLevelMostRecent)
