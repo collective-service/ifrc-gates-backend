@@ -1,8 +1,9 @@
 import re
+from functools import reduce
 from datetime import datetime, timedelta
 from collections import defaultdict
 from asgiref.sync import sync_to_async
-from django.db.models import Max, F, FloatField
+from django.db.models import Max, F, FloatField, Q
 from django.db.models.functions import TruncMonth
 from django.db.models import OuterRef, Subquery
 from strawberry_django.filters import apply as filter_apply
@@ -20,6 +21,9 @@ from .models import (
 )
 from utils import get_async_list_from_queryset
 
+COUNTRY_LEVEL = 'country_level'
+REGIONAL_LEVEL = 'region_level'
+GLOBAL_LEVEL = 'global_level'
 
 @sync_to_async
 def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
@@ -373,210 +377,42 @@ def get_overview_table_data(
         ]
 
 
-async def get_country_combined_indicators(filters):
+async def process_combined_indicators(qs, type):
     from .types import (
         CombinedIndicatorType,
         CombinedIndicatorTopicType,
         IndicatorType
     )
 
-    qs = DataCountryLevelMostRecent.objects.filter(category='Global')
-    if filters:
-        qs = filter_apply(filters, qs)
-
-    thematics = await get_async_list_from_queryset(
-        qs.values('thematic', 'thematic_description').distinct('thematic')
-    )
-
-    thematic_topic_qs = await get_async_list_from_queryset(
-        qs.values(
-            'thematic', 'topic', 'topic_description',
-        ).distinct(
-            'thematic', 'topic', 'topic_description',
-        )
-    )
-    thematic_topic_map = defaultdict(list)
-    for item in thematic_topic_qs:
-        thematic_topic_map[item['thematic']].append({
-            'topic': item['topic'],
-            'topic_description': item['topic_description']
-        })
-
-    topic_indicator_name_qs = await get_async_list_from_queryset(
-        qs.values('topic', 'indicator_name').distinct('topic', 'indicator_name')
-    )
-    topic_indicator_name_map = defaultdict(list)
-    for item in topic_indicator_name_qs:
-        topic_indicator_name_map[item['topic']].append(item['indicator_name'])
-
-    indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
-        qs.annotate(
-            max_indicator_value=Max('indicator_value'),
-            max_indicator_value_regional=Subquery(
-                RegionLevel.objects.filter(
-                    indicator_id=OuterRef('indicator_id')
-                ).order_by('subvariable').values('indicator_value_regional')[:1],
-                output_field=FloatField()
-            )
-        ).values('indicator_name', 'max_indicator_value', 'max_indicator_value_regional', 'subvariable')
-    )
-    indicator_name_max_indicator_value_map = defaultdict(list)
-    for item in indicator_name_max_indicator_value_qs:
-        indicator_name_max_indicator_value_map[item['indicator_name']] = {
-            'indicator_value': item['max_indicator_value'],
-            'indicator_value_regional': item['max_indicator_value_regional'],
-            'subvariable': item['subvariable'],
-        }
-
-    data = []
-    for thematic in thematics:
-        data.append(
-            {
-                'thematic': thematic['thematic'],
-                'thematic_description': thematic['thematic_description'],
-                'topics': [
-                    {
-                        'topic_name': topic['topic'],
-                        'topic_description': topic['topic_description'],
-                        'indicators': [
-                            {
-                                'indicator_name': indicator_name,
-                                'indicator_value': indicator_name_max_indicator_value_map.get(
-                                    indicator_name
-                                )['indicator_value'],
-                                'indicator_value_regional': indicator_name_max_indicator_value_map.get(
-                                    indicator_name
-                                )['indicator_value_regional'],
-                                # 'indicator_value_global': None,
-                                'subvariable': indicator_name_max_indicator_value_map.get(
-                                    indicator_name
-                                )['subvariable'],
-                            } if indicator_name else None for indicator_name in topic_indicator_name_map.get(topic['topic'])
-                        ]
-                    } if topic else None for topic in thematic_topic_map.get(thematic['thematic'])
-                ]
+    def get_indicator_value_annotate_statements(type):
+        '''
+        Returns indicator values annotate statement to be annotated
+        '''
+        if type == COUNTRY_LEVEL:
+            return {
+                'indicator_value': Max('indicator_value'),
+                'indicator_value_regional': Subquery(
+                    RegionLevel.objects.filter(
+                        indicator_id=OuterRef('indicator_id')
+                    ).order_by('subvariable').values('indicator_value_regional')[:1],
+                    output_field=FloatField()
+                )
             }
-        )
-    return [
-        CombinedIndicatorType(
-            thematic=item['thematic'],
-            thematic_description=item['thematic_description'],
-            topics=[
-                CombinedIndicatorTopicType(
-                    topic_name=topic['topic_name'],
-                    topic_description=topic['topic_description'],
-                    indicators=[IndicatorType(**indicator) for indicator in topic['indicators']]
-                ) for topic in item['topics']
-            ],
-        ) for item in data
-    ]
-
-
-async def get_region_combined_indicators(filters):
-    from .types import (
-        CombinedIndicatorType,
-        CombinedIndicatorTopicType,
-        IndicatorType
-    )
-
-    qs = RegionLevel.objects.filter(category='Global')
-    if filters:
-        qs = filter_apply(filters, qs)
-
-    thematics = await get_async_list_from_queryset(
-        qs.values('thematic', 'thematic_description').distinct('thematic')
-    )
-
-    thematic_topic_qs = await get_async_list_from_queryset(
-        qs.values(
-            'thematic', 'topic', 'topic_description',
-        ).distinct(
-            'thematic', 'topic', 'topic_description',
-        )
-    )
-    thematic_topic_map = defaultdict(list)
-    for item in thematic_topic_qs:
-        thematic_topic_map[item['thematic']].append({
-            'topic': item['topic'],
-            'topic_description': item['topic_description']
-        })
-
-    topic_indicator_name_qs = await get_async_list_from_queryset(
-        qs.values('topic', 'indicator_name').distinct('topic', 'indicator_name')
-    )
-    topic_indicator_name_map = defaultdict(list)
-    for item in topic_indicator_name_qs:
-        topic_indicator_name_map[item['topic']].append(item['indicator_name'])
-
-    indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
-        qs.annotate(
-            max_indicator_value=Max('indicator_value_regional'),
-        ).values('indicator_name', 'max_indicator_value', 'subvariable')
-    )
-    indicator_name_max_indicator_value_map = defaultdict(list)
-    for item in indicator_name_max_indicator_value_qs:
-        indicator_name_max_indicator_value_map[item['indicator_name']] = {
-            'indicator_value': item['max_indicator_value'],
-            'subvariable': item['subvariable'],
-        }
-
-    data = []
-    for thematic in thematics:
-        data.append(
-            {
-                'thematic': thematic['thematic'],
-                'thematic_description': thematic['thematic_description'],
-                'topics': [
-                    {
-                        'topic_name': topic['topic'],
-                        'topic_description': topic['topic_description'],
-                        'indicators': [
-                            {
-                                'indicator_name': indicator_name,
-                                'indicator_value': indicator_name_max_indicator_value_map.get(
-                                    indicator_name
-                                )['indicator_value'],
-                                'indicator_value_regional': None,
-                                # 'indicator_value_global': None,
-                                'subvariable': indicator_name_max_indicator_value_map.get(
-                                    indicator_name
-                                )['subvariable'],
-                            } if indicator_name else None for indicator_name in topic_indicator_name_map.get(topic['topic'])
-                        ]
-                    } if topic else None for topic in thematic_topic_map.get(thematic['thematic'])
-                ]
+        elif type == REGIONAL_LEVEL:
+            return {
+                'indicator_value': Max('indicator_value_regional'),
             }
-        )
-    return [
-        CombinedIndicatorType(
-            thematic=item['thematic'],
-            thematic_description=item['thematic_description'],
-            topics=[
-                CombinedIndicatorTopicType(
-                    topic_name=topic['topic_name'],
-                    topic_description=topic['topic_description'],
-                    indicators=[IndicatorType(**indicator) for indicator in topic['indicators']]
-                ) for topic in item['topics']
-            ],
-        ) for item in data
-    ]
+        elif type == GLOBAL_LEVEL:
+            return {
+                'indicator_value': Max('indicator_value_global'),
+            }
+        else:
+            return {}
 
-
-async def get_global_combined_indicators(filters):
-    from .types import (
-        CombinedIndicatorType,
-        CombinedIndicatorTopicType,
-        IndicatorType
-    )
-
-    qs = GlobalLevel.objects.filter(category='Global')
-    if filters:
-        qs = filter_apply(filters, qs)
 
     thematics = await get_async_list_from_queryset(
         qs.values('thematic', 'thematic_description').distinct('thematic')
     )
-
     thematic_topic_qs = await get_async_list_from_queryset(
         qs.values(
             'thematic', 'topic', 'topic_description',
@@ -590,7 +426,6 @@ async def get_global_combined_indicators(filters):
             'topic': item['topic'],
             'topic_description': item['topic_description']
         })
-
     topic_indicator_name_qs = await get_async_list_from_queryset(
         qs.values('topic', 'indicator_name').distinct('topic', 'indicator_name')
     )
@@ -598,20 +433,50 @@ async def get_global_combined_indicators(filters):
     for item in topic_indicator_name_qs:
         topic_indicator_name_map[item['topic']].append(item['indicator_name'])
 
-    indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
+    indicators_with_max_month = await get_async_list_from_queryset(
         qs.values(
-            'indicator_name', 'indicator_value_global', 'subvariable'
+            'indicator_name', 'subvariable'
         ).annotate(
-            max_indicator_month=Max('indicator_month')).order_by('subvariable')
+            max_indicator_month=Max('indicator_month'),
+        ).order_by('subvariable')
+    )
+
+    # TODO: Improve this
+    indicator_filters = None
+    if indicators_with_max_month:
+        indicator_filters = reduce(
+            lambda acc,
+            item: acc | item,
+            [
+                Q(
+                    indicator_name=value['indicator_name'],
+                    indicator_month=value['max_indicator_month'],
+                    subvariable=value['subvariable'],
+                ) for value in indicators_with_max_month
+            ]
         )
+    if indicator_filters:
+        qs = qs.filter(indicator_filters)
+
+    indicator_value_annotate_statement = get_indicator_value_annotate_statements(type)
+    indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
+        qs.values(
+            'indicator_name', 'subvariable'
+        ).annotate(
+            max_indicator_month=Max('indicator_month'),
+            **indicator_value_annotate_statement,
+        ).order_by('subvariable')
+    )
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
         indicator_name_max_indicator_value_map[item['indicator_name']].append({
             'indicator_name': item['indicator_name'],
-            'indicator_value': item['indicator_value_global'],
+            'indicator_value': item['indicator_value'],
             'subvariable': item['subvariable'],
+            'indicator_value_regional': item.get('indicator_value_regional', None),
         })
 
+    # Format data for dashboard
     data = []
     for thematic in thematics:
         data.append(
@@ -626,10 +491,13 @@ async def get_global_combined_indicators(filters):
                             {
                                 'indicator_name': indicator_data['indicator_name'],
                                 'indicator_value': indicator_data['indicator_value'],
-                                'indicator_value_regional': None,
-                                # 'indicator_value_global': None,
+                                'indicator_value_regional': indicator_data.get('indicator_value_regional', None),
                                 'subvariable': indicator_data['subvariable'],
-                            } for indicator_name in topic_indicator_name_map.get(topic['topic']) for indicator_data in indicator_name_max_indicator_value_map.get(indicator_name)
+                            } for indicator_name in topic_indicator_name_map.get(
+                                topic['topic']
+                            ) for indicator_data in indicator_name_max_indicator_value_map.get(
+                                indicator_name
+                            )
                         ]
                     } if topic else None for topic in thematic_topic_map.get(thematic['thematic'])
                 ]
@@ -643,8 +511,36 @@ async def get_global_combined_indicators(filters):
                 CombinedIndicatorTopicType(
                     topic_name=topic['topic_name'],
                     topic_description=topic['topic_description'],
-                    indicators=[IndicatorType(**indicator) for indicator in topic['indicators']]
+                    indicators=[
+                        IndicatorType(
+                            **indicator
+                        ) for indicator in topic['indicators']
+                    ]
                 ) for topic in item['topics']
             ],
         ) for item in data
     ]
+
+
+async def get_country_combined_indicators(filters):
+    qs = DataCountryLevelMostRecent.objects.filter(category='Global')
+    if filters:
+        qs = filter_apply(filters, qs)
+    return await process_combined_indicators(qs, type=COUNTRY_LEVEL)
+
+
+async def get_region_combined_indicators(filters):
+    qs = RegionLevel.objects.filter(category='Global')
+    if filters:
+        qs = filter_apply(filters, qs)
+    return await process_combined_indicators(qs, type=REGIONAL_LEVEL)
+
+
+async def get_global_combined_indicators(filters):
+    qs = GlobalLevel.objects.filter(category='Global')
+    if filters:
+        qs = filter_apply(filters, qs)
+    return await process_combined_indicators(qs, type=GLOBAL_LEVEL)
+
+
+
