@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 import environ
+from config import sentry
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,6 +18,8 @@ env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str),
     ALLOWED_HOSTS=(str, '*'),
+    IFRC_GATES_ENVIRONMENT=(str, 'staging'),
+    APP_TYPE=(str, None),
 
     # Used same database for all schema,
     # But we have different users per schema with different permissions
@@ -67,8 +70,15 @@ env = environ.Env(
     AWS_MEDIA_LOCATION=(str, 'media'),
 
     # Http protocol settings
-    HTTP_PROTOCOL=(str, 'http')
+    HTTP_PROTOCOL=(str, 'http'),
+
+    # Sentry
+    SENTRY_DSN=(str, None),
+    SENTRY_SAMPLE_RATE=(float, 0.2),
 )
+
+IFRC_GATES_ENVIRONMENT=env('IFRC_GATES_ENVIRONMENT')
+APP_TYPE=env('APP_TYPE'),
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -342,3 +352,24 @@ TINYMCE_DEFAULT_CONFIG = {
     "custom_undo_redo_levels": 10,
     "language": "en",
 }
+
+# Sentry Config
+SENTRY_DSN = env("SENTRY_DSN")
+SENTRY_SAMPLE_RATE = env("SENTRY_SAMPLE_RATE")
+SENTRY_ENABLED = False
+
+if SENTRY_DSN:
+    SENTRY_CONFIG = {
+        "dsn": SENTRY_DSN,
+        "send_default_pii": True,
+        "environment": IFRC_GATES_ENVIRONMENT,
+        "debug": DEBUG,
+        "tags": {
+            "site": ",".join(set(ALLOWED_HOSTS)),
+        },
+    }
+    sentry.init_sentry(
+        app_type=APP_TYPE,
+        **SENTRY_CONFIG,
+    )
+    SENTRY_ENABLED = True
