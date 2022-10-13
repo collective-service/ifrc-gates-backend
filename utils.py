@@ -1,5 +1,8 @@
 import hashlib
 from django.core.cache import cache
+from strawberry import UNSET
+from dataclasses import asdict
+
 
 REDIS_TTL = 86400  # Seconds
 
@@ -38,3 +41,8 @@ def set_redis_cache_data(*keys, value=None):
 def get_redis_cache_data(*keys):
     redis_key = '-'.join(filter(None, list(keys)))
     return cache.get(redis_key)
+
+def get_values_list_from_dataclass(data_class):
+    if data_class:
+        return [value for value in asdict(data_class).values() if value != UNSET ]
+    return []
