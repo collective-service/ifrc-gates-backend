@@ -1,8 +1,8 @@
 from django_filters import rest_framework as filters
 from .models import (
     DataCountryLevelMostRecent,
-    DataCountryLevel,
-    DataGranular,
+    DataCountryLevelPublic,
+    DataGranularPublic,
     ContextualData,
 )
 
@@ -26,26 +26,26 @@ class DataCountryLevelMostRecentFilter(filters.FilterSet):
         return qs.filter(topic__in=topics)
 
 
-class DataCountryLevelFilter(filters.FilterSet):
-    iso3 = filters.CharFilter(field_name='iso3', required=True)
+class DataCountryLevelPublicFilter(filters.FilterSet):
+    iso3 = filters.CharFilter(field_name='iso3')
     indicator_id = filters.CharFilter(field_name='indicator_id')
 
     class Meta:
-        model = DataCountryLevel
+        model = DataCountryLevelPublic
         fields = ()
 
 
-class DataGranularFilter(filters.FilterSet):
-    iso3 = filters.CharFilter(field_name='iso3', required=True)
+class DataGranularPublicFilter(filters.FilterSet):
+    iso3 = filters.CharFilter(field_name='iso3')
     indicator_id = filters.CharFilter(field_name='indicator_id')
 
     class Meta:
-        model = DataGranular
+        model = DataGranularPublic
         fields = ()
 
 
 class ContextualDataFilter(filters.FilterSet):
-    iso3 = filters.CharFilter(field_name='iso3', required=True)
+    iso3 = filters.CharFilter(field_name='iso3')
     indicator_id = filters.CharFilter(field_name='indicator_id')
 
     class Meta:
