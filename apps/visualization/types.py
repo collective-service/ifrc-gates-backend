@@ -413,6 +413,17 @@ class DataGranularType:
         return generate_id_from_unique_fields(self)
 
 
+@strawberry.django.type(DataGranular)
+class SourceType:
+    source_comment: auto
+    link: auto
+    source_status: auto
+    source_id: auto
+    subvariable: auto
+    source_date: auto
+    organisation: auto
+
+
 @strawberry.django.type(EpiDataGlobal)
 class EpiDataGlobalType:
     region: auto

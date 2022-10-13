@@ -10,7 +10,7 @@ from .models import (
     Sources,
     ContextualData,
     CountryEmergencyProfile,
-    Countries,
+    DataGranular,
 )
 from utils import get_async_list_from_queryset
 
@@ -365,3 +365,34 @@ def get_overview_table_data(
                 data=format_indicator_value(iso3, emergency_profile_qs_iso3_map)
             ) for iso3 in unique_iso3
         ]
+
+
+@sync_to_async
+def get_sources(iso3, emergency, indicator_name, subvariable):
+    from .types import SourceType
+    all_filters = {
+        'iso3': iso3,
+        'emergency': emergency,
+        'indicator_name': indicator_name,
+        'subvariable': subvariable,
+    }
+    filters = {k: v for k, v in all_filters.items() if v is not None}
+    sources = DataGranular.objects.filter(
+        **filters
+    ).values_list(
+        'source_comment', 'link', 'source_status', 'source_id', 'source_date',
+        'subvariable', 'organisation'
+    ).distinct(
+        'link', 'source_id', 'source_date'
+    )
+    return [
+        SourceType(
+            source_comment=source_comment,
+            link=link,
+            source_status=source_status,
+            source_id=source_id,
+            source_date=source_date,
+            subvariable=subvariable,
+            organisation=organisation
+        ) for source_comment, link, source_status, source_id, source_date, subvariable, organisation in sources
+    ]

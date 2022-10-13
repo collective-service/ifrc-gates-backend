@@ -19,6 +19,7 @@ from .types import (
     OutbreaksType,
     FilterOptionsType,
     DataGranularType,
+    SourceType,
     DisaggregationType,
     ContextualDataType,
     RegionLevelType,
@@ -49,6 +50,7 @@ from .utils import (
     get_contextual_data_with_multiple_emergency,
     get_overview_map_data,
     get_overview_table_data,
+    get_sources,
 )
 
 
@@ -94,6 +96,10 @@ class Query:
         filters=DataGranularFilter,
         pagination=True,
     )
+    # sources: List[SourcesType] = strawberry.django.field(
+    #     filters=DataGranularFilter,
+    #     pagination=True
+    # )
     epi_data_global: List[EpiDataGlobalType] = strawberry.django.field(
         filters=EpiDataGlobalFilter,
         order=EpiDataGlobalOrder,
@@ -162,4 +168,16 @@ class Query:
             emergency,
             region,
             indicator_id,
+        )
+
+    @strawberry.field
+    async def sources(
+        self,
+        iso3: Optional[str] = None,
+        emergency: Optional[str] = None,
+        indicator_name: Optional[str] = None,
+        subvariable: Optional[str] = None,
+    ) -> List[SourceType]:
+        return await get_sources(
+            iso3, emergency, indicator_name, subvariable
         )
