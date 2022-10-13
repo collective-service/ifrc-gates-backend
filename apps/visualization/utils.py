@@ -218,12 +218,6 @@ def get_overview_map_data(
 
     existing_iso3 = Countries.objects.values_list('iso3', flat=True)
 
-    def format_map_data(data):
-        return {
-            'indicator_value': data['indicator_value'],
-            'format': data['format'],
-        }
-
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
         data_country_map = {}
@@ -232,9 +226,9 @@ def get_overview_map_data(
                 if data_country_map.get(item['iso3'], None):
                     pass
                 else:
-                    data_country_map[item['iso3']] = format_map_data(item)
+                    data_country_map[item['iso3']] = item
             else:
-                data_country_map[item['iso3']] = format_map_data(item)
+                data_country_map[item['iso3']] = item
 
         return [
             OverviewMapType(
