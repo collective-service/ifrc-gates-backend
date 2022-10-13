@@ -6,20 +6,24 @@ from functools import reduce
 from rest_framework.exceptions import ValidationError
 from .models import (
     DataCountryLevelMostRecent,
-    DataCountryLevel,
-    DataGranular,
+    DataCountryLevelPublic,
+    DataGranularPublic,
     ContextualData,
 )
 from .serializers import DataCountryLevelMostRecentSerializer
 from .rest_filters import (
     DataCountryLevelMostRecentFilter,
-    DataCountryLevelFilter,
-    DataGranularFilter,
+    DataCountryLevelPublicFilter,
+    DataGranularPublicFilter,
     ContextualDataFilter,
 )
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
+from rest_framework.serializers import ValidationError
 
+def validate_export_params_together(params):
+    if not any(elem in ['iso3', 'indicator_id'] for elem in list(params.keys())):
+        raise ValidationError({'error': 'iso3 or indicator_id params are required'})
 
 class ContextIndicatorsViews(ListAPIView):
     '''
@@ -61,14 +65,16 @@ class ContextIndicatorsViews(ListAPIView):
 
 class ExportRawDataView(ListAPIView):
 
-    filterset_class = DataGranularFilter
-    queryset = DataGranular.objects.all()
+    filterset_class = DataGranularPublicFilter
+    queryset = DataGranularPublic.objects.all()
 
     def get(self, request, format=None):
         """
         Export raw data
         """
-        filterset = DataGranularFilter(
+
+        validate_export_params_together(self.request.query_params)
+        filterset = DataGranularPublicFilter(
             data=self.request.query_params,
             queryset=self.get_queryset(),
         )
@@ -79,6 +85,8 @@ class ExportRawDataView(ListAPIView):
         writer = csv.writer(response)
         writer.writerow([
             'emergency',
+            'country_name',
+            'region',
             'iso3',
             'admin_level_1',
             'indicator_id',
@@ -90,32 +98,22 @@ class ExportRawDataView(ListAPIView):
             'topic_description',
             'indicator_description',
             'type',
-            'direction',
             'question',
             'indicator_value',
             'nominator',
+            'error_margin',
             'denominator',
+            'indicator_month',
+            'category',
             'gender',
             'age_group',
             'age_info',
             'target_group',
-            'indicator_date',
             'indicator_matching',
-            'error_margin',
             'representativeness',
             'limitation',
             'indicator_comment',
             'source_id',
-            'interpolated',
-            'insert_date',
-            'publish',
-            'indicator_month',
-            'indicator_publish',
-            'country_name',
-            'region',
-            'display_in_tableau',
-            'income_group',
-            'fragility_index_fund_for_peace',
             'organisation',
             'title',
             'details',
@@ -130,17 +128,13 @@ class ExportRawDataView(ListAPIView):
             'publication_channel',
             'link',
             'source_date',
-            'key_words',
-            'source_status',
-            'frequency',
             'sample_type',
-            'population_size',
-            'category',
-            'format',
         ])
         for item in filterset.qs:
             writer.writerow([
                 item.emergency,
+                item.country_name,
+                item.region,
                 item.iso3,
                 item.admin_level_1,
                 item.indicator_id,
@@ -152,32 +146,22 @@ class ExportRawDataView(ListAPIView):
                 item.topic_description,
                 item.indicator_description,
                 item.type,
-                item.direction,
                 item.question,
                 item.indicator_value,
                 item.nominator,
+                item.error_margin,
                 item.denominator,
+                item.indicator_month,
+                item.category,
                 item.gender,
                 item.age_group,
                 item.age_info,
                 item.target_group,
-                item.indicator_date,
                 item.indicator_matching,
-                item.error_margin,
                 item.representativeness,
                 item.limitation,
                 item.indicator_comment,
                 item.source_id,
-                item.interpolated,
-                item.insert_date,
-                item.publish,
-                item.indicator_month,
-                item.indicator_publish,
-                item.country_name,
-                item.region,
-                item.display_in_tableau,
-                item.income_group,
-                item.fragility_index_fund_for_peace,
                 item.organisation,
                 item.title,
                 item.details,
@@ -192,27 +176,23 @@ class ExportRawDataView(ListAPIView):
                 item.publication_channel,
                 item.link,
                 item.source_date,
-                item.key_words,
-                item.source_status,
-                item.frequency,
                 item.sample_type,
-                item.population_size,
-                item.category,
-                item.format,
             ])
         return response
 
 
 class ExportSummaryView(ListAPIView):
 
-    filterset_class = DataCountryLevelFilter
-    queryset = DataCountryLevel.objects.all()
+    filterset_class = DataCountryLevelPublicFilter
+    queryset = DataCountryLevelPublic.objects.all()
 
     def get(self, request, format=None):
         """
         Export summary data
         """
-        filterset = DataCountryLevelFilter(
+
+        validate_export_params_together(self.request.query_params)
+        filterset = DataCountryLevelPublicFilter(
             data=self.request.query_params,
             queryset=self.get_queryset(),
         )
@@ -229,6 +209,7 @@ class ExportSummaryView(ListAPIView):
             'region',
             'income_group',
             'fragility_index_fund_for_peace',
+            'population_size',
             'indicator_id',
             'subvariable',
             'indicator_name',
@@ -238,13 +219,10 @@ class ExportSummaryView(ListAPIView):
             'topic_description',
             'indicator_description',
             'type',
+            'indicator_value',
+            'error_margin',
             'indicator_month',
             'category',
-            'population_size',
-            'interpolated',
-            'indicator_value',
-            'indicator_value_gradient',
-            'error_margin'
         ])
         for item in filterset.qs:
             writer.writerow([
@@ -255,6 +233,7 @@ class ExportSummaryView(ListAPIView):
                 item.region,
                 item.income_group,
                 item.fragility_index_fund_for_peace,
+                item.population_size,
                 item.indicator_id,
                 item.subvariable,
                 item.indicator_name,
@@ -264,13 +243,10 @@ class ExportSummaryView(ListAPIView):
                 item.topic_description,
                 item.indicator_description,
                 item.type,
+                item.indicator_value,
+                item.error_margin,
                 item.indicator_month,
                 item.category,
-                item.population_size,
-                item.interpolated,
-                item.indicator_value,
-                item.indicator_value_gradient,
-                item.error_margin
             ])
         return response
 
@@ -284,6 +260,8 @@ class ExportCountryContextualDataView(ListAPIView):
         """
         Export country contextual data
         """
+
+        validate_export_params_together(self.request.query_params)
         filterset = ContextualDataFilter(
             data=self.request.query_params,
             queryset=self.get_queryset(),
