@@ -19,11 +19,12 @@ from .rest_filters import (
 )
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
-from rest_framework.serializers import ValidationError
+
 
 def validate_export_params_together(params):
     if not any(elem in ['iso3', 'indicator_id'] for elem in list(params.keys())):
         raise ValidationError({'error': 'iso3 or indicator_id params are required'})
+
 
 class ContextIndicatorsViews(ListAPIView):
     '''
