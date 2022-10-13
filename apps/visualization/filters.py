@@ -300,7 +300,6 @@ class NarrativesFilter():
         topic = DataCountryLevel.objects.filter(
             indicator_id=self.indicator_id
         ).first().topic
-        print(topic)
         return queryset.filter(topic=topic)
 
 

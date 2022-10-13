@@ -406,8 +406,7 @@ async def process_combined_indicators(qs, type):
             return {
                 'indicator_value': Max('indicator_value_global'),
             }
-        else:
-            return {}
+        return {}
 
 
     thematics = await get_async_list_from_queryset(

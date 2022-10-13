@@ -35,7 +35,7 @@ def indicator_value_regional_load(keys: List[int]):
 
 def population_size_load(keys: List[str]):
     qs = CountryProfile.objects.filter(iso3__in=keys).values('iso3', 'population_size')
-    _map = defaultdict(str)
+    _map = defaultdict(int)
     for country_profile in qs:
         _map[country_profile['iso3']] = country_profile['population_size']
     return [_map[key] for key in keys]

@@ -1,7 +1,6 @@
 import strawberry
 from typing import List
 from typing import Optional
-
 from .models import (
     CountryProfile,
     Outbreaks,
@@ -59,6 +58,7 @@ from .utils import (
 from utils import (
     get_redis_cache_data,
     set_redis_cache_data,
+    get_values_list_from_dataclass,
 )
 
 
@@ -191,30 +191,36 @@ class Query:
         filters: Optional[DataCountryLevelMostRecentFilter] = None,
     ) -> List[CombinedIndicatorType]:
         prefix_key = 'country_combined_indicators'
-        cached_data = get_redis_cache_data(prefix_key)
-        if not filters and cached_data:
+        filter_values = get_values_list_from_dataclass(filters)
+        cached_data = get_redis_cache_data(prefix_key, *filter_values)
+        if cached_data:
             return cached_data
-        set_redis_cache_data(prefix_key)
-        return await get_country_combined_indicators(filters)
+        data = await get_country_combined_indicators(filters)
+        set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data
 
     @strawberry.field
     async def region_combined_indicators(
         filters: Optional[ContextIndicatorRegionLevelFilter] = None,
     ) -> List[CombinedIndicatorType]:
         prefix_key = 'region_combined_indicators'
-        cached_data = get_redis_cache_data(prefix_key)
+        filter_values = get_values_list_from_dataclass(filters)
+        cached_data = get_redis_cache_data(prefix_key, *filter_values)
         if not filters and cached_data:
             return cached_data
-        set_redis_cache_data(prefix_key)
-        return await get_region_combined_indicators(filters)
+        data = await get_region_combined_indicators(filters)
+        set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data
 
     @strawberry.field
     async def global_combined_indicators(
         filters: Optional[ContextIndicatorGlobalLevelFilter] = None,
     ) -> List[CombinedIndicatorType]:
         prefix_key = 'global_combined_indicators'
-        cached_data = get_redis_cache_data(prefix_key)
+        filter_values = get_values_list_from_dataclass(filters)
+        cached_data = get_redis_cache_data(prefix_key, *filter_values)
         if not filters and cached_data:
             return cached_data
-        set_redis_cache_data(prefix_key)
-        return await get_global_combined_indicators(filters)
+        data = await get_global_combined_indicators(filters)
+        set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data
