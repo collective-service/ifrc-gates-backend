@@ -173,11 +173,12 @@ class Query:
     @strawberry.field
     async def sources(
         self,
+        limit: int,
         iso3: Optional[str] = None,
         emergency: Optional[str] = None,
         indicator_name: Optional[str] = None,
         subvariable: Optional[str] = None,
     ) -> List[SourceType]:
         return await get_sources(
-            iso3, emergency, indicator_name, subvariable
+            limit, iso3, emergency, indicator_name, subvariable,
         )

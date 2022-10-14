@@ -368,7 +368,7 @@ def get_overview_table_data(
 
 
 @sync_to_async
-def get_sources(iso3, emergency, indicator_name, subvariable):
+def get_sources(limit, iso3, emergency, indicator_name, subvariable):
     from .types import SourceType
     all_filters = {
         'iso3': iso3,
@@ -378,21 +378,17 @@ def get_sources(iso3, emergency, indicator_name, subvariable):
     }
     filters = {k: v for k, v in all_filters.items() if v is not None}
     sources = DataGranular.objects.filter(
-        **filters
-    ).values_list(
-        'source_comment', 'link', 'source_status', 'source_id', 'source_date',
-        'subvariable', 'organisation'
-    ).distinct(
-        'link', 'source_id', 'source_date'
-    )
+        **filters,
+        link__isnull=False,
+        source_comment__isnull=False
+    ).values(
+        'source_comment', 'link'
+    ).annotate(max_date=Max('source_date')).order_by('-max_date')
     return [
         SourceType(
-            source_comment=source_comment,
-            link=link,
-            source_status=source_status,
-            source_id=source_id,
-            source_date=source_date,
-            subvariable=subvariable,
-            organisation=organisation
-        ) for source_comment, link, source_status, source_id, source_date, subvariable, organisation in sources
+            source_comment=source['source_comment'],
+            link=source['link'],
+            max_date=source['max_date'],
+            limit=limit
+        ) for source in sources[:limit]
     ]
