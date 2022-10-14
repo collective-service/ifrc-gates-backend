@@ -26,28 +26,24 @@ class DataCountryLevelMostRecentFilter(filters.FilterSet):
         return qs.filter(topic__in=topics)
 
 
-class DataCountryLevelPublicFilter(filters.FilterSet):
+class BaseExportFilter(filters.FilterSet):
     iso3 = filters.CharFilter(field_name='iso3')
     indicator_id = filters.CharFilter(field_name='indicator_id')
 
+
+class DataCountryLevelPublicExportFilter(BaseExportFilter):
     class Meta:
         model = DataCountryLevelPublic
         fields = ()
 
 
-class DataGranularPublicFilter(filters.FilterSet):
-    iso3 = filters.CharFilter(field_name='iso3')
-    indicator_id = filters.CharFilter(field_name='indicator_id')
-
+class DataGranularPublicExportFilter(BaseExportFilter):
     class Meta:
         model = DataGranularPublic
         fields = ()
 
 
-class ContextualDataFilter(filters.FilterSet):
-    iso3 = filters.CharFilter(field_name='iso3')
-    indicator_id = filters.CharFilter(field_name='indicator_id')
-
+class ContextualDataExportFilter(BaseExportFilter):
     class Meta:
         model = ContextualData
         fields = ()
