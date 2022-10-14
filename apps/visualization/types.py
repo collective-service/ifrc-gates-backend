@@ -6,6 +6,7 @@ from strawberry.types import Info
 from utils import (
     generate_id_from_unique_fields,
     generate_id_from_unique_field,
+    generate_id_from_unique_non_model_fields,
 )
 
 from .utils import (
@@ -488,7 +489,7 @@ class GenderDisaggregationType:
 
     @strawberry.field
     def id(self) -> ID:
-        return generate_id_from_unique_fields(self)
+        return generate_id_from_unique_non_model_fields([self.category, self.indicator_value])
 
 
 @strawberry.type

@@ -4,7 +4,6 @@ from asgiref.sync import sync_to_async
 from django.db.models import Max, F
 from django.db.models.functions import TruncMonth
 from .models import (
-    Countries,
     DataCountryLevel,
     DataCountryLevelMostRecent,
     CountryFilterOptions,

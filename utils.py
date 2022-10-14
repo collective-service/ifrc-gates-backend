@@ -20,3 +20,8 @@ def generate_id_from_unique_fields(obj):
         ]
     )
     return int(hashlib.sha1(unique_value.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
+
+
+def generate_id_from_unique_non_model_fields(unique_field_list):
+    unique_value = ''.join([str(item) for item in unique_field_list])
+    return int(hashlib.sha1(unique_value.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
