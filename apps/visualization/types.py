@@ -415,8 +415,10 @@ class DataGranularType:
 
 @strawberry.type
 class SourceType:
+    title: Optional[str]
     source_comment: Optional[str]
     link: Optional[str]
+    organisation: Optional[str]
     max_date: Optional[str]
     limit: int
 

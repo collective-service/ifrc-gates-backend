@@ -382,12 +382,14 @@ def get_sources(limit, iso3, emergency, indicator_name, subvariable):
         link__isnull=False,
         source_comment__isnull=False
     ).values(
-        'source_comment', 'link'
+        'source_comment', 'link', 'organisation', 'title',
     ).annotate(max_date=Max('source_date')).order_by('-max_date')
     return [
         SourceType(
             source_comment=source['source_comment'],
             link=source['link'],
+            title=source['title'],
+            organisation=source['organisation'],
             max_date=source['max_date'],
             limit=limit
         ) for source in sources[:limit]

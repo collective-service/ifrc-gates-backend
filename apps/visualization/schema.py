@@ -174,11 +174,11 @@ class Query:
     async def sources(
         self,
         limit: int,
-        iso3: Optional[str] = None,
+        iso3: str = None,
         emergency: Optional[str] = None,
-        indicator_name: Optional[str] = None,
+        indicator_id: Optional[str] = None,
         subvariable: Optional[str] = None,
     ) -> List[SourceType]:
         return await get_sources(
-            limit, iso3, emergency, indicator_name, subvariable,
+            limit, iso3, emergency, indicator_id, subvariable,
         )
