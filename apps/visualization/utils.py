@@ -1,5 +1,6 @@
 import re
 from datetime import datetime, timedelta
+from collections import defaultdict
 from asgiref.sync import sync_to_async
 from django.db.models import Max, F
 from django.db.models.functions import TruncMonth
@@ -327,12 +328,9 @@ def get_overview_table_data(
             month=F('indicator_month'),
             format=F('format'),
         ).order_by('subvariable')
-        country_most_recent_qs_iso3_map = {}
+        country_most_recent_qs_iso3_map = defaultdict()
         for item in country_most_recent_qs:
-            if country_most_recent_qs_iso3_map.get(item['iso3']):
-                country_most_recent_qs_iso3_map[item['iso3']].append(format_table_data(item))
-            else:
-                country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
+            country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
         unique_iso3 = set(list(country_most_recent_qs.values_list('iso3', flat=True)))
         return [
             OverviewTableType(
@@ -357,12 +355,9 @@ def get_overview_table_data(
             month=F('context_date'),
             format=F('format'),
         )
-        emergency_profile_qs_iso3_map = {}
+        emergency_profile_qs_iso3_map = defaultdict()
         for item in emergency_profile_qs:
-            if emergency_profile_qs_iso3_map.get(item['iso3']):
-                emergency_profile_qs_iso3_map[item['iso3']].append(format_table_data(item))
-            else:
-                emergency_profile_qs_iso3_map[item['iso3']] = [format_table_data(item)]
+            emergency_profile_qs_iso3_map[item['iso3']] = [format_table_data(item)]
 
         unique_iso3 = set(list(emergency_profile_qs.values_list('iso3', flat=True)))
         return [
