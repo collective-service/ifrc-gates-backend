@@ -606,6 +606,7 @@ class ContextualDataWithMultipleEmergencyType:
 class OverviewMapType:
     indicator_value: float
     iso3: str
+    format: str
 
     @strawberry.field
     def country_id(self) -> ID:
@@ -616,6 +617,7 @@ class OverviewMapType:
 class OverviewTableDataType:
     month: str
     indicator_value: float
+    format: str
 
 
 @strawberry.type
