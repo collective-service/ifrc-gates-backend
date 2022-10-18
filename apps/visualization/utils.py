@@ -391,6 +391,7 @@ async def process_combined_indicators(qs, type):
         if type == COUNTRY_LEVEL:
             return {
                 'indicator_value': Max('indicator_value'),
+                'region_name': F('region'),
                 'indicator_value_regional': Subquery(
                     RegionLevel.objects.filter(
                         indicator_id=OuterRef('indicator_id')
@@ -460,7 +461,7 @@ async def process_combined_indicators(qs, type):
     indicator_value_annotate_statement = get_indicator_value_annotate_statements(type)
     indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
         qs.values(
-            'indicator_name', 'subvariable'
+            'indicator_name', 'subvariable', 'indicator_id', 'indicator_description', 'format',
         ).annotate(
             max_indicator_month=Max('indicator_month'),
             **indicator_value_annotate_statement,
@@ -469,10 +470,14 @@ async def process_combined_indicators(qs, type):
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
         indicator_name_max_indicator_value_map[item['indicator_name']].append({
+            'indicator_id': item['indicator_id'],
+            'indicator_description': item['indicator_description'],
+            'format': item['format'],
             'indicator_name': item['indicator_name'],
             'indicator_value': item['indicator_value'],
             'subvariable': item['subvariable'],
             'indicator_value_regional': item.get('indicator_value_regional', None),
+            'region': item.get('region_name', None),
         })
 
     # Format data for dashboard
@@ -490,8 +495,12 @@ async def process_combined_indicators(qs, type):
                             {
                                 'indicator_name': indicator_data['indicator_name'],
                                 'indicator_value': indicator_data['indicator_value'],
-                                'indicator_value_regional': indicator_data.get('indicator_value_regional', None),
                                 'subvariable': indicator_data['subvariable'],
+                                'indicator_id': indicator_data['indicator_id'],
+                                'indicator_description': indicator_data['indicator_description'],
+                                'format': indicator_data['format'],
+                                'indicator_value_regional': indicator_data.get('indicator_value_regional', None),
+                                'region': indicator_data.get('region', None),
                             } for indicator_name in topic_indicator_name_map.get(
                                 topic['topic']
                             ) for indicator_data in indicator_name_max_indicator_value_map.get(

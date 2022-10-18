@@ -637,10 +637,13 @@ class OverviewTableType:
 @strawberry.type
 class IndicatorType:
     indicator_name: str
+    indicator_id: Optional[str]
+    indicator_description: Optional['str']
     indicator_value: Optional[float]
     indicator_value_regional: Optional[float]
-    # indicator_value_global: Optional[float]
     subvariable: Optional[str]
+    region: Optional[str]
+    format: Optional[str]
 
 
 @strawberry.type
