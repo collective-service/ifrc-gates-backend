@@ -156,9 +156,11 @@ class DataCountryLevelFilter():
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
             max_indicator_date = queryset.aggregate(max_date=Max('indicator_month')).get('max_date')
-            return queryset.filter(
-                indicator_month__gte=max_indicator_date - timedelta(days=365)
-            ).order_by('-indicator_month')
+            if max_indicator_date:
+                queryset = queryset.filter(
+                    indicator_month__gte=max_indicator_date - timedelta(days=365)
+                ).order_by('-indicator_month')  # XXX: Avoid using ordering in the code.
+        return queryset
 
 
 @strawberry.django.filters.filter(DataCountryLevelMostRecent)
