@@ -695,3 +695,11 @@ class IndicatorLatestStatsType:
     @strawberry.field
     def country_id(self) -> ID:
         return generate_id_from_unique_field(self.iso3)
+
+
+@strawberry.type
+class ExportMetaType:
+    total_raw_data_count: int
+    total_summary_count: int
+    total_country_contextual_data_count: int
+    max_page_limit: int
