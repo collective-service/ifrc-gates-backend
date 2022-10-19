@@ -1,7 +1,6 @@
 import strawberry
 from typing import List
 from typing import Optional
-
 from .models import (
     CountryProfile,
     Outbreaks,
@@ -25,6 +24,7 @@ from .types import (
     ContextualDataWithMultipleEmergencyType,
     OverviewMapType,
     OverviewTableType,
+    CombinedIndicatorType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -36,6 +36,8 @@ from .filters import (
     EpiDataGlobalFilter,
     GlobalLevelFilter,
     NarrativesFilter,
+    ContextIndicatorRegionLevelFilter,
+    ContextIndicatorGlobalLevelFilter,
 )
 from .ordering import (
     RegionLevelOrder,
@@ -49,6 +51,14 @@ from .utils import (
     get_contextual_data_with_multiple_emergency,
     get_overview_map_data,
     get_overview_table_data,
+    get_country_combined_indicators,
+    get_region_combined_indicators,
+    get_global_combined_indicators,
+)
+from utils import (
+    get_redis_cache_data,
+    set_redis_cache_data,
+    get_values_list_from_dataclass,
 )
 
 
@@ -145,11 +155,17 @@ class Query:
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
     ) -> List[OverviewMapType]:
-        return await get_overview_map_data(
+        prefix_key = 'overview-map'
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        if cached_data:
+            return cached_data
+        data = await get_overview_map_data(
             emergency,
             region,
             indicator_id,
         )
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        return data
 
     @strawberry.field
     async def overview_table(
@@ -158,8 +174,53 @@ class Query:
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
     ) -> List[OverviewTableType]:
-        return await get_overview_table_data(
+        prefix_key = 'overview-table'
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        if cached_data:
+            return cached_data
+        data = await get_overview_table_data(
             emergency,
             region,
             indicator_id,
         )
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        return data
+
+    @strawberry.field
+    async def country_combined_indicators(
+        filters: Optional[DataCountryLevelMostRecentFilter] = None,
+    ) -> List[CombinedIndicatorType]:
+        prefix_key = 'country_combined_indicators'
+        filter_values = get_values_list_from_dataclass(filters)
+        cached_data = get_redis_cache_data(prefix_key, *filter_values)
+        if cached_data:
+            return cached_data
+        data = await get_country_combined_indicators(filters)
+        set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data
+
+    @strawberry.field
+    async def region_combined_indicators(
+        filters: Optional[ContextIndicatorRegionLevelFilter] = None,
+    ) -> List[CombinedIndicatorType]:
+        prefix_key = 'region_combined_indicators'
+        filter_values = get_values_list_from_dataclass(filters)
+        cached_data = get_redis_cache_data(prefix_key, *filter_values)
+        if not filters and cached_data:
+            return cached_data
+        data = await get_region_combined_indicators(filters)
+        set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data
+
+    @strawberry.field
+    async def global_combined_indicators(
+        filters: Optional[ContextIndicatorGlobalLevelFilter] = None,
+    ) -> List[CombinedIndicatorType]:
+        prefix_key = 'global_combined_indicators'
+        filter_values = get_values_list_from_dataclass(filters)
+        cached_data = get_redis_cache_data(prefix_key, *filter_values)
+        if not filters and cached_data:
+            return cached_data
+        data = await get_global_combined_indicators(filters)
+        set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data

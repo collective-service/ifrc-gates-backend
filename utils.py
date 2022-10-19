@@ -1,4 +1,10 @@
 import hashlib
+from django.core.cache import cache
+from strawberry import UNSET
+from dataclasses import asdict
+
+
+REDIS_TTL = 86400  # Seconds
 
 
 async def get_async_list_from_queryset(qs):
@@ -25,3 +31,18 @@ def generate_id_from_unique_fields(obj):
 def generate_id_from_unique_non_model_fields(unique_field_list):
     unique_value = ''.join([str(item) for item in unique_field_list])
     return int(hashlib.sha1(unique_value.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
+
+
+def set_redis_cache_data(*keys, value=None):
+    redis_key = '-'.join(filter(None, list(keys)))
+    return cache.set(redis_key, value, REDIS_TTL)
+
+
+def get_redis_cache_data(*keys):
+    redis_key = '-'.join(filter(None, list(keys)))
+    return cache.get(redis_key)
+
+def get_values_list_from_dataclass(data_class):
+    if data_class:
+        return [value for value in asdict(data_class).values() if value != UNSET ]
+    return []

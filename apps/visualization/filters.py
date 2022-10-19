@@ -300,5 +300,28 @@ class NarrativesFilter():
         topic = DataCountryLevel.objects.filter(
             indicator_id=self.indicator_id
         ).first().topic
-        print(topic)
         return queryset.filter(topic=topic)
+
+
+@strawberry.django.filters.filter(RegionLevel, lookups=True)
+class ContextIndicatorRegionLevelFilter():
+    region: str
+    emergency: str
+    category: str
+    indicator_id: str
+    subvariable: str
+    topic: str
+    thematic: str
+    type: str
+
+
+@strawberry.django.filters.filter(GlobalLevel, lookups=True)
+class ContextIndicatorGlobalLevelFilter():
+    region: str
+    emergency: str
+    category: str
+    indicator_id: str
+    subvariable: str
+    topic: str
+    thematic: str
+    type: str
