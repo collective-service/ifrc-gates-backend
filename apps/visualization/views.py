@@ -21,11 +21,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
 
 
-def validate_export_params_together(params):
-    if not any(elem in ['iso3', 'indicator_id'] for elem in list(params.keys())):
-        raise ValidationError({'error': 'iso3 or indicator_id params are required'})
-
-
 class ContextIndicatorsViews(ListAPIView):
     '''
     Returns most recent inidcator values for a country level.
@@ -64,7 +59,40 @@ class ContextIndicatorsViews(ListAPIView):
         return DataCountryLevelMostRecent.objects.filter(filters).distinct('subvariable')
 
 
-class ExportRawDataView(ListAPIView):
+class ExportBaseView(ListAPIView):
+    pagination_class = LimitOffsetPagination
+
+    def get_serializer_class(self):
+        return None
+
+    def validate_export_params_together(self, params):
+        query_params_keys_list = list(params.keys())
+        if not any(elem in ['iso3', 'indicator_id'] for elem in query_params_keys_list):
+            raise ValidationError({'error': 'iso3 or indicator_id params are required'})
+
+        if 'limit' not in query_params_keys_list:
+            raise ValidationError({'error': 'Limit is required.'})
+
+        if 'offset' not in query_params_keys_list:
+            raise ValidationError({'error': 'offset is required.'})
+
+    def process_csv_response(self, header_fields, include_header, qs):
+        response = HttpResponse(
+            content_type='text/csv',
+        )
+        writer = csv.writer(response)
+
+        if include_header:
+            writer.writerow([field for field in header_fields])
+
+        for item in qs:
+            row = [getattr(item, field) for field in header_fields]
+            writer.writerow(row)
+
+        return response
+
+
+class ExportRawDataView(ExportBaseView):
 
     filterset_class = DataGranularPublicExportFilter
     queryset = DataGranularPublic.objects.all()
@@ -74,25 +102,18 @@ class ExportRawDataView(ListAPIView):
         Export raw data
         """
 
-        validate_export_params_together(self.request.query_params)
+        self.validate_export_params_together(self.request.query_params)
         filterset = DataGranularPublicExportFilter(
             data=self.request.query_params,
             queryset=self.get_queryset(),
         )
-        response = HttpResponse(
-            content_type='text/csv',
-            headers={'Content-Disposition': 'attachment; filename="raw-data.csv"'},
-        )
-        writer = csv.writer(response)
-        all_fields = [field.name for field in DataGranularPublic._meta.get_fields()]
-        writer.writerow(all_fields)
-        for item in filterset.qs:
-            row = [getattr(item, field) for field in all_fields]
-            writer.writerow(row)
-        return response
+        if filterset.is_valid():
+            header_fields = [field.name for field in DataGranularPublic._meta.get_fields()]
+            include_header = filterset.form.cleaned_data.get('include_header')
+            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
 
 
-class ExportSummaryView(ListAPIView):
+class ExportSummaryView(ExportBaseView):
 
     filterset_class = DataCountryLevelPublicExportFilter
     queryset = DataCountryLevelPublic.objects.all()
@@ -102,25 +123,18 @@ class ExportSummaryView(ListAPIView):
         Export summary data
         """
 
-        validate_export_params_together(self.request.query_params)
+        self.validate_export_params_together(self.request.query_params)
         filterset = DataCountryLevelPublicExportFilter(
             data=self.request.query_params,
             queryset=self.get_queryset(),
         )
-        response = HttpResponse(
-            content_type='text/csv',
-            headers={'Content-Disposition': 'attachment; filename="summary.csv"'},
-        )
-        writer = csv.writer(response)
-        all_fields = [field.name for field in DataCountryLevelPublic._meta.get_fields()]
-        writer.writerow(all_fields)
-        for item in filterset.qs:
-            row = [getattr(item, field) for field in all_fields]
-            writer.writerow(row)
-        return response
+        if filterset.is_valid():
+            header_fields = [field.name for field in DataCountryLevelPublic._meta.get_fields()]
+            include_header = filterset.form.cleaned_data.get('include_header')
+            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
 
 
-class ExportCountryContextualDataView(ListAPIView):
+class ExportCountryContextualDataView(ExportBaseView):
 
     filterset_class = ContextualDataExportFilter
     queryset = ContextualData.objects.all()
@@ -130,20 +144,12 @@ class ExportCountryContextualDataView(ListAPIView):
         Export country contextual data
         """
 
-        validate_export_params_together(self.request.query_params)
+        self.validate_export_params_together(self.request.query_params)
         filterset = ContextualDataExportFilter(
             data=self.request.query_params,
             queryset=self.get_queryset(),
         )
-        response = HttpResponse(
-            content_type='text/csv',
-            headers={'Content-Disposition': 'attachment; filename="country-contextual-data.csv"'},
-        )
-        writer = csv.writer(response)
-
-        all_fields = [field.name for field in ContextualData._meta.get_fields()]
-        writer.writerow(all_fields)
-        for item in filterset.qs:
-            row = [getattr(item, field) for field in all_fields]
-            writer.writerow(row)
-        return response
+        if filterset.is_valid():
+            header_fields = [field.name for field in ContextualData._meta.get_fields()]
+            include_header = filterset.form.cleaned_data.get('include_header')
+            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
