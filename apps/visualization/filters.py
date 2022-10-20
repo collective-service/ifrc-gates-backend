@@ -277,6 +277,7 @@ class DataGranularFilter():
     indicator_name: str
     indicator_discription: str
     subvariable: str
+    indicator_id: str
     is_distinct_sources: bool
 
     def filter_is_distinct_sources(self, queryset):
