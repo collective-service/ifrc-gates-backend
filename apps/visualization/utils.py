@@ -15,11 +15,13 @@ from .models import (
     Sources,
     ContextualData,
     CountryEmergencyProfile,
-    Countries,
     RegionLevel,
     GlobalLevel,
 )
-from utils import get_async_list_from_queryset
+from utils import (
+    get_async_list_from_queryset,
+    get_country_iso3_list,
+)
 
 COUNTRY_LEVEL = 'country_level'
 REGIONAL_LEVEL = 'region_level'
@@ -227,7 +229,7 @@ def get_overview_map_data(
 ):
     from .types import OverviewMapType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    existing_iso3 = get_country_iso3_list()
 
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
@@ -290,7 +292,7 @@ def get_overview_table_data(
 ):
     from .types import OverviewTableType, OverviewTableDataType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    existing_iso3 = get_country_iso3_list()
 
     def format_table_data(data):
         return {

@@ -1,6 +1,7 @@
 import strawberry
 from typing import List
 from typing import Optional
+from strawberry_django.pagination import OffsetPaginationInput
 from .models import (
     CountryProfile,
     Outbreaks,
@@ -59,6 +60,19 @@ from utils import (
     get_redis_cache_data,
     set_redis_cache_data,
     get_values_list_from_dataclass,
+    get_filtered_ordered_paginated_qs,
+    get_country_iso3_list,
+)
+from .models import (
+    CountryEmergencyProfile,
+    DataCountryLevelMostRecent,
+    DataCountryLevel,
+    DataGranular,
+    ContextualData,
+    EpiData,
+    EpiDataGlobal,
+    GlobalLevel,
+    RegionLevel,
 )
 
 
@@ -76,59 +90,148 @@ def get_outbreaks():
 @strawberry.type
 class Query:
     country_profiles: List[CountryProfileType] = strawberry.django.field()
-    country_emergency_profile: List[CountryEmergencyProfileType] = strawberry.django.field(
-        filters=CountryEmergencyProfileFilter,
-        order=CountryEmergencyProfileOrder,
-        pagination=True,
-    )
     naratives: List[NarrativesType] = strawberry.django.field(
         filters=NarrativesFilter
     )
     countries: List[CountryType] = strawberry.django.field()
-    # NOTE : Needed for future
-    epi_data: List[EpiDataType] = strawberry.django.field()
-    data_country_level_most_recent: List[DataCountryLevelMostRecentType] = strawberry.django.field(
-        filters=DataCountryLevelMostRecentFilter,
-        order=DataCountryLevelMostRecentOrder,
-        pagination=True,
-    )
-    global_level: List[GlobalLevelType] = strawberry.django.field(
-        filters=GlobalLevelFilter,
-        order=GlobalLevelOrder,
-        pagination=True,
-    )
-
-    # NOTE : Needed for future
-    # data_country_level_quantiles: List[DataCountryLevelQuantilesType] = strawberry.django.field()
-    data_granular: List[DataGranularType] = strawberry.django.field(
-        filters=DataGranularFilter,
-        pagination=True,
-    )
-    epi_data_global: List[EpiDataGlobalType] = strawberry.django.field(
-        filters=EpiDataGlobalFilter,
-        order=EpiDataGlobalOrder,
-        pagination=True,
-    )
     out_breaks: List[OutbreaksType] = strawberry.django.field(resolver=get_outbreaks)
-    region_level: List[RegionLevelType] = strawberry.django.field(
-        filters=RegionLevelFilter,
-        order=RegionLevelOrder,
-        pagination=True,
-    )
-    contextual_data: List[ContextualDataType] = strawberry.django.field(
-        filters=ContextualDataFilter,
-        order=ContextualDataOrder,
-        pagination=True,
-    )
-
-    data_country_level: List[DataCountryLevelType] = strawberry.django.field(
-        filters=DataCountryLevelFilter,
-        pagination=True
-    )
 
     @strawberry.field
     def country_profile(self, iso3: Optional[str] = None) -> CountryProfileType:
         return get_country_profile_object(iso3)
+
+    @strawberry.field
+    async def country_emergency_profile(
+        self,
+        filters: Optional[CountryEmergencyProfileFilter] = None,
+        order: Optional[CountryEmergencyProfileOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[CountryEmergencyProfileType]:
+        return await get_filtered_ordered_paginated_qs(
+            CountryEmergencyProfile.objects.filter(
+                iso3__in=get_country_iso3_list()
+            ),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
+    async def data_country_level_most_recent(
+        self,
+        filters: Optional[DataCountryLevelMostRecentFilter] = None,
+        order: Optional[DataCountryLevelMostRecentOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[DataCountryLevelMostRecentType]:
+        return await get_filtered_ordered_paginated_qs(
+            DataCountryLevelMostRecent.objects.filter(
+                iso3__in=get_country_iso3_list()
+            ),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
+    async def data_country_level(
+        self,
+        filters: Optional[DataCountryLevelFilter] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[DataCountryLevelType]:
+        return await get_filtered_ordered_paginated_qs(
+            DataCountryLevel.objects.filter(
+                iso3__in=get_country_iso3_list()
+            ),
+            filters,
+            None,
+            pagination,
+        )
+
+    @strawberry.field
+    async def global_level(
+        self,
+        filters: Optional[GlobalLevelFilter] = None,
+        order: Optional[GlobalLevelOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[GlobalLevelType]:
+        return await get_filtered_ordered_paginated_qs(
+            GlobalLevel.objects.all(),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
+    async def region_level(
+        self,
+        filters: Optional[RegionLevelFilter] = None,
+        order: Optional[RegionLevelOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[RegionLevelType]:
+        return await get_filtered_ordered_paginated_qs(
+            RegionLevel.objects.all(),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
+    async def contextual_data(
+        self,
+        filters: Optional[ContextualDataFilter] = None,
+        order: Optional[ContextualDataOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[ContextualDataType]:
+        return await get_filtered_ordered_paginated_qs(
+            ContextualData.objects.filter(
+                iso3__in=get_country_iso3_list()
+            ),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
+    async def data_granular(
+        self,
+        filters: Optional[DataGranularFilter] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[DataGranularType]:
+        return await get_filtered_ordered_paginated_qs(
+            DataGranular.objects.filter(
+                iso3__in=get_country_iso3_list()
+            ),
+            filters,
+            None,
+            pagination,
+        )
+
+    @strawberry.field
+    async def epi_data_global(
+        self,
+        filters: Optional[EpiDataGlobalFilter] = None,
+        order: Optional[EpiDataGlobalOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[EpiDataGlobalType]:
+        return await get_filtered_ordered_paginated_qs(
+            EpiDataGlobal.objects.all(),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
+    async def epi_data(
+        self,
+    ) -> List[EpiDataType]:
+        return await get_filtered_ordered_paginated_qs(
+            EpiData.objects.filter(
+                iso3__in=get_country_iso3_list()
+            ),
+            None,
+            None,
+            None,
+        )
 
     @strawberry.field
     async def filter_options(self) -> FilterOptionsType:
