@@ -7,6 +7,7 @@ from apps.visualization.models import (
     EpiDataGlobal,
     CountryEmergencyProfile,
     DataCountryLevelMostRecent,
+    DataGranular,
 )
 
 
@@ -45,3 +46,8 @@ class CountryEmergencyProfileOrder:
 class DataCountryLevelMostRecentOrder:
     indicator_month: auto
     indicator_value: auto
+
+
+@strawberry.django.ordering.order(DataGranular)
+class DataGranularOrder:
+    source_date: auto
