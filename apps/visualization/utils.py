@@ -2,10 +2,12 @@ import re
 from functools import reduce
 from datetime import datetime, timedelta
 from collections import defaultdict
+
 from asgiref.sync import sync_to_async
 from django.db.models import Max, F, FloatField, Q
 from django.db.models.functions import TruncMonth
 from django.db.models import OuterRef, Subquery
+from django.utils import timezone
 from strawberry_django.filters import apply as filter_apply
 
 from .models import (
@@ -556,3 +558,69 @@ async def get_global_combined_indicators(filters):
     if filters:
         qs = filter_apply(filters, qs)
     return await process_combined_indicators(qs, type=GLOBAL_LEVEL)
+
+
+@sync_to_async
+def get_indicator_stats_latest(
+    emergency,
+    region,
+    indicator_id,
+    is_top=False,
+):
+    from .types import IndicatorLatestStatsType
+
+    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+
+    def get_unique_countries_data(qs):
+        data_country_map = {}
+        for item in qs:
+            if data_country_map:
+                if data_country_map.get(item['iso3'], None):
+                    pass
+                else:
+                    data_country_map[item['iso3']] = item
+            else:
+                data_country_map[item['iso3']] = item
+
+        return [
+            IndicatorLatestStatsType(
+                iso3=iso3,
+                indicator_value=map_data['indicator_value'],
+            ) for iso3, map_data in data_country_map.items()
+        ]
+
+    if indicator_id or emergency or region:
+        all_filters = {
+            'region': region,
+            'indicator_id': indicator_id,
+            'emergency': emergency,
+        }
+        filters = {k: v for k, v in all_filters.items() if v is not None}
+        qs = DataCountryLevelMostRecent.objects.filter(
+            **filters,
+            iso3__in=existing_iso3,
+            category='Global',
+            indicator_value__gt=0
+        ).values('iso3').annotate(
+            indicator_value=F('indicator_value'),
+            max_indicator_month=Max('indicator_month')
+        ).order_by('subvariable')
+
+    else:
+        all_filters = {
+            'emergency': emergency,
+        }
+        filters = {k: v for k, v in all_filters.items() if v is not None}
+        qs = CountryEmergencyProfile.objects.filter(
+            **filters,
+            iso3__in=existing_iso3,
+            context_indicator_value__gt=0
+        ).values('iso3').annotate(
+            indicator_value=F('context_indicator_value'),
+            max_indicator_month=Max('context_date'),
+        )
+    if is_top:
+        qs = qs.order_by('-indicator_value')[:5]
+    else:
+        qs = qs.order_by('indicator_value')[:5]
+    return get_unique_countries_data(qs)
