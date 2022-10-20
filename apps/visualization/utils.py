@@ -44,7 +44,8 @@ def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
             category__in=gender_category
         ).values_list(
             'category',
-            'indicator_value'
+            'indicator_value',
+            'format',
         ).distinct('category')
     else:
         return []
@@ -52,8 +53,9 @@ def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
     return [
         GenderDisaggregationType(
             category=category,
-            indicator_value=value
-        ) for category, value in data
+            indicator_value=value,
+            format=format,
+        ) for category, value, format in data
     ]
 
 
@@ -74,15 +76,17 @@ def get_age_disaggregation_data(iso3, indicator_id, subvariable):
             indicator_month=recent_data.latest('indicator_month').indicator_month,
         ).values_list(
             'category',
-            'indicator_value'
+            'indicator_value',
+            'format',
         ).distinct('category')
     else:
         return []
     return [
         GenderDisaggregationType(
             category=category,
-            indicator_value=value
-        ) for category, value in data
+            indicator_value=value,
+            format=format,
+        ) for category, value, format in data
     ]
 
 

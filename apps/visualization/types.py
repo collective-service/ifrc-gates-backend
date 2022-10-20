@@ -118,6 +118,13 @@ class CountryProfileType:
     vulnerability: auto
     risk: auto
     response: auto
+    internet_access_format: auto
+    literacy_rate_format: auto
+    wash_access_national_format: auto
+    wash_access_rural_format: auto
+    wash_access_urban_format: auto
+    stringency_format: auto
+    medical_staff_format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -476,6 +483,7 @@ class ContextualDataType:
     source: auto
     context_subvariable: auto
     emergency: auto
+    format: auto
 
     @strawberry.field
     def id(self) -> ID:
@@ -486,6 +494,7 @@ class ContextualDataType:
 class GenderDisaggregationType:
     category: Optional[str]
     indicator_value: Optional[float]
+    format: Optional[str]
 
     @strawberry.field
     def id(self) -> ID:
@@ -496,6 +505,7 @@ class GenderDisaggregationType:
 class AgeDisaggregationType:
     category: Optional[str]
     indicator_value: Optional[float]
+    format: Optional[float]
 
 
 @strawberry.type
@@ -590,6 +600,7 @@ class ContexualDataMultipleType:
     context_date: str
     context_indicator_value: Optional[str]
     context_indicator_id: Optional[str]
+    format: Optional[str]
 
     @strawberry.field
     def id(self) -> ID:
