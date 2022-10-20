@@ -395,7 +395,11 @@ async def process_combined_indicators(qs, type):
                 'region_name': F('region'),
                 'indicator_value_regional': Subquery(
                     RegionLevel.objects.filter(
-                        indicator_id=OuterRef('indicator_id')
+                        indicator_month=OuterRef('max_indicator_month'),
+                        indicator_id=OuterRef('indicator_id'),
+                        subvariable=OuterRef('subvariable'),
+                        region=OuterRef('region'),
+                        category='Global',
                     ).order_by('subvariable').values('indicator_value_regional')[:1],
                     output_field=FloatField()
                 )
@@ -463,7 +467,7 @@ async def process_combined_indicators(qs, type):
         qs.values(
             'indicator_name', 'subvariable', 'indicator_id', 'indicator_description', 'format',
         ).annotate(
-            max_indicator_month=Max('indicator_month'),
+            max_indicator_month=F('indicator_month'),
             **indicator_value_annotate_statement,
         ).order_by('subvariable')
     )
