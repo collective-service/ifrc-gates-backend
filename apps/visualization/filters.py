@@ -173,20 +173,7 @@ class DataCountryLevelMostRecentFilter():
     thematic: str
     type: str
     region: str
-    keywords: List[str]
     category: str
-
-    def filter_keywords(self, queryset):
-        if not self.keywords:
-            return queryset
-
-        keywords_filters = reduce(lambda acc, item: acc | item, [Q(key_words__icontains=value) for value in self.keywords])
-
-        source_ids = Sources.objects.filter(keywords_filters).values_list('source_id', flat=True)
-        indicator_ids = DataGranular.objects.filter(
-            source_id__in=source_ids
-        ).values_list('indicator_id', flat=True)
-        return queryset.filter(indicator_id__in=indicator_ids)
 
 
 @strawberry.django.filters.filter(RegionLevel, lookups=True)

@@ -19,7 +19,6 @@ from .utils import (
     get_types,
     get_thematics,
     get_topics,
-    get_keywords,
 )
 from .models import (
     CountryProfile,
@@ -588,10 +587,6 @@ class FilterOptionsType:
     @strawberry.field
     async def topics(self, thematic: Optional[str] = None) -> List[str]:
         return await get_topics(thematic)
-
-    @strawberry.field
-    async def keywords(self) -> List[str]:
-        return await get_keywords()
 
 
 @strawberry.type
