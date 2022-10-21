@@ -277,6 +277,21 @@ class DataGranularFilter():
     indicator_name: str
     indicator_discription: str
     subvariable: str
+    indicator_id: str
+    is_distinct_sources: bool
+
+    def filter_is_distinct_sources(self, queryset):
+        # NOTE: This filter when selected shows data with distinct fields
+        # title, organisation, source_date, link, source_comment
+        if self.is_distinct_sources:
+            return queryset.distinct(
+                'title',
+                'organisation',
+                'source_date',
+                'link',
+                'source_comment'
+            )
+        return queryset
 
 
 @strawberry.django.filters.filter(ContextualData)

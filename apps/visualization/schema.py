@@ -46,6 +46,7 @@ from .ordering import (
     EpiDataGlobalOrder,
     CountryEmergencyProfileOrder,
     DataCountryLevelMostRecentOrder,
+    DataGranularOrder
 )
 from .utils import (
     get_contextual_data_with_multiple_emergency,
@@ -102,6 +103,7 @@ class Query:
     # data_country_level_quantiles: List[DataCountryLevelQuantilesType] = strawberry.django.field()
     data_granular: List[DataGranularType] = strawberry.django.field(
         filters=DataGranularFilter,
+        order=DataGranularOrder,
         pagination=True,
     )
     epi_data_global: List[EpiDataGlobalType] = strawberry.django.field(
