@@ -7,7 +7,6 @@ from asgiref.sync import sync_to_async
 from django.db.models import Max, F, FloatField, Q
 from django.db.models.functions import TruncMonth
 from django.db.models import OuterRef, Subquery
-from django.utils import timezone
 from strawberry_django.filters import apply as filter_apply
 
 from .models import (
@@ -620,7 +619,7 @@ def get_indicator_stats_latest(
             max_indicator_month=Max('context_date'),
         )
     if is_top:
-        qs = qs.order_by('-indicator_value')[:5]
+        qs = qs.order_by('-max_indicator_month', 'subvariable', '-indicator_value')[:5]
     else:
-        qs = qs.order_by('indicator_value')[:5]
+        qs = qs.order_by('-max_indicator_month', 'subvariable', 'indicator_value')[:5]
     return get_unique_countries_data(qs)
