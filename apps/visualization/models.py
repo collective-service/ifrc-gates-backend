@@ -596,15 +596,3 @@ class Sources(models.Model):
     class Meta:
         managed = False
         db_table = 't_sources'
-
-
-class CountryFilterOptions(models.Model):
-    iso3 = models.CharField(primary_key=True, max_length=3)
-    emergency = models.CharField(max_length=50)
-    indicator_id = models.CharField(max_length=6, default='')
-    indicator_description = models.CharField(max_length=250, blank=True, null=True)
-    subvariable = models.CharField(max_length=255)
-
-    class Meta:
-        managed = False
-        db_table = 't_country_indicator_options'

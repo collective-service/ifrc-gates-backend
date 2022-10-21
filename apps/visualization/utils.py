@@ -11,7 +11,6 @@ from strawberry_django.filters import apply as filter_apply
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
-    CountryFilterOptions,
     Sources,
     ContextualData,
     CountryEmergencyProfile,
@@ -19,6 +18,7 @@ from .models import (
     RegionLevel,
     GlobalLevel,
 )
+from apps.migrate_csv.models import CountryFilterOptions
 from utils import get_async_list_from_queryset
 
 COUNTRY_LEVEL = 'country_level'

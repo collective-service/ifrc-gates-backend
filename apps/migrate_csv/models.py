@@ -366,3 +366,14 @@ class DataImport(models.Model):
         if new:
             # process_data_import.delay(self.pk)
             process_data_import(self.pk)
+
+
+class CountryFilterOptions(models.Model):
+    iso3 = models.CharField(max_length=3)
+    emergency = models.CharField(max_length=50)
+    indicator_id = models.CharField(max_length=50, default='')
+    indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    subvariable = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.iso3
