@@ -93,7 +93,11 @@ def get_age_disaggregation_data(iso3, indicator_id, subvariable):
 @sync_to_async
 def get_outbreaks(iso3):
     return list(
-        CountryFilterOptions.objects.filter(iso3=iso3).distinct('emergency').values_list('emergency', flat=True)
+        CountryFilterOptions.objects.filter(
+            iso3=iso3,
+        ).distinct(
+            'emergency'
+        ).order_by('emergency').values_list('emergency', flat=True)
     )
 
 
@@ -109,7 +113,7 @@ def get_country_indicators(iso3, outbreak):
         CountryIndicatorType(
             indicator_id=indicator['indicator_id'],
             indicator_description=indicator['indicator_description'],
-        ) for indicator in indicators.distinct().values('indicator_id', 'indicator_description')
+        ) for indicator in indicators.distinct().values('indicator_id', 'indicator_description').order_by('indicator_description')
     ]
 
 
@@ -121,14 +125,14 @@ def get_subvariables(iso3, indicator_id):
     if indicator_id:
         subvariables = subvariables.filter(indicator_id=indicator_id)
     return list(
-        subvariables.distinct('subvariable').values_list('subvariable', flat=True)
+        subvariables.distinct('subvariable').values_list('subvariable', flat=True).order_by('subvariable')
     )
 
 
 @sync_to_async
 def get_types():
     return list(
-        DataCountryLevelMostRecent.objects.distinct('type').values_list('type', flat=True)
+        DataCountryLevelMostRecent.objects.distinct('type').values_list('type', flat=True).order_by('type')
     )
 
 
@@ -137,7 +141,7 @@ def get_thematics(type):
     if type:
         qs = qs.filter(type=type)
     return get_async_list_from_queryset(
-        qs.distinct('thematic').values_list('thematic', flat=True)
+        qs.distinct('thematic').values_list('thematic', flat=True).order_by('thematic')
     )
 
 
@@ -146,7 +150,7 @@ def get_topics(thematic):
     if thematic:
         qs = qs.filter(thematic=thematic)
     return get_async_list_from_queryset(
-        qs.distinct('topic').values_list('topic', flat=True)
+        qs.distinct('topic').values_list('topic', flat=True).order_by('topic')
     )
 
 
@@ -162,7 +166,7 @@ async def clean_keywords(keywords_qs):
 def get_keywords():
     qs = Sources.objects.filter(
         key_words__isnull=False
-    ).distinct('key_words').values_list('key_words', flat=True)
+    ).distinct('key_words').values_list('key_words', flat=True).order_by('key_words')
     return clean_keywords(qs)
 
 
@@ -184,7 +188,7 @@ def get_overview_indicators(out_break, region):
         ).values_list(
             'indicator_id',
             'indicator_description',
-        ).distinct('indicator_id')
+        ).distinct('indicator_id').order_by('indicator_description')
     )
     return [
         OverviewIndicatorType(
