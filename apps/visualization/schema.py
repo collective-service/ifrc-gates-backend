@@ -192,7 +192,6 @@ class Query:
     async def country_combined_indicators(
         filters: Optional[DataCountryLevelMostRecentFilter] = None,
     ) -> List[CombinedIndicatorType]:
-        return await get_country_combined_indicators(filters)
         prefix_key = 'country_combined_indicators'
         filter_values = get_values_list_from_dataclass(filters)
         cached_data = get_redis_cache_data(prefix_key, *filter_values)
