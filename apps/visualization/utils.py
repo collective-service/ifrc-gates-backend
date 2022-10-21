@@ -395,12 +395,11 @@ async def process_combined_indicators(qs, type):
                 'region_name': F('region'),
                 'indicator_value_regional': Subquery(
                     RegionLevel.objects.filter(
-                        indicator_month=OuterRef('max_indicator_month'),
                         indicator_id=OuterRef('indicator_id'),
                         subvariable=OuterRef('subvariable'),
                         region=OuterRef('region'),
                         category='Global',
-                    ).order_by('subvariable').values('indicator_value_regional')[:1],
+                    ).order_by('-indicator_month', 'subvariable').values('indicator_value_regional')[:1],
                     output_field=FloatField()
                 )
             }
@@ -442,7 +441,7 @@ async def process_combined_indicators(qs, type):
             'indicator_name', 'subvariable'
         ).annotate(
             max_indicator_month=Max('indicator_month'),
-        ).order_by('subvariable')
+        ).order_by('-max_indicator_month', 'subvariable')
     )
 
     # TODO: Improve this
@@ -469,7 +468,7 @@ async def process_combined_indicators(qs, type):
         ).annotate(
             max_indicator_month=F('indicator_month'),
             **indicator_value_annotate_statement,
-        ).order_by('subvariable')
+        ).order_by('-max_indicator_month','subvariable')
     )
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
