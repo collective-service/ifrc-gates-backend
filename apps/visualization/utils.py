@@ -603,7 +603,7 @@ def get_indicator_stats_latest(
         ).values('iso3').annotate(
             indicator_value=F('indicator_value'),
             max_indicator_month=Max('indicator_month')
-        ).order_by('subvariable')
+        ).order_by('-max_indicator_month','subvariable')
 
     else:
         all_filters = {
@@ -617,9 +617,9 @@ def get_indicator_stats_latest(
         ).values('iso3').annotate(
             indicator_value=F('context_indicator_value'),
             max_indicator_month=Max('context_date'),
-        )
+        ).order_by('max_indicator_month')
     if is_top:
-        qs = qs.order_by('-max_indicator_month', 'subvariable', '-indicator_value')[:5]
+        qs = qs.order_by('-indicator_value')[:5]
     else:
-        qs = qs.order_by('-max_indicator_month', 'subvariable', 'indicator_value')[:5]
+        qs = qs.order_by('indicator_value')[:5]
     return get_unique_countries_data(qs)
