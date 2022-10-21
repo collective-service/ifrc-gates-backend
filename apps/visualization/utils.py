@@ -254,7 +254,7 @@ def get_overview_map_data(
             ) for iso3, map_data in data_country_map.items()
         ]
 
-    if indicator_id or region or emergency:
+    if indicator_id:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
@@ -268,7 +268,7 @@ def get_overview_map_data(
             max_indicator_month=Max('indicator_month'),
             indicator_value=F('indicator_value'),
             format=F('format'),
-        ).order_by('subvariable', '-max_indicator_month')
+        ).order_by('-max_indicator_month', 'subvariable')
 
     else:
         all_filters = {
@@ -283,7 +283,7 @@ def get_overview_map_data(
             max_indicator_month=Max('context_date'),
             indicator_value=F('context_indicator_value'),
             format=F('format'),
-        )
+        ).order_by('-max_indicator_month')
     return get_unique_countries_data(qs)
 
 
@@ -325,7 +325,7 @@ def get_overview_table_data(
             ) for month, table_data in month_data_sorted_by_subvariable.items()
         ]
 
-    if region or indicator_id:
+    if indicator_id:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
@@ -342,7 +342,7 @@ def get_overview_table_data(
             indicator_value=Max('indicator_value'),
             month=F('indicator_month'),
             format=F('format'),
-        ).order_by('subvariable')
+        ).order_by('-month','subvariable')
         country_most_recent_qs_iso3_map = defaultdict()
         for item in country_most_recent_qs:
             country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
@@ -369,7 +369,7 @@ def get_overview_table_data(
             indicator_value=F('context_indicator_value'),
             month=F('context_date'),
             format=F('format'),
-        )
+        ).order_by('-month')
         emergency_profile_qs_iso3_map = defaultdict()
         for item in emergency_profile_qs:
             emergency_profile_qs_iso3_map[item['iso3']] = [format_table_data(item)]
@@ -473,7 +473,7 @@ async def process_combined_indicators(qs, type):
         ).annotate(
             max_indicator_month=F('indicator_month'),
             **indicator_value_annotate_statement,
-        ).order_by('-max_indicator_month','subvariable')
+        ).order_by('-max_indicator_month', 'subvariable')
     )
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
@@ -588,7 +588,7 @@ def get_indicator_stats_latest(
             ) for iso3, map_data in data_country_map.items()
         ]
 
-    if indicator_id or emergency or region:
+    if indicator_id:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
