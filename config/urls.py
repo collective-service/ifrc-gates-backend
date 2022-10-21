@@ -29,7 +29,7 @@ router = routers.DefaultRouter()
 
 schema_view = swagger_get_schema_view(
     openapi.Info(
-        title="IFRC Gates API",
+        title="RCCE-Collective API",
         default_version='1.0.0',
         description="API documentation of App",
     ),
@@ -46,7 +46,7 @@ urlpatterns = [
     path('api/v1/context_indicators/', views.ContextIndicatorsViews.as_view()),
 ]
 
-admin.site.site_header = "IFRC-Gates administration"
+admin.site.site_header = "RCCE-Collective administration"
 
 # Enable graphiql in local only
 if settings.DEBUG:
