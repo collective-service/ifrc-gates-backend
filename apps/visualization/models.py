@@ -51,6 +51,7 @@ class ContextualData(models.Model):
     source = models.CharField(max_length=100, blank=True, null=True)
     context_subvariable = models.CharField(max_length=100)
     emergency = models.CharField(max_length=50)
+    format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
@@ -137,6 +138,13 @@ class CountryProfile(models.Model):
     vulnerability = models.FloatField(blank=True, null=True)
     risk = models.FloatField(blank=True, null=True)
     response = models.FloatField(blank=True, null=True)
+    internet_access_format = models.CharField(max_length=50)
+    literacy_rate_format = models.CharField(max_length=50)
+    wash_access_national_format = models.CharField(max_length=50)
+    wash_access_rural_format = models.CharField(max_length=50)
+    wash_access_urban_format = models.CharField(max_length=50)
+    stringency_format = models.CharField(max_length=50)
+    medical_staff_format = models.CharField(max_length=50)
 
     class Meta:
         managed = False
