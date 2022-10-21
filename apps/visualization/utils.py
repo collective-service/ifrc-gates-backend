@@ -4,7 +4,14 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 from asgiref.sync import sync_to_async
-from django.db.models import Max, F, FloatField, Q
+from django.db.models import (
+    Max,
+    F,
+    FloatField,
+    Q,
+    Subquery,
+    OuterRef
+)
 from django.db.models.functions import TruncMonth
 from django.db.models import OuterRef, Subquery
 from strawberry_django.filters import apply as filter_apply
@@ -342,7 +349,7 @@ def get_overview_table_data(
             indicator_value=Max('indicator_value'),
             month=F('indicator_month'),
             format=F('format'),
-        ).order_by('-month','subvariable')
+        ).order_by('-month', 'subvariable')
         country_most_recent_qs_iso3_map = defaultdict()
         for item in country_most_recent_qs:
             country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
@@ -585,6 +592,8 @@ def get_indicator_stats_latest(
             IndicatorLatestStatsType(
                 iso3=iso3,
                 indicator_value=map_data['indicator_value'],
+                format=map_data['format'],
+                country_name=map_data['country_name'],
             ) for iso3, map_data in data_country_map.items()
         ]
 
@@ -602,8 +611,10 @@ def get_indicator_stats_latest(
             indicator_value__gt=0
         ).values('iso3').annotate(
             indicator_value=F('indicator_value'),
-            max_indicator_month=Max('indicator_month')
-        ).order_by('-max_indicator_month','subvariable')
+            max_indicator_month=Max('indicator_month'),
+            format=F('format'),
+            country_name=F('country_name'),
+        ).order_by('-max_indicator_month', 'subvariable')
 
     else:
         all_filters = {
@@ -617,6 +628,12 @@ def get_indicator_stats_latest(
         ).values('iso3').annotate(
             indicator_value=F('context_indicator_value'),
             max_indicator_month=Max('context_date'),
+            format=F('format'),
+            country_name=Subquery(
+                Countries.objects.filter(
+                    iso3=OuterRef('iso3')
+                ).order_by().values('country_name')[:1]
+            ),
         ).order_by('max_indicator_month')
     if is_top:
         qs = qs.order_by('-indicator_value')[:5]

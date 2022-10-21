@@ -675,6 +675,8 @@ class CombinedIndicatorType:
 class IndicatorLatestStatsType:
     indicator_value: float
     iso3: str
+    format: str
+    country_name: str
 
     @strawberry.field
     def country_id(self) -> ID:
