@@ -306,9 +306,11 @@ class ContextualDataFilter():
             greatest_context_indicator_value = queryset.order_by(
                 '-context_date'
             ).first()
-            return queryset.filter(
-                context_subvariable=greatest_context_indicator_value.context_subvariable
-            )
+            if greatest_context_indicator_value:
+                return queryset.filter(
+                    context_subvariable=greatest_context_indicator_value.context_subvariable
+                )
+            return queryset.none()
         return queryset
 
 
