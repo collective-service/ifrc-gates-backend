@@ -138,13 +138,13 @@ class CountryProfile(models.Model):
     vulnerability = models.FloatField(blank=True, null=True)
     risk = models.FloatField(blank=True, null=True)
     response = models.FloatField(blank=True, null=True)
-    internet_access_format = models.CharField(max_length=50)
-    literacy_rate_format = models.CharField(max_length=50)
-    wash_access_national_format = models.CharField(max_length=50)
-    wash_access_rural_format = models.CharField(max_length=50)
-    wash_access_urban_format = models.CharField(max_length=50)
-    stringency_format = models.CharField(max_length=50)
-    medical_staff_format = models.CharField(max_length=50)
+    internet_access_format = models.CharField(max_length=50, null=True)
+    literacy_rate_format = models.CharField(max_length=50, null=True)
+    wash_access_national_format = models.CharField(max_length=50, null=True)
+    wash_access_rural_format = models.CharField(max_length=50, null=True)
+    wash_access_urban_format = models.CharField(max_length=50, null=True)
+    stringency_format = models.CharField(max_length=50, null=True)
+    medical_staff_format = models.CharField(max_length=50, null=True)
 
     class Meta:
         managed = False
