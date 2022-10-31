@@ -13,7 +13,6 @@ from django.db.models import (
     OuterRef
 )
 from django.db.models.functions import TruncMonth
-from django.db.models import OuterRef, Subquery
 from strawberry_django.filters import apply as filter_apply
 
 from .models import (
@@ -280,11 +279,16 @@ def get_overview_map_data(
     else:
         all_filters = {
             'emergency': emergency,
+            'region': region,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
+        if region:
+            iso3_list = existing_iso3.filter(region=region).values_list('iso3', flat=True)
+            filters['iso3__in'] = iso3_list
+        else:
+            filters['iso3__in'] = existing_iso3
         qs = CountryEmergencyProfile.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
             context_indicator_id='new_cases_per_million',
         ).values('iso3').annotate(
             max_indicator_month=Max('context_date'),
@@ -365,8 +369,12 @@ def get_overview_table_data(
             'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
+        if region:
+            iso3_list = existing_iso3.filter(region=region).values_list('iso3', flat=True)
+            filters['iso3__in'] = iso3_list
+        else:
+            filters['iso3__in'] = existing_iso3
         emergency_profile_qs = CountryEmergencyProfile.objects.filter(
-            iso3__in=existing_iso3,
             **filters,
             context_indicator_id='new_cases_per_million',
             context_date__lte=TruncMonth(datetime.today()),
@@ -575,7 +583,7 @@ def get_indicator_stats_latest(
 ):
     from .types import IndicatorLatestStatsType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    existing_iso3 = Countries.objects.values('iso3')
 
     def get_unique_countries_data(qs):
         data_country_map = {}
@@ -597,35 +605,46 @@ def get_indicator_stats_latest(
             ) for iso3, map_data in data_country_map.items()
         ]
 
-    if indicator_id:
-        all_filters = {
-            'region': region,
-            'indicator_id': indicator_id,
-            'emergency': emergency,
+    def _clean_filters(filters):
+        # Filter out None values
+        return {
+            k: v
+            for k, v in filters.items()
+            if v is not None
         }
-        filters = {k: v for k, v in all_filters.items() if v is not None}
+    if indicator_id:
+        filters = _clean_filters({
+            'region': region,
+            'emergency': emergency,
+        })
+        filters.update({
+            'indicator_id': indicator_id,
+        })
         qs = DataCountryLevelMostRecent.objects.filter(
             **filters,
             iso3__in=existing_iso3,
             category='Global',
             indicator_value__gt=0
-        ).values('iso3').annotate(
+        ).order_by().values('iso3').annotate(
             indicator_value=F('indicator_value'),
             max_indicator_month=Max('indicator_month'),
             format=F('format'),
             country_name=F('country_name'),
         ).order_by('-max_indicator_month', 'subvariable')
-
     else:
-        all_filters = {
+        filters = _clean_filters({
             'emergency': emergency,
-        }
-        filters = {k: v for k, v in all_filters.items() if v is not None}
+        })
+        if region:
+            iso3_list = existing_iso3.filter(region=region).values_list('iso3', flat=True)
+            filters['iso3__in'] = iso3_list
+        else:
+            filters['iso3__in'] = existing_iso3
+
         qs = CountryEmergencyProfile.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
             context_indicator_value__gt=0
-        ).values('iso3').annotate(
+        ).order_by().values('iso3').annotate(
             indicator_value=F('context_indicator_value'),
             max_indicator_month=Max('context_date'),
             format=F('format'),
@@ -639,4 +658,5 @@ def get_indicator_stats_latest(
         qs = qs.order_by('-indicator_value')[:5]
     else:
         qs = qs.order_by('indicator_value')[:5]
+
     return get_unique_countries_data(qs)
