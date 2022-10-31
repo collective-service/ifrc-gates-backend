@@ -46,7 +46,9 @@ urlpatterns = [
     path('api/v1/context_indicators/', views.ContextIndicatorsViews.as_view()),
 ]
 
-admin.site.site_header = "RCCE-Collective administration"
+admin.site.site_header = "RCCE Collective Services"
+admin.site.site_title = "RCCE Collective Services"
+admin.site.index_title = "RCCE Collective Services"
 
 # Enable graphiql in local only
 if settings.DEBUG:
