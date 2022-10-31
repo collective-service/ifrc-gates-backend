@@ -238,7 +238,7 @@ def get_overview_map_data(
 ):
     from .types import OverviewMapType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    countries_qs = Countries.objects.values_list('iso3', flat=True)
 
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
@@ -269,7 +269,7 @@ def get_overview_map_data(
         filters = {k: v for k, v in all_filters.items() if v is not None}
         qs = DataCountryLevelMostRecent.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
+            iso3__in=countries_qs,
         ).values('iso3').annotate(
             max_indicator_month=Max('indicator_month'),
             indicator_value=F('indicator_value'),
@@ -279,14 +279,12 @@ def get_overview_map_data(
     else:
         all_filters = {
             'emergency': emergency,
-            'region': region,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
         if region:
-            iso3_list = existing_iso3.filter(region=region).values_list('iso3', flat=True)
-            filters['iso3__in'] = iso3_list
-        else:
-            filters['iso3__in'] = existing_iso3
+            countries_qs = countries_qs.filter(region=region)
+        filters['iso3__in'] = countries_qs.values('iso3')
+
         qs = CountryEmergencyProfile.objects.filter(
             **filters,
             context_indicator_id='new_cases_per_million',
@@ -306,7 +304,7 @@ def get_overview_table_data(
 ):
     from .types import OverviewTableType, OverviewTableDataType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    countries_qs = Countries.objects.values_list('iso3', flat=True)
 
     def format_table_data(data):
         return {
@@ -348,7 +346,7 @@ def get_overview_table_data(
 
         country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
+            iso3__in=countries_qs,
         ).values('iso3').annotate(
             indicator_value=Max('indicator_value'),
             month=F('indicator_month'),
@@ -370,10 +368,8 @@ def get_overview_table_data(
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
         if region:
-            iso3_list = existing_iso3.filter(region=region).values_list('iso3', flat=True)
-            filters['iso3__in'] = iso3_list
-        else:
-            filters['iso3__in'] = existing_iso3
+            countries_qs = countries_qs.filter(region=region)
+        filters['iso3__in'] = countries_qs.values('iso3')
         emergency_profile_qs = CountryEmergencyProfile.objects.filter(
             **filters,
             context_indicator_id='new_cases_per_million',
@@ -583,27 +579,7 @@ def get_indicator_stats_latest(
 ):
     from .types import IndicatorLatestStatsType
 
-    existing_iso3 = Countries.objects.values('iso3')
-
-    def get_unique_countries_data(qs):
-        data_country_map = {}
-        for item in qs:
-            if data_country_map:
-                if data_country_map.get(item['iso3'], None):
-                    pass
-                else:
-                    data_country_map[item['iso3']] = item
-            else:
-                data_country_map[item['iso3']] = item
-
-        return [
-            IndicatorLatestStatsType(
-                iso3=iso3,
-                indicator_value=map_data['indicator_value'],
-                format=map_data['format'],
-                country_name=map_data['country_name'],
-            ) for iso3, map_data in data_country_map.items()
-        ]
+    countries_qs = Countries.objects.values('iso3')
 
     def _clean_filters(filters):
         # Filter out None values
@@ -616,13 +592,11 @@ def get_indicator_stats_latest(
         filters = _clean_filters({
             'region': region,
             'emergency': emergency,
-        })
-        filters.update({
             'indicator_id': indicator_id,
         })
         qs = DataCountryLevelMostRecent.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
+            iso3__in=countries_qs,
             category='Global',
             indicator_value__gt=0
         ).order_by().values('iso3').annotate(
@@ -636,10 +610,8 @@ def get_indicator_stats_latest(
             'emergency': emergency,
         })
         if region:
-            iso3_list = existing_iso3.filter(region=region).values_list('iso3', flat=True)
-            filters['iso3__in'] = iso3_list
-        else:
-            filters['iso3__in'] = existing_iso3
+            countries_qs = countries_qs.filter(region=region)
+        filters['iso3__in'] = countries_qs.values('iso3')
 
         qs = CountryEmergencyProfile.objects.filter(
             **filters,
@@ -659,4 +631,11 @@ def get_indicator_stats_latest(
     else:
         qs = qs.order_by('indicator_value')[:5]
 
-    return get_unique_countries_data(qs)
+    return [
+        IndicatorLatestStatsType(
+            iso3=data['iso3'],
+            indicator_value=data['indicator_value'],
+            format=data['format'],
+            country_name=data['country_name'],
+        ) for data in qs
+    ]
