@@ -18,7 +18,7 @@ env = environ.Env(
     DEBUG=(bool, True),
     SECRET_KEY=(str),
     ALLOWED_HOSTS=(str, '*'),
-    IFRC_GATES_ENVIRONMENT=(str, 'staging'),
+    RCCE_CS_ENVIRONMENT=(str, 'development'),
     APP_TYPE=(str, None),
 
     # Used same database for all schema,
@@ -77,8 +77,8 @@ env = environ.Env(
     SENTRY_SAMPLE_RATE=(float, 0.2),
 )
 
-IFRC_GATES_ENVIRONMENT=env('IFRC_GATES_ENVIRONMENT')
-APP_TYPE=env('APP_TYPE'),
+RCCE_CS_ENVIRONMENT=env('RCCE_CS_ENVIRONMENT')
+APP_TYPE=env('APP_TYPE')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -362,7 +362,7 @@ if SENTRY_DSN:
     SENTRY_CONFIG = {
         "dsn": SENTRY_DSN,
         "send_default_pii": True,
-        "environment": IFRC_GATES_ENVIRONMENT,
+        "environment": RCCE_CS_ENVIRONMENT,
         "debug": DEBUG,
         "tags": {
             "site": ",".join(set(ALLOWED_HOSTS)),
