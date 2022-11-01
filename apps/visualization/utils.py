@@ -188,7 +188,7 @@ def get_overview_indicators(out_break, region):
         ).values_list(
             'indicator_id',
             'indicator_description',
-        ).distinct('indicator_id').order_by('indicator_description')
+        ).distinct().order_by('indicator_description')
     )
     return [
         OverviewIndicatorType(
