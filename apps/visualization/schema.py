@@ -71,7 +71,7 @@ async def get_country_profile_object(iso3):
 
 
 def get_outbreaks():
-    return Outbreaks.objects.filter(active=True)
+    return Outbreaks.objects.filter(active=True).order_by('outbreak')
 
 
 @strawberry.type
