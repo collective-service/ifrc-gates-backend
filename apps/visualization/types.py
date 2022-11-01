@@ -118,13 +118,13 @@ class CountryProfileType:
     vulnerability: auto
     risk: auto
     response: auto
-    internet_access_format: auto
-    literacy_rate_format: auto
-    wash_access_national_format: auto
-    wash_access_rural_format: auto
-    wash_access_urban_format: auto
-    stringency_format: auto
-    medical_staff_format: auto
+    internet_access_format: Optional[str]
+    literacy_rate_format: Optional[str]
+    wash_access_national_format: Optional[str]
+    wash_access_rural_format: Optional[str]
+    wash_access_urban_format: Optional[str]
+    stringency_format: Optional[str]
+    medical_staff_format: Optional[str]
 
     @strawberry.field
     def id(self) -> ID:
