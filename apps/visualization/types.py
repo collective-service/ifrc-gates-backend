@@ -504,7 +504,7 @@ class GenderDisaggregationType:
 class AgeDisaggregationType:
     category: Optional[str]
     indicator_value: Optional[float]
-    format: Optional[float]
+    format: Optional[str]
 
 
 @strawberry.type
