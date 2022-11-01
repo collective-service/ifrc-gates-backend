@@ -476,7 +476,7 @@ async def process_combined_indicators(qs, type):
         ).annotate(
             max_indicator_month=F('indicator_month'),
             **indicator_value_annotate_statement,
-        ).order_by('-max_indicator_month','subvariable')
+        ).order_by('-max_indicator_month', 'subvariable')
     )
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
