@@ -154,22 +154,6 @@ def get_topics(thematic):
     )
 
 
-async def clean_keywords(keywords_qs):
-    data = set()
-    async for keyword in keywords_qs:
-        splited_keywords = re.split(";|,|\|", keyword.strip()) # noqa W605
-        cleaned_keywords = [keyword.strip().capitalize() for keyword in filter(None, splited_keywords)]
-        data.update(set(cleaned_keywords))
-    return list(data)
-
-
-def get_keywords():
-    qs = Sources.objects.filter(
-        key_words__isnull=False
-    ).distinct('key_words').values_list('key_words', flat=True).order_by('key_words')
-    return clean_keywords(qs)
-
-
 @sync_to_async
 def get_overview_indicators(out_break, region):
     from .types import OverviewIndicatorType
