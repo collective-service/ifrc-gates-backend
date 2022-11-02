@@ -25,6 +25,7 @@ from .types import (
     OverviewMapType,
     OverviewTableType,
     CombinedIndicatorType,
+    IndicatorLatestStatsType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -55,6 +56,7 @@ from .utils import (
     get_country_combined_indicators,
     get_region_combined_indicators,
     get_global_combined_indicators,
+    get_indicator_stats_latest,
 )
 from utils import (
     get_redis_cache_data,
@@ -225,4 +227,31 @@ class Query:
             return cached_data
         data = await get_global_combined_indicators(filters)
         set_redis_cache_data(prefix_key, *filter_values, value=data)
+        return data
+
+    @strawberry.field
+    async def overview_ranking(
+        self,
+        is_top: Optional[bool] = None,
+        emergency: Optional[str] = None,
+        region: Optional[str] = None,
+        indicator_id: Optional[str] = None,
+    ) -> List[IndicatorLatestStatsType]:
+        return await get_indicator_stats_latest(
+            emergency,
+            region,
+            indicator_id,
+            is_top
+        )
+        prefix_key = 'stats-latest'
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        if cached_data:
+            return cached_data
+        data = await get_indicator_stats_latest(
+            emergency,
+            region,
+            indicator_id,
+            is_top
+        )
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
         return data

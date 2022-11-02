@@ -664,3 +664,15 @@ class CombinedIndicatorType:
     thematic: str
     thematic_description: Optional[str]
     topics: Optional[List[CombinedIndicatorTopicType]]
+
+
+@strawberry.type
+class IndicatorLatestStatsType:
+    indicator_value: float
+    iso3: str
+    format: str
+    country_name: str
+
+    @strawberry.field
+    def country_id(self) -> ID:
+        return generate_id_from_unique_field(self.iso3)

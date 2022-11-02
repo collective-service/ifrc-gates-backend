@@ -2,10 +2,17 @@ import re
 from functools import reduce
 from datetime import datetime, timedelta
 from collections import defaultdict
+
 from asgiref.sync import sync_to_async
-from django.db.models import Max, F, FloatField, Q
+from django.db.models import (
+    Max,
+    F,
+    FloatField,
+    Q,
+    Subquery,
+    OuterRef
+)
 from django.db.models.functions import TruncMonth
-from django.db.models import OuterRef, Subquery
 from strawberry_django.filters import apply as filter_apply
 
 from .models import (
@@ -219,7 +226,7 @@ def get_overview_map_data(
 ):
     from .types import OverviewMapType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    countries_qs = Countries.objects.values_list('iso3', flat=True)
 
     def get_unique_countries_data(qs):
         # TODO: Improve this logic
@@ -241,7 +248,7 @@ def get_overview_map_data(
             ) for iso3, map_data in data_country_map.items()
         ]
 
-    if indicator_id or region or emergency:
+    if indicator_id:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
@@ -250,27 +257,30 @@ def get_overview_map_data(
         filters = {k: v for k, v in all_filters.items() if v is not None}
         qs = DataCountryLevelMostRecent.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
+            iso3__in=countries_qs,
         ).values('iso3').annotate(
             max_indicator_month=Max('indicator_month'),
             indicator_value=F('indicator_value'),
             format=F('format'),
-        ).order_by('subvariable', '-max_indicator_month')
+        ).order_by('-max_indicator_month', 'subvariable')
 
     else:
         all_filters = {
             'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
+        if region:
+            countries_qs = countries_qs.filter(region=region)
+        filters['iso3__in'] = countries_qs.values('iso3')
+
         qs = CountryEmergencyProfile.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
             context_indicator_id='new_cases_per_million',
         ).values('iso3').annotate(
             max_indicator_month=Max('context_date'),
             indicator_value=F('context_indicator_value'),
             format=F('format'),
-        )
+        ).order_by('-max_indicator_month')
     return get_unique_countries_data(qs)
 
 
@@ -282,7 +292,7 @@ def get_overview_table_data(
 ):
     from .types import OverviewTableType, OverviewTableDataType
 
-    existing_iso3 = Countries.objects.values_list('iso3', flat=True)
+    countries_qs = Countries.objects.values_list('iso3', flat=True)
 
     def format_table_data(data):
         return {
@@ -312,7 +322,7 @@ def get_overview_table_data(
             ) for month, table_data in month_data_sorted_by_subvariable.items()
         ]
 
-    if region or indicator_id:
+    if indicator_id:
         all_filters = {
             'region': region,
             'indicator_id': indicator_id,
@@ -324,12 +334,12 @@ def get_overview_table_data(
 
         country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(
             **filters,
-            iso3__in=existing_iso3,
+            iso3__in=countries_qs,
         ).values('iso3').annotate(
             indicator_value=Max('indicator_value'),
             month=F('indicator_month'),
             format=F('format'),
-        ).order_by('subvariable')
+        ).order_by('-month', 'subvariable')
         country_most_recent_qs_iso3_map = defaultdict()
         for item in country_most_recent_qs:
             country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
@@ -345,8 +355,10 @@ def get_overview_table_data(
             'emergency': emergency,
         }
         filters = {k: v for k, v in all_filters.items() if v is not None}
+        if region:
+            countries_qs = countries_qs.filter(region=region)
+        filters['iso3__in'] = countries_qs.values('iso3')
         emergency_profile_qs = CountryEmergencyProfile.objects.filter(
-            iso3__in=existing_iso3,
             **filters,
             context_indicator_id='new_cases_per_million',
             context_date__lte=TruncMonth(datetime.today()),
@@ -356,7 +368,7 @@ def get_overview_table_data(
             indicator_value=F('context_indicator_value'),
             month=F('context_date'),
             format=F('format'),
-        )
+        ).order_by('-month')
         emergency_profile_qs_iso3_map = defaultdict()
         for item in emergency_profile_qs:
             emergency_profile_qs_iso3_map[item['iso3']] = [format_table_data(item)]
@@ -544,3 +556,74 @@ async def get_global_combined_indicators(filters):
     if filters:
         qs = filter_apply(filters, qs)
     return await process_combined_indicators(qs, type=GLOBAL_LEVEL)
+
+
+@sync_to_async
+def get_indicator_stats_latest(
+    emergency,
+    region,
+    indicator_id,
+    is_top=False,
+):
+    from .types import IndicatorLatestStatsType
+
+    countries_qs = Countries.objects.values('iso3')
+
+    def _clean_filters(filters):
+        # Filter out None values
+        return {
+            k: v
+            for k, v in filters.items()
+            if v is not None
+        }
+    if indicator_id:
+        filters = _clean_filters({
+            'region': region,
+            'emergency': emergency,
+            'indicator_id': indicator_id,
+        })
+        qs = DataCountryLevelMostRecent.objects.filter(
+            **filters,
+            iso3__in=countries_qs,
+            category='Global',
+            indicator_value__gt=0
+        ).order_by().values('iso3').annotate(
+            indicator_value=F('indicator_value'),
+            max_indicator_month=Max('indicator_month'),
+            format=F('format'),
+            country_name=F('country_name'),
+        ).order_by('-max_indicator_month', 'subvariable')
+    else:
+        filters = _clean_filters({
+            'emergency': emergency,
+        })
+        if region:
+            countries_qs = countries_qs.filter(region=region)
+        filters['iso3__in'] = countries_qs.values('iso3')
+
+        qs = CountryEmergencyProfile.objects.filter(
+            **filters,
+            context_indicator_value__gt=0
+        ).order_by().values('iso3').annotate(
+            indicator_value=F('context_indicator_value'),
+            max_indicator_month=Max('context_date'),
+            format=F('format'),
+            country_name=Subquery(
+                Countries.objects.filter(
+                    iso3=OuterRef('iso3')
+                ).order_by().values('country_name')[:1]
+            ),
+        ).order_by('max_indicator_month')
+    if is_top:
+        qs = qs.order_by('-indicator_value')[:5]
+    else:
+        qs = qs.order_by('indicator_value')[:5]
+
+    return [
+        IndicatorLatestStatsType(
+            iso3=data['iso3'],
+            indicator_value=data['indicator_value'],
+            format=data['format'],
+            country_name=data['country_name'],
+        ) for data in qs
+    ]
