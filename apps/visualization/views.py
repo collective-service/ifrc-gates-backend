@@ -69,87 +69,50 @@ class ExportBaseView(ListAPIView):
         query_params_keys_list = list(params.keys())
         if not any(elem in ['iso3', 'indicator_id'] for elem in query_params_keys_list):
             raise ValidationError({'error': 'iso3 or indicator_id params are required'})
-
         if 'limit' not in query_params_keys_list:
             raise ValidationError({'error': 'Limit is required.'})
-
         if 'offset' not in query_params_keys_list:
             raise ValidationError({'error': 'offset is required.'})
+        limit = int(params.get('limit'))
+        if limit > settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT:
+            raise ValidationError(
+                {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
+            )
 
     def process_csv_response(self, header_fields, include_header, qs):
         response = HttpResponse(
             content_type='text/csv',
         )
         writer = csv.writer(response)
-
         if include_header:
-            writer.writerow([field for field in header_fields])
-
+            writer.writerow(header_fields)
         for item in qs:
             row = [getattr(item, field) for field in header_fields]
             writer.writerow(row)
-
         return response
+
+    def get(self, request, format=None):
+        self.validate_export_params_together(self.request.query_params)
+        filterset = self.filterset_class(
+            data=self.request.query_params,
+            queryset=self.get_queryset(),
+        )
+        if filterset.is_valid():
+            header_fields = [field.name for field in filterset.qs.model._meta.get_fields()]
+            include_header = filterset.form.cleaned_data.get('include_header')
+            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
 
 
 class ExportRawDataView(ExportBaseView):
-
     filterset_class = DataGranularPublicExportFilter
     queryset = DataGranularPublic.objects.all()
 
-    def get(self, request, format=None):
-        """
-        Export raw data
-        """
-
-        self.validate_export_params_together(self.request.query_params)
-        filterset = DataGranularPublicExportFilter(
-            data=self.request.query_params,
-            queryset=self.get_queryset(),
-        )
-        if filterset.is_valid():
-            header_fields = [field.name for field in DataGranularPublic._meta.get_fields()]
-            include_header = filterset.form.cleaned_data.get('include_header')
-            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
-
 
 class ExportSummaryView(ExportBaseView):
-
     filterset_class = DataCountryLevelPublicExportFilter
     queryset = DataCountryLevelPublic.objects.all()
 
-    def get(self, request, format=None):
-        """
-        Export summary data
-        """
-
-        self.validate_export_params_together(self.request.query_params)
-        filterset = DataCountryLevelPublicExportFilter(
-            data=self.request.query_params,
-            queryset=self.get_queryset(),
-        )
-        if filterset.is_valid():
-            header_fields = [field.name for field in DataCountryLevelPublic._meta.get_fields()]
-            include_header = filterset.form.cleaned_data.get('include_header')
-            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
-
 
 class ExportCountryContextualDataView(ExportBaseView):
-
     filterset_class = ContextualDataExportFilter
     queryset = ContextualData.objects.all()
-
-    def get(self, request, format=None):
-        """
-        Export country contextual data
-        """
-
-        self.validate_export_params_together(self.request.query_params)
-        filterset = ContextualDataExportFilter(
-            data=self.request.query_params,
-            queryset=self.get_queryset(),
-        )
-        if filterset.is_valid():
-            header_fields = [field.name for field in ContextualData._meta.get_fields()]
-            include_header = filterset.form.cleaned_data.get('include_header')
-            return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))

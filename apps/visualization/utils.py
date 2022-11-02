@@ -557,7 +557,7 @@ def get_indicator_stats_latest(
     ]
 
 
-def get_export_meta_data(iso3, indicator_id):
+def get_export_meta_data(iso3, indicator_id, context_indicator_id):
     from .types import ExportMetaType
     filters_map = {
         'iso3': iso3,
@@ -565,13 +565,13 @@ def get_export_meta_data(iso3, indicator_id):
     }
     contextual_filters_map = {
         'iso3': iso3,
-        'context_indicator_id': indicator_id,
+        'context_indicator_id': context_indicator_id,
     }
-    filters = {k: v for k, v in filters_map.items() if v is not None}
-    contextual_filters = {k: v for k, v in contextual_filters_map.items() if v is not None}
+    filters = clean_filters(filters_map)
+    contextual_filters = clean_filters(contextual_filters_map)
     return ExportMetaType(
         total_raw_data_count=DataGranularPublic.objects.filter(**filters).count(),
         total_summary_count=DataCountryLevelPublic.objects.filter(**filters).count(),
         total_country_contextual_data_count=ContextualData.objects.filter(**contextual_filters).count(),
-        max_page_limit=settings.OPEN_API_MAX_PAGE_LIMIT,
+        max_page_limit=settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT,
     )

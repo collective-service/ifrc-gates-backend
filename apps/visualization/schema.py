@@ -257,5 +257,6 @@ class Query:
         self,
         iso3: Optional[str] = None,
         indicator_id: Optional[str] = None,
+        context_indicator_id: Optional[str] = None,
     ) -> ExportMetaType:
-        return await get_export_meta_data(iso3, indicator_id)
+        return await get_export_meta_data(iso3, indicator_id, context_indicator_id)
