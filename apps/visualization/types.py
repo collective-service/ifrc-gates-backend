@@ -117,6 +117,19 @@ class CountryProfileType:
     vulnerability: auto
     risk: auto
     response: auto
+    population_comment: auto
+    stringency_date: auto
+    new_cases_region_share_date: auto
+    new_cases_region_share_source: auto
+    economic_support_index_date: auto
+    readiness_date: auto
+    readiness_source: auto
+    risk_date: auto
+    risk_source: auto
+    vulnerability_date: auto
+    vulnerability_source: auto
+    response_date: auto
+    response_source: auto
     internet_access_format: Optional[str]
     literacy_rate_format: Optional[str]
     wash_access_national_format: Optional[str]
