@@ -557,6 +557,7 @@ def get_indicator_stats_latest(
     ]
 
 
+@sync_to_async
 def get_export_meta_data(iso3, indicator_id, context_indicator_id):
     from .types import ExportMetaType
     filters_map = {

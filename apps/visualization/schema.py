@@ -253,6 +253,7 @@ class Query:
         set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
         return data
 
+    @strawberry.field
     async def export_meta(
         self,
         iso3: Optional[str] = None,
