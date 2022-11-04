@@ -28,7 +28,6 @@ class DataCountryLevelMostRecentFilter(filters.FilterSet):
 
 class BaseExportFilter(filters.FilterSet):
     iso3 = filters.CharFilter(field_name='iso3')
-    include_header = filters.BooleanFilter(method='filter_include_header', required=True)
 
     def filter_include_header(self, queryset, name, value):
         # Used for browseable api documentation

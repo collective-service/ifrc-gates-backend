@@ -66,3 +66,10 @@ def cache_clear(request):
     cache.clear()
     messages.add_message(request, messages.INFO, mark_safe("Cache Cleared"))
     return HttpResponseRedirect(reverse('admin:index'))
+
+
+def str_to_bool(value):
+    # https://github.com/django/django/blob/c765b62e3258de4dce9935ab7aed430346dfbc10/django/forms/fields.py#L790-L800
+    if isinstance(value, str) and value.lower() in ("false", "0"):
+        return False
+    return bool(value)

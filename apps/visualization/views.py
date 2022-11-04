@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.db.models import Max, Q
 from functools import reduce
 from rest_framework.exceptions import ValidationError
+from utils import str_to_bool
 from .models import (
     DataCountryLevelMostRecent,
     DataCountryLevelPublic,
@@ -66,18 +67,23 @@ class ExportBaseView(ListAPIView):
         return None
 
     def validate_export_params_together(self, params):
+        errors = []
         query_params_keys_list = list(params.keys())
         if not any(elem in ['iso3', 'indicator_id'] for elem in query_params_keys_list):
-            raise ValidationError({'error': 'iso3 or indicator_id params are required'})
+            errors.append('iso3 or indicator_id params are required')
         if 'limit' not in query_params_keys_list:
-            raise ValidationError({'error': 'Limit is required.'})
+            errors.append('Limit is required.')
         if 'offset' not in query_params_keys_list:
-            raise ValidationError({'error': 'offset is required.'})
-        limit = int(params.get('limit'))
-        if limit > settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT:
-            raise ValidationError(
-                {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
+            errors.append('offset is required.')
+        limit = params.get('limit')
+        if 'include_header' not in query_params_keys_list:
+            errors.append('include_header bool param is required')
+        if limit and int(limit) > settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT:
+            errors.append(
+                f'Limit must be less or equal to {settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT}'
             )
+        if errors:
+            raise ValidationError({'non_field_errors': errors})
 
     def process_csv_response(self, header_fields, include_header, qs):
         response = HttpResponse(
@@ -99,7 +105,7 @@ class ExportBaseView(ListAPIView):
         )
         if filterset.is_valid():
             header_fields = [field.name for field in filterset.qs.model._meta.get_fields()]
-            include_header = filterset.form.cleaned_data.get('include_header')
+            include_header = str_to_bool(self.request.query_params.get('include_header'))
             return self.process_csv_response(header_fields, include_header, self.paginate_queryset(filterset.qs))
 
 

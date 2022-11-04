@@ -12,7 +12,6 @@ from django.db.models import (
     Subquery,
     OuterRef,
 )
-from django.db.models import Max, F, FloatField, Q
 from django.conf import settings
 from django.db.models.functions import TruncMonth
 from strawberry_django.filters import apply as filter_apply
