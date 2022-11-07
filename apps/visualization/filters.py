@@ -18,6 +18,7 @@ from .models import (
     DataGranular,
     ContextualData,
     EpiDataGlobal,
+    Sources,
     GlobalLevel,
     Countries,
     Narratives,
