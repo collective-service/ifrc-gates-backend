@@ -147,9 +147,10 @@ class Query:
         self,
         iso3: Optional[str] = None,
         emergency: Optional[str] = None,
+        context_indicator_id: Optional[str] = None,
     ) -> List[ContextualDataWithMultipleEmergencyType]:
         return await get_contextual_data_with_multiple_emergency(
-            iso3, emergency
+            iso3, emergency, context_indicator_id
         )
 
     @strawberry.field
