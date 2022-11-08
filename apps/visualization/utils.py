@@ -106,7 +106,7 @@ def get_outbreaks(iso3):
 @sync_to_async
 def get_country_indicators(iso3, outbreak, type):
     from .types import CountryIndicatorType
-    filters = clean_filters({'iso3': iso3, 'outbreak': outbreak, 'type': type})
+    filters = clean_filters({'iso3': iso3, 'emergency': outbreak, 'type': type})
     indicators = CountryFilterOptions.objects.filter(
         **filters
     )
