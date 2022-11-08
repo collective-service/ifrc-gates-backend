@@ -115,6 +115,7 @@ class GlobalLevelFilter():
     thematic: str
     type: str
     is_combined_indicators: bool
+    is_most_recent: bool
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
@@ -145,6 +146,32 @@ class GlobalLevelFilter():
                 )
                 result = queryset.filter(filters).distinct('subvariable')
                 return result
+
+    def filter_is_most_recent(self, queryset):
+        if self.is_most_recent:
+            latest_emergency_data = queryset.filter(category='Global').values('emergency').annotate(
+                latest_month=Max('indicator_month'),
+                first_subvariable=Subquery(
+                    GlobalLevel.objects.filter(
+                        indicator_id=OuterRef('indicator_id'),
+                        category='Global',
+                    ).order_by('subvariable').values('subvariable')[:1],
+                    output_field=CharField()
+                )
+            )
+            if latest_emergency_data:
+                filters = reduce(
+                    lambda acc,
+                    item: acc | item,
+                    [
+                        Q(
+                            emergency=value['emergency'],
+                            indicator_month=value['latest_month'],
+                            subvariable=value['first_subvariable'],
+                        ) for value in latest_emergency_data
+                    ]
+                )
+                return queryset.filter(filters)
         return queryset
 
 
@@ -194,6 +221,7 @@ class RegionLevelFilter():
     type: str
     is_regional_chart: bool
     is_combined_indicators: bool
+    is_most_recent: bool
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
@@ -265,6 +293,33 @@ class RegionLevelFilter():
                 )
                 result = queryset.filter(filters).distinct('subvariable')
                 return result
+        return queryset
+
+    def filter_is_most_recent(self, queryset):
+        if self.is_most_recent:
+            latest_emergency_data = queryset.filter(category='Global').values('region').annotate(
+                latest_month=Max('indicator_month'),
+                first_subvariable=Subquery(
+                    RegionLevel.objects.filter(
+                        indicator_id=OuterRef('indicator_id'),
+                        category='Global',
+                    ).order_by('subvariable').values('subvariable')[:1],
+                    output_field=CharField()
+                )
+            )
+            if latest_emergency_data:
+                filters = reduce(
+                    lambda acc,
+                    item: acc | item,
+                    [
+                        Q(
+                            region=value['region'],
+                            indicator_month=value['latest_month'],
+                            subvariable=value['first_subvariable'],
+                        ) for value in latest_emergency_data
+                    ]
+                )
+                return queryset.filter(filters)
         return queryset
 
 
