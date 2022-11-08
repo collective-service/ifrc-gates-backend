@@ -24,7 +24,7 @@ from .models import (
     GlobalLevel,
 )
 from apps.migrate_csv.models import CountryFilterOptions
-from utils import get_async_list_from_queryset
+from utils import get_async_list_from_queryset, clean_filters
 
 COUNTRY_LEVEL = 'country_level'
 REGIONAL_LEVEL = 'region_level'
@@ -107,10 +107,11 @@ def get_outbreaks(iso3):
 
 
 @sync_to_async
-def get_country_indicators(iso3, outbreak):
+def get_country_indicators(iso3, outbreak, type):
     from .types import CountryIndicatorType
+    filters = clean_filters({'iso3': iso3, 'outbreak': outbreak, 'type': type})
     indicators = CountryFilterOptions.objects.filter(
-        iso3=iso3,
+        **filters
     )
     if outbreak:
         indicators = indicators.filter(emergency=outbreak)

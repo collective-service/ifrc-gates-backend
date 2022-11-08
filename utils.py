@@ -47,3 +47,12 @@ def get_values_list_from_dataclass(data_class):
     if data_class:
         return [value for value in asdict(data_class).values() if value != UNSET]
     return []
+
+
+def clean_filters(filters):
+    # Filter out None values
+    return {
+        k: v
+        for k, v in filters.items()
+        if v is not None
+    }

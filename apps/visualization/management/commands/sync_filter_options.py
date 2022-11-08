@@ -14,9 +14,9 @@ class Command(BaseCommand):
 
         # Get distinct values queryset
         qs = DataCountryLevel.objects.values(
-            'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable'
+            'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
         ).distinct(
-            'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable'
+            'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
         )
         CountryFilterOptions.objects.bulk_create([
             CountryFilterOptions(
@@ -24,7 +24,8 @@ class Command(BaseCommand):
                 emergency=item['emergency'],
                 indicator_id=item['indicator_id'],
                 indicator_description=item['indicator_description'],
-                subvariable=item['subvariable']
+                subvariable=item['subvariable'],
+                type=item['type'],
             ) for item in qs
         ])
         self.stdout.write(self.style.SUCCESS('Created %s distinct filter options' % qs.count()))

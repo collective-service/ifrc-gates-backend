@@ -555,9 +555,10 @@ class FilterOptionsType:
     async def country_indicators(
         self,
         iso3: str,
+        type: Optional[str] = None,
         outbreak: Optional[str] = None,
     ) -> List[CountryIndicatorType]:
-        return await get_country_indicators(iso3, outbreak)
+        return await get_country_indicators(iso3, outbreak, type)
 
     @strawberry.field
     async def subvariables(
