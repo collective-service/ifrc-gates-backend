@@ -77,8 +77,8 @@ env = environ.Env(
     SENTRY_SAMPLE_RATE=(float, 0.2),
 )
 
-RCCE_CS_ENVIRONMENT=env('RCCE_CS_ENVIRONMENT')
-APP_TYPE=env('APP_TYPE')
+RCCE_CS_ENVIRONMENT = env('RCCE_CS_ENVIRONMENT')
+APP_TYPE = env('APP_TYPE')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/

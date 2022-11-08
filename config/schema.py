@@ -10,6 +10,7 @@ from strawberry.types import ExecutionResult
 class Query(VisualizationQuery):
     pass
 
+
 class Schema(strawberry.Schema):
     def _scope_with_sentry(self, execute_func, *args, **kwargs) -> ExecutionResult:
         if not settings.SENTRY_ENABLED:
@@ -25,6 +26,7 @@ class Schema(strawberry.Schema):
 
     def execute(self, *args, **kwargs) -> ExecutionResult:
         return self._scope_with_sentry(super().execute, *args, **kwargs)
+
 
 schema = Schema(
     query=Query,

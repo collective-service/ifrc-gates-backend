@@ -1,4 +1,3 @@
-import re
 from functools import reduce
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -18,7 +17,6 @@ from strawberry_django.filters import apply as filter_apply
 from .models import (
     DataCountryLevel,
     DataCountryLevelMostRecent,
-    Sources,
     ContextualData,
     CountryEmergencyProfile,
     Countries,
@@ -120,7 +118,8 @@ def get_country_indicators(iso3, outbreak):
         CountryIndicatorType(
             indicator_id=indicator['indicator_id'],
             indicator_description=indicator['indicator_description'],
-        ) for indicator in indicators.distinct().values('indicator_id', 'indicator_description').order_by('indicator_description')
+        ) for indicator in indicators.distinct().values(
+            'indicator_id', 'indicator_description').order_by('indicator_description')
     ]
 
 
