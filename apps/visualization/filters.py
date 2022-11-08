@@ -1,6 +1,13 @@
 import strawberry
 from datetime import timedelta
-from django.db.models import Q, Max, F
+from django.db.models import (
+    Q,
+    Max,
+    F,
+    Subquery,
+    OuterRef,
+    CharField,
+)
 from functools import reduce
 from .models import (
     CountryEmergencyProfile,
@@ -216,8 +223,14 @@ class RegionLevelFilter():
                 regions_with_highest_indicator_month_highest_indicator_value_regional = queryset.filter(
                     regions_with_highest_indicator_month_filter
                 ).values('region').annotate(
-                    highest_indicator_value_regional=Max('indicator_value_regional'),
                     highest_indicator_month=Max('indicator_month'),
+                    first_subvariable=Subquery(
+                        RegionLevel.objects.filter(
+                            indicator_id=OuterRef('indicator_id'),
+                            region=OuterRef('region'),
+                        ).order_by('subvariable').values('subvariable')[:1],
+                        output_field=CharField()
+                    )
                 )
                 filters = reduce(
                     lambda acc,
@@ -225,12 +238,13 @@ class RegionLevelFilter():
                     [
                         Q(
                             region=value['region'],
-                            indicator_value_regional=value['highest_indicator_value_regional'],
                             indicator_month=value['highest_indicator_month'],
+                            subvariable=value['first_subvariable'],
                         ) for value in regions_with_highest_indicator_month_highest_indicator_value_regional
                     ]
                 )
                 return queryset.filter(filters)
+
         return queryset
 
     def filter_is_combined_indicators(self, queryset):
