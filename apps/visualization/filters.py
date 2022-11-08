@@ -1,7 +1,6 @@
 import strawberry
 from datetime import timedelta
 from django.db.models import Q, Max, F
-from typing import List
 from functools import reduce
 from .models import (
     CountryEmergencyProfile,
@@ -12,7 +11,6 @@ from .models import (
     DataGranular,
     ContextualData,
     EpiDataGlobal,
-    Sources,
     GlobalLevel,
     Countries,
     Narratives,
