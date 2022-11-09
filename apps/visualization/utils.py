@@ -225,26 +225,6 @@ def get_overview_map_data(
 
     countries_qs = Countries.objects.values_list('iso3', flat=True)
 
-    def get_unique_countries_data(qs):
-        # TODO: Improve this logic
-        data_country_map = {}
-        for item in qs:
-            if data_country_map:
-                if data_country_map.get(item['iso3'], None):
-                    pass
-                else:
-                    data_country_map[item['iso3']] = item
-            else:
-                data_country_map[item['iso3']] = item
-
-        return [
-            OverviewMapType(
-                iso3=iso3,
-                indicator_value=map_data['indicator_value'],
-                format=map_data['format'],
-            ) for iso3, map_data in data_country_map.items()
-        ]
-
     filters = clean_filters({
         'region': region,
         'indicator_id': indicator_id,
@@ -256,11 +236,17 @@ def get_overview_map_data(
         iso3__in=countries_qs,
     ).values('iso3').annotate(
         max_indicator_month=Max('indicator_month'),
-        indicator_value=F('indicator_value'),
+        indicator_value=Max('indicator_value'),
         format=F('format'),
     ).order_by('-max_indicator_month', 'subvariable')
 
-    return get_unique_countries_data(qs)
+    return [
+        OverviewMapType(
+            iso3=item['iso3'],
+            indicator_value=item['indicator_value'],
+            format=item['format'],
+        ) for item in qs
+    ]
 
 
 @sync_to_async
