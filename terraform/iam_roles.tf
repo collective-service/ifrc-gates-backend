@@ -45,7 +45,10 @@ resource "aws_iam_role_policy" "param_store" {
           "${aws_ssm_parameter.celery_redis_url.arn}",
           "${aws_ssm_parameter.django_cache_redis_url.arn}",
           "${data.aws_ssm_parameter.http_protocol.arn}",
-          "${data.aws_ssm_parameter.cors_allowed_origins.arn}"
+          "${data.aws_ssm_parameter.cors_allowed_origins.arn}",
+          "${data.aws_ssm_parameter.app_type.arn}",
+          "${data.aws_ssm_parameter.rcce_cs_environment.arn}",
+          "${data.aws_ssm_parameter.sentry_dsn.arn}"
         ]
       }
     ]
