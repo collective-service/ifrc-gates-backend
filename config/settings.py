@@ -15,6 +15,7 @@ from config import sentry
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
+    DJANGO_LOG_LEVEL=(str, "INFO"),  # DEBUG, INFO, WARNING, ERROR, CRITICAL
     DEBUG=(bool, True),
     SECRET_KEY=(str),
     ALLOWED_HOSTS=(str, '*'),
@@ -113,6 +114,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'apps.migrate_csv',
     'apps.data',
+    'apps.common',
 ]
 
 MIDDLEWARE = [
@@ -282,7 +284,8 @@ CORS_ALLOW_HEADERS = (
 CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS')
 
 # Celery settings
-CELERY_BROKER_URL = CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL = CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
@@ -373,3 +376,30 @@ if SENTRY_DSN:
         **SENTRY_CONFIG,
     )
     SENTRY_ENABLED = True
+
+# Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": ("%(asctime)s: - %(levelname)s - %(name)s - %(message)s"),
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": env("DJANGO_LOG_LEVEL"),
+    },
+    "loggers": {
+        "django": {
+            "level": env("DJANGO_LOG_LEVEL"),
+        },
+    },
+}
