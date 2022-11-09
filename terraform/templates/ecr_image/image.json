@@ -112,6 +112,18 @@
             {
                 "name": "DJANGO_CACHE_REDIS_URL",
                 "valueFrom": "${django_cache_redis_url}"
+            },
+            {
+                "name": "APP_TYPE",
+                "valueFrom": "${app_type}"
+            },
+            {
+                "name": "RCCE_CS_ENVIRONMENT",
+                "valueFrom": "${rcce_cs_environment}"
+            },
+            {
+                "name": "SENTRY_DSN",
+                "valueFrom": "${sentry_dsn}"
             }
         ]
     }

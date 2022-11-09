@@ -38,6 +38,18 @@ data "aws_ssm_parameter" "cors_allowed_origins" {
     name = "cors_allowed_origins"
 }
 
+data "aws_ssm_parameter" "sentry_dsn" {
+    name = "sentry_dsn"
+}
+
+data "aws_ssm_parameter" "app_type" {
+    name = "app_type"
+}
+
+data "aws_ssm_parameter" "rcce_cs_environment" {
+    name = "rcce_cs_environment"
+}
+
 resource "aws_ssm_parameter" "celery_redis_url" {
     name    = "celery_redis_url"
     type    = "SecureString"
