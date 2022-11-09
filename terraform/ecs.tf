@@ -28,9 +28,9 @@ data "template_file" "config" {
     s3_bucket_name = data.aws_ssm_parameter.s3_bucket_name.arn
     http_protocol = data.aws_ssm_parameter.http_protocol.arn
     cors_allowed_origins = data.aws_ssm_parameter.cors_allowed_origins.arn
-    app_type = data.aws_ssm_parameter.app_type
-    rcce_cs_environment = data.aws_ssm_parameter.rcce_cs_environment
-    sentry_dsn = data.aws_ssm_parameter.sentry_dsn
+    app_type = data.aws_ssm_parameter.app_type.arn
+    rcce_cs_environment = data.aws_ssm_parameter.rcce_cs_environment.arn
+    sentry_dsn = data.aws_ssm_parameter.sentry_dsn.arn
   }
 }
 
