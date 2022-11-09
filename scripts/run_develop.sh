@@ -6,5 +6,5 @@ python manage.py collectstatic --noinput &
 # NOTE: We will only migrate data in django migration
 # Don't use default schmea for migrations
 python manage.py migrate --database=default &
-celery -A config worker --loglevel=INFO &
+./manage.py run_celery_dev &
 python manage.py runserver 0.0.0.0:7020

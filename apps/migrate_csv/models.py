@@ -352,7 +352,7 @@ class DataImport(models.Model):
         return self.FILE_TYPE_TO_MODEL_MAP[DataImport.FileType(self.file_type)]
 
     def clean(self):
-        if self.pk is None and self.file_type is not None:
+        if self.pk is None and self.file_type is not None and self.file.name:
             # Validate CSV File on creation.
             required_headers = self.preview_model.CSV_HEADERS
             csv_file_validator(self.file, required_headers)

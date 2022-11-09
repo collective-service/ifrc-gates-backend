@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'apps.migrate_csv',
     'apps.data',
+    'apps.common',
 ]
 
 MIDDLEWARE = [
@@ -283,7 +284,8 @@ CORS_ALLOW_HEADERS = (
 CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS')
 
 # Celery settings
-CELERY_BROKER_URL = CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL = CELERY_REDIS_URL = env('CELERY_REDIS_URL')
+CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
@@ -392,7 +394,7 @@ LOGGING = {
         },
     },
     "root": {
-        "handlers": ["console", "file"],
+        "handlers": ["console"],
         "level": env("DJANGO_LOG_LEVEL"),
     },
     "loggers": {
