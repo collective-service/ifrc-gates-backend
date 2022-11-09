@@ -1,7 +1,7 @@
 import csv
 import logging
 
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import User
@@ -364,8 +364,9 @@ class DataImport(models.Model):
             new = True
         super().save(*args, **kwargs)
         if new:
-            # process_data_import.delay(self.pk)
-            process_data_import(self.pk)
+            transaction.on_commit(
+                lambda: process_data_import.delay(self.pk)
+            )
 
 
 class CountryFilterOptions(models.Model):
