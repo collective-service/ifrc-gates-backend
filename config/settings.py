@@ -15,6 +15,7 @@ from config import sentry
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(
+    DJANGO_LOG_LEVEL=(str, "INFO"),  # DEBUG, INFO, WARNING, ERROR, CRITICAL
     DEBUG=(bool, True),
     SECRET_KEY=(str),
     ALLOWED_HOSTS=(str, '*'),
@@ -373,3 +374,30 @@ if SENTRY_DSN:
         **SENTRY_CONFIG,
     )
     SENTRY_ENABLED = True
+
+# Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": ("%(asctime)s: - %(levelname)s - %(name)s - %(message)s"),
+            "datefmt": "%Y-%m-%dT%H:%M:%S",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console", "file"],
+        "level": env("DJANGO_LOG_LEVEL"),
+    },
+    "loggers": {
+        "django": {
+            "level": env("DJANGO_LOG_LEVEL"),
+        },
+    },
+}
