@@ -238,12 +238,6 @@ class Query:
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
     ) -> List[IndicatorLatestStatsType]:
-        return await get_indicator_stats_latest(
-            emergency,
-            region,
-            indicator_id,
-            is_top
-        )
         prefix_key = 'stats-latest'
         cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
         if cached_data:
