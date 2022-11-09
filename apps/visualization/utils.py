@@ -273,24 +273,21 @@ def get_overview_table_data(
         'indicator_month__lte': TruncMonth(datetime.today()),
         'indicator_month__gte': TruncMonth(datetime.today() - timedelta(days=365)),
     })
-
     country_most_recent_qs = DataCountryLevel.objects.filter(
         **filters,
         iso3__in=countries_qs,
     ).values('iso3').annotate(
-        indicator_value=F('indicator_value'),
+        indicator_value=Max('indicator_value'),
         month=F('indicator_month'),
         format=F('format'),
     ).order_by('-month', 'subvariable')
     country_most_recent_qs_iso3_map = {}
     for item in country_most_recent_qs:
         if country_most_recent_qs_iso3_map.get(item['iso3']):
-            print('hiiiiii')
             country_most_recent_qs_iso3_map[item['iso3']].append(format_table_data(item))
         else:
             country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
     unique_iso3 = set(list(country_most_recent_qs.values_list('iso3', flat=True)))
-
     return [
         OverviewTableType(
             iso3=iso3,
