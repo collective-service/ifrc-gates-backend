@@ -9,7 +9,8 @@ from django.db.models import (
     FloatField,
     Q,
     Subquery,
-    OuterRef
+    OuterRef,
+    CharField,
 )
 from django.db.models.functions import TruncMonth
 from strawberry_django.filters import apply as filter_apply
@@ -498,12 +499,22 @@ def get_indicator_stats_latest(
         max_indicator_month=Max('indicator_month'),
         format=F('format'),
         country_name=F('country_name'),
-    ).order_by('-max_indicator_month', 'subvariable')
+        first_subvariable=Subquery(
+            DataCountryLevelMostRecent.objects.filter(
+                indicator_id=OuterRef('indicator_id'),
+                category='Global',
+                iso3=OuterRef('iso3'),
+                region=OuterRef('region'),
+                subvariable=OuterRef('subvariable'),
+            ).order_by('subvariable').values('subvariable')[:1],
+            output_field=CharField()
+        )
+    ).order_by('-max_indicator_month')
 
     if is_top:
-        qs = qs.order_by('-indicator_value')[:5]
+        qs = qs.order_by('subvariable', '-indicator_value')[:5]
     else:
-        qs = qs.order_by('indicator_value')[:5]
+        qs = qs.order_by('subvariable', 'indicator_value')[:5]
 
     return [
         IndicatorLatestStatsType(
