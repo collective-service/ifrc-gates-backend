@@ -260,32 +260,11 @@ def get_overview_table_data(
     countries_qs = Countries.objects.values_list('iso3', flat=True)
 
     def format_table_data(data):
-        return {
-            'month': data['month'],
-            'indicator_value': data['indicator_value'],
-            'format': data['format'],
-        }
-
-    def format_indicator_value(iso3, qs_map):
-
-        # TODO: Find alternative for this
-        twelve_month_data = qs_map.get(iso3)
-        month_data_sorted_by_subvariable = {}
-        for item in twelve_month_data:
-            if month_data_sorted_by_subvariable:
-                if month_data_sorted_by_subvariable.get(item['month'], None):
-                    pass
-                else:
-                    month_data_sorted_by_subvariable[item['month']] = item
-            else:
-                month_data_sorted_by_subvariable[item['month']] = item
-        return [
-            OverviewTableDataType(
-                month=month,
-                indicator_value=table_data['indicator_value'],
-                format=table_data['format'],
-            ) for month, table_data in month_data_sorted_by_subvariable.items()
-        ]
+        return OverviewTableDataType(
+            month=data['month'],
+            indicator_value=data['indicator_value'],
+            format=data['format'],
+        )
 
     filters = clean_filters({
         'region': region,
@@ -294,8 +273,7 @@ def get_overview_table_data(
         'indicator_month__lte': TruncMonth(datetime.today()),
         'indicator_month__gte': TruncMonth(datetime.today() - timedelta(days=365)),
     })
-
-    country_most_recent_qs = DataCountryLevelMostRecent.objects.filter(
+    country_most_recent_qs = DataCountryLevel.objects.filter(
         **filters,
         iso3__in=countries_qs,
     ).values('iso3').annotate(
@@ -303,14 +281,17 @@ def get_overview_table_data(
         month=F('indicator_month'),
         format=F('format'),
     ).order_by('-month', 'subvariable')
-    country_most_recent_qs_iso3_map = defaultdict()
+    country_most_recent_qs_iso3_map = {}
     for item in country_most_recent_qs:
-        country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
+        if country_most_recent_qs_iso3_map.get(item['iso3']):
+            country_most_recent_qs_iso3_map[item['iso3']].append(format_table_data(item))
+        else:
+            country_most_recent_qs_iso3_map[item['iso3']] = [format_table_data(item)]
     unique_iso3 = set(list(country_most_recent_qs.values_list('iso3', flat=True)))
     return [
         OverviewTableType(
             iso3=iso3,
-            data=format_indicator_value(iso3, country_most_recent_qs_iso3_map)
+            data=country_most_recent_qs_iso3_map.get(iso3)
         ) for iso3 in unique_iso3
     ]
 
