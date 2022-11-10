@@ -24,6 +24,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
 
 from apps.visualization import views
+from utils import cache_clear
 
 router = routers.DefaultRouter()
 
@@ -44,6 +45,8 @@ urlpatterns = [
     # rest api urls
     path('api/v1/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
     path('api/v1/context_indicators/', views.ContextIndicatorsViews.as_view()),
+
+    path('clear-cache/', cache_clear, name='clear_cache')
 ]
 
 admin.site.site_header = "RCCE Collective Services Administration"

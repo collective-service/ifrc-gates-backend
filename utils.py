@@ -1,5 +1,9 @@
 import hashlib
 from django.core.cache import cache
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.contrib import messages
+from django.utils.safestring import mark_safe
 from strawberry import UNSET
 from dataclasses import asdict
 
@@ -56,3 +60,9 @@ def clean_filters(filters):
         for k, v in filters.items()
         if v is not None
     }
+
+
+def cache_clear(request):
+    cache.clear()
+    messages.add_message(request, messages.INFO, mark_safe("Cache Cleared"))
+    return HttpResponseRedirect(reverse('admin:index'))
