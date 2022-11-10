@@ -169,7 +169,7 @@ class Query:
             region,
             indicator_id,
         )
-        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
         return data
 
     @strawberry.field
@@ -188,7 +188,7 @@ class Query:
             region,
             indicator_id,
         )
-        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
         return data
 
     @strawberry.field
@@ -248,5 +248,5 @@ class Query:
             indicator_id,
             is_top
         )
-        set_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
         return data
