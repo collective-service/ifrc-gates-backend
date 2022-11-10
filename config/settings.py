@@ -54,21 +54,21 @@ env = environ.Env(
     TIME_ZONE=(str, 'Asia/Kathmandu'),
     CORS_ALLOWED_ORIGINS=(list, ['http://localhost:3050']),
 
-    # Static, Media configs for develop
-    DJANGO_STATIC_URL=(str, '/static/'),
-    DJANGO_MEDIA_URL=(str, '/media/'),
-    DJANGO_STATIC_ROOT=(str, os.path.join(BASE_DIR, "staticfiles")),
-    DJANGO_MEDIA_ROOT=(str, os.path.join(BASE_DIR, "media")),
-    USE_LOCAL_STORAGE=(bool, True),
+    # Storage
+    # -- File storage (Mostly used locally for development)
+    USE_LOCAL_STORAGE=(bool, True),  # False -> Use S3
+    FILE_STORAGE_STATIC_URL=(str, '/static/'),  # Should end with /
+    FILE_STORAGE_MEDIA_URL=(str, '/media/'),  # Should end with /
+    FILE_STORAGE_STATIC_ROOT=(str, os.path.join(BASE_DIR, "staticfiles")),
+    FILE_STORAGE_MEDIA_ROOT=(str, os.path.join(BASE_DIR, "media")),
+    # -- S3 related settings for production
+    AWS_STORAGE_BUCKET_NAME=str,
+    AWS_STATIC_LOCATION=(str, 'static'),  # Shouldn't end with /
+    AWS_MEDIA_LOCATION=(str, 'media'),  # Shouldn't end with /
 
     # Celery
     CELERY_REDIS_URL=str,  # redis://redis:6379/0
     DJANGO_CACHE_REDIS_URL=str,  # redis://redis:6379/1
-
-    # S3 related settings for production
-    AWS_STORAGE_BUCKET_NAME=str,
-    AWS_STATIC_LOCATION=(str, 'static'),
-    AWS_MEDIA_LOCATION=(str, 'media'),
 
     # Http protocol settings
     HTTP_PROTOCOL=(str, 'http'),
@@ -233,25 +233,26 @@ USE_TZ = True
 STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 if DEBUG or env('USE_LOCAL_STORAGE'):
-    STATIC_URL = env('DJANGO_STATIC_URL')
-    MEDIA_URL = env('DJANGO_MEDIA_URL')
-    STATIC_ROOT = env('DJANGO_STATIC_ROOT')
-    MEDIA_ROOT = env('DJANGO_MEDIA_ROOT')
+    STATIC_URL = env('FILE_STORAGE_STATIC_URL')
+    MEDIA_URL = env('FILE_STORAGE_MEDIA_URL')
+    STATIC_ROOT = env('FILE_STORAGE_STATIC_ROOT')
+    MEDIA_ROOT = env('FILE_STORAGE_MEDIA_ROOT')
 else:
-    AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+    AWS_STORAGE_BUCKET_NAME_MEDIA = AWS_STORAGE_BUCKET_NAME_STATIC = env('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_CUSTOM_DOMAIN = None
     AWS_S3_OBJECT_PARAMETERS = {
         "CacheControl": "max-age=86400",
     }
     AWS_STATIC_LOCATION = env('AWS_STATIC_LOCATION')
     AWS_MEDIA_LOCATION = env('AWS_MEDIA_LOCATION')
+    STATIC_URL = f"{AWS_STATIC_LOCATION}/"
+    MEDIA_URL = f"{AWS_MEDIA_LOCATION}/"
+    TINYMCE_JS_URL = (
+        f"https://{AWS_STORAGE_BUCKET_NAME_STATIC}.s3.amazonaws.com/{AWS_STATIC_LOCATION}/tinymce/tinymce.min.js"
+    )
 
-    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
-    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_MEDIA_LOCATION}/"
-    TINYMCE_JS_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/tinymce/tinymce.min.js"
-
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    DEFAULT_FILE_STORAGE = "config.storage_backends.MediaStorage"
+    STATICFILES_STORAGE = "config.aws.StaticStorage"
+    DEFAULT_FILE_STORAGE = "config.aws.MediaStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
