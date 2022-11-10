@@ -520,7 +520,7 @@ def get_indicator_stats_latest(
     qs_with = With(qs, name="qs")
     final_qs = (
         qs_with.queryset().with_cte(qs_with)
-        .order_by('indicator_value')
+        .order_by(indicator_value_order)
     )[:5]
 
     return [
