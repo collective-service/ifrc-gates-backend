@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_yasg',
     'tinymce',
+    'strawberry.django',
     # Local
     'apps.visualization',
     'corsheaders',

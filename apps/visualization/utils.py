@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 from asgiref.sync import sync_to_async
+from django_cte import With
 from django.db.models import (
     Max,
     F,
@@ -10,7 +11,6 @@ from django.db.models import (
     Q,
     Subquery,
     OuterRef,
-    CharField,
 )
 from django.db.models.functions import TruncMonth
 from strawberry_django.filters import apply as filter_apply
@@ -481,7 +481,6 @@ def get_indicator_stats_latest(
     is_top=False,
 ):
     from .types import IndicatorLatestStatsType
-    from django.db import connections
 
     countries_qs = Countries.objects.values('iso3')
 
@@ -492,10 +491,8 @@ def get_indicator_stats_latest(
     })
 
     indicator_value_order = 'indicator_value'
-    indicator_value_order_raw = 'ASC'
     if is_top:
         indicator_value_order = '-indicator_value'
-        indicator_value_order_raw = 'DESC'
 
     qs = DataCountryLevelMostRecent.objects.filter(
         **filters,
@@ -519,25 +516,18 @@ def get_indicator_stats_latest(
         'format',
         'country_name',
     )
-    query, params = qs.query.sql_with_params()
-    raw_query = f"""
-    WITH recent_month_countries AS (
-        {query}
-    ), countries_sorted_by_indicator_value AS (
-        SELECT * FROM recent_month_countries
-        ORDER BY indicator_value {indicator_value_order_raw} LIMIT 5
-    )
-    SELECT * FROM countries_sorted_by_indicator_value;
-    """
-    with connections['visualization'].cursor() as cursor:
-        cursor.mogrify(raw_query, params)
-        data = cursor.fetchall()
 
-        return [
-            IndicatorLatestStatsType(
-                iso3=item['iso3'],
-                indicator_value=item['indicator_value'],
-                format=item['format'],
-                country_name=item['country_name'],
-            ) for item in data
-        ]
+    qs_with = With(qs, name="qs")
+    final_qs = (
+        qs_with.queryset().with_cte(qs_with)
+        .order_by('indicator_value')
+    )[:5]
+
+    return [
+        IndicatorLatestStatsType(
+            iso3=item['iso3'],
+            indicator_value=item['indicator_value'],
+            format=item['format'],
+            country_name=item['country_name'],
+        ) for item in final_qs
+    ]
