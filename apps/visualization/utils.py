@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 from asgiref.sync import sync_to_async
+from django_cte import With
 from django.db.models import (
     Max,
     F,
@@ -10,7 +11,6 @@ from django.db.models import (
     Q,
     Subquery,
     OuterRef,
-    CharField,
 )
 from django.db.models.functions import TruncMonth
 from strawberry_django.filters import apply as filter_apply
@@ -489,28 +489,45 @@ def get_indicator_stats_latest(
         'emergency': emergency,
         'indicator_id': indicator_id,
     })
+
+    indicator_value_order = 'indicator_value'
+    if is_top:
+        indicator_value_order = '-indicator_value'
+
     qs = DataCountryLevelMostRecent.objects.filter(
         **filters,
         iso3__in=countries_qs,
         category='Global',
         indicator_value__gt=0
-    ).order_by().values('iso3').annotate(
-        indicator_value=F('indicator_value'),
-        max_indicator_month=Max('indicator_month'),
-        format=F('format'),
-        country_name=F('country_name'),
-    ).order_by('-max_indicator_month')
+    ).order_by(
+        'iso3',
+        '-indicator_month',
+        'subvariable',
+        indicator_value_order,
+    ).distinct(
+        'iso3',
+        'indicator_month',
+        'subvariable',
+    ).values(
+        'iso3',
+        'indicator_month',
+        'subvariable',
+        'indicator_value',
+        'format',
+        'country_name',
+    )
 
-    if is_top:
-        qs = qs.order_by('-max_indicator_month', 'subvariable', '-indicator_value')[:5]
-    else:
-        qs = qs.order_by('-max_indicator_month', 'subvariable', 'indicator_value')[:5]
+    qs_with = With(qs, name="qs")
+    final_qs = (
+        qs_with.queryset().with_cte(qs_with)
+        .order_by(indicator_value_order)
+    )[:5]
 
     return [
         IndicatorLatestStatsType(
-            iso3=data['iso3'],
-            indicator_value=data['indicator_value'],
-            format=data['format'],
-            country_name=data['country_name'],
-        ) for data in qs
+            iso3=item['iso3'],
+            indicator_value=item['indicator_value'],
+            format=item['format'],
+            country_name=item['country_name'],
+        ) for item in final_qs
     ]

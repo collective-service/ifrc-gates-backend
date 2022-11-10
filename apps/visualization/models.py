@@ -1,5 +1,7 @@
 from django.db import models
 
+from config.models import Model
+
 
 class Narratives(models.Model):
     id = models.AutoField(primary_key=True)
@@ -207,7 +209,7 @@ class DataCountryLevel(models.Model):
         )
 
 
-class DataCountryLevelMostRecent(models.Model):
+class DataCountryLevelMostRecent(Model):
     emergency = models.CharField(primary_key=True, max_length=50)
     country_name = models.CharField(max_length=50, blank=True, null=True)
     iso3 = models.CharField(max_length=3)

@@ -6,6 +6,7 @@ authors = ["dev <dev@togglecorp.com>"]
 
 [tool.poetry.dependencies]
 Django = "^4.0.5"
+django-cte = "*"
 python = "^3.10"
 psycopg2 = "^2.9.3"
 django-environ = "^0.9.0"
