@@ -481,6 +481,7 @@ def get_indicator_stats_latest(
     is_top=False,
 ):
     from .types import IndicatorLatestStatsType
+    from django.db import connections
 
     countries_qs = Countries.objects.values('iso3')
 
@@ -489,28 +490,54 @@ def get_indicator_stats_latest(
         'emergency': emergency,
         'indicator_id': indicator_id,
     })
+
+    indicator_value_order = 'indicator_value'
+    indicator_value_order_raw = 'ASC'
+    if is_top:
+        indicator_value_order = '-indicator_value'
+        indicator_value_order_raw = 'DESC'
+
     qs = DataCountryLevelMostRecent.objects.filter(
         **filters,
         iso3__in=countries_qs,
         category='Global',
         indicator_value__gt=0
-    ).order_by().values('iso3').annotate(
-        indicator_value=F('indicator_value'),
-        max_indicator_month=Max('indicator_month'),
-        format=F('format'),
-        country_name=F('country_name'),
-    ).order_by('-max_indicator_month')
+    ).order_by(
+        'iso3',
+        '-indicator_month',
+        'subvariable',
+        indicator_value_order,
+    ).distinct(
+        'iso3',
+        'indicator_month',
+        'subvariable',
+    ).values(
+        'iso3',
+        'indicator_month',
+        'subvariable',
+        'indicator_value',
+        'format',
+        'country_name',
+    )
+    query, params = qs.query.sql_with_params()
+    raw_query = f"""
+    WITH recent_month_countries AS (
+        {query}
+    ), countries_sorted_by_indicator_value AS (
+        SELECT * FROM recent_month_countries
+        ORDER BY indicator_value {indicator_value_order_raw} LIMIT 5
+    )
+    SELECT * FROM countries_sorted_by_indicator_value;
+    """
+    with connections['visualization'].cursor() as cursor:
+        cursor.mogrify(raw_query, params)
+        data = cursor.fetchall()
 
-    if is_top:
-        qs = qs.order_by('-max_indicator_month', 'subvariable', '-indicator_value')[:5]
-    else:
-        qs = qs.order_by('-max_indicator_month', 'subvariable', 'indicator_value')[:5]
-
-    return [
-        IndicatorLatestStatsType(
-            iso3=data['iso3'],
-            indicator_value=data['indicator_value'],
-            format=data['format'],
-            country_name=data['country_name'],
-        ) for data in qs
-    ]
+        return [
+            IndicatorLatestStatsType(
+                iso3=item['iso3'],
+                indicator_value=item['indicator_value'],
+                format=item['format'],
+                country_name=item['country_name'],
+            ) for item in data
+        ]
