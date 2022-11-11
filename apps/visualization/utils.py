@@ -263,7 +263,8 @@ def get_overview_map_data(
         'indicator_id': indicator_id,
         'emergency': emergency,
     })
-    qs = process_overview_data(filters)
+    indicator_value_order = '-indicator_value'
+    qs = process_overview_data(filters, indicator_value_order=indicator_value_order)
     return [
         OverviewMapType(
             iso3=item['iso3'],
