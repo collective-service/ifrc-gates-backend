@@ -216,6 +216,40 @@ def get_contextual_data_with_multiple_emergency(
     ]
 
 
+def process_overview_data(filters, indicator_value_order='indicator_value'):
+    countries_qs = Countries.objects.values('iso3')
+    qs = DataCountryLevelMostRecent.objects.filter(
+        **filters,
+        iso3__in=countries_qs,
+        category='Global',
+    )
+    if 'indicator_id' in filters:
+        qs = qs.filter(
+            # NOTE: subvariable should not be empty, if empty contact cyrille
+            subvariable=qs.order_by('subvariable').values('subvariable').distinct()[:1],
+        )
+    qs = qs.order_by(
+        'iso3',
+        '-indicator_month',
+        'subvariable',
+        indicator_value_order,
+    ).distinct(
+        'iso3',
+    ).values(
+        'iso3',
+        'indicator_month',
+        'subvariable',
+        'indicator_value',
+        'format',
+        'country_name',
+    )
+    qs_with = With(qs, name="qs")
+    return (
+        qs_with.queryset().with_cte(qs_with)
+        .order_by(indicator_value_order)
+    )
+
+
 @sync_to_async
 def get_overview_map_data(
     emergency,
@@ -224,23 +258,12 @@ def get_overview_map_data(
 ):
     from .types import OverviewMapType
 
-    countries_qs = Countries.objects.values_list('iso3', flat=True)
-
     filters = clean_filters({
         'region': region,
         'indicator_id': indicator_id,
         'emergency': emergency,
     })
-
-    qs = DataCountryLevelMostRecent.objects.filter(
-        **filters,
-        iso3__in=countries_qs,
-    ).values('iso3').annotate(
-        max_indicator_month=Max('indicator_month'),
-        indicator_value=Max('indicator_value'),
-        format=F('format'),
-    ).order_by('-max_indicator_month', 'subvariable')
-
+    qs = process_overview_data(filters)
     return [
         OverviewMapType(
             iso3=item['iso3'],
@@ -262,7 +285,7 @@ def get_overview_table_data(
 
     def format_table_data(data):
         return OverviewTableDataType(
-            month=data['month'],
+            month=data['indicator_month'],
             indicator_value=data['indicator_value'],
             format=data['format'],
         )
@@ -273,15 +296,32 @@ def get_overview_table_data(
         'emergency': emergency,
         'indicator_month__lte': TruncMonth(datetime.today()),
         'indicator_month__gte': TruncMonth(datetime.today() - timedelta(days=365)),
+        'category': 'Global',
     })
-    country_most_recent_qs = DataCountryLevel.objects.filter(
+
+    qs = DataCountryLevel.objects.filter(
         **filters,
         iso3__in=countries_qs,
-    ).values('iso3').annotate(
-        indicator_value=Max('indicator_value'),
-        month=F('indicator_month'),
-        format=F('format'),
-    ).order_by('-month', 'subvariable')
+    )
+
+    if 'indicator_id' in filters:
+        qs = qs.filter(
+            # NOTE: subvariable should not be empty, if empty contact to cyrille
+            subvariable=qs.order_by('subvariable').values('subvariable').distinct()[:1],
+        )
+    country_most_recent_qs = qs.order_by(
+        'iso3',
+        '-indicator_month',
+        'subvariable',
+    ).distinct(
+        'iso3',
+        'indicator_month',
+    ).values(
+        'iso3',
+        'indicator_month',
+        'indicator_value',
+        'format',
+    )
     country_most_recent_qs_iso3_map = {}
     for item in country_most_recent_qs:
         if country_most_recent_qs_iso3_map.get(item['iso3']):
@@ -482,52 +522,22 @@ def get_indicator_stats_latest(
 ):
     from .types import IndicatorLatestStatsType
 
-    countries_qs = Countries.objects.values('iso3')
-
     filters = clean_filters({
         'region': region,
         'emergency': emergency,
         'indicator_id': indicator_id,
+        'indicator_value__gt': 0
     })
 
     indicator_value_order = 'indicator_value'
     if is_top:
         indicator_value_order = '-indicator_value'
-
-    qs = DataCountryLevelMostRecent.objects.filter(
-        **filters,
-        iso3__in=countries_qs,
-        category='Global',
-        indicator_value__gt=0
-    ).order_by(
-        'iso3',
-        '-indicator_month',
-        'subvariable',
-        indicator_value_order,
-    ).distinct(
-        'iso3',
-        'indicator_month',
-        'subvariable',
-    ).values(
-        'iso3',
-        'indicator_month',
-        'subvariable',
-        'indicator_value',
-        'format',
-        'country_name',
-    )
-
-    qs_with = With(qs, name="qs")
-    final_qs = (
-        qs_with.queryset().with_cte(qs_with)
-        .order_by(indicator_value_order)
-    )[:5]
-
+    qs = process_overview_data(filters, indicator_value_order=indicator_value_order)
     return [
         IndicatorLatestStatsType(
             iso3=item['iso3'],
             indicator_value=item['indicator_value'],
             format=item['format'],
             country_name=item['country_name'],
-        ) for item in final_qs
+        ) for item in qs[:5]
     ]
