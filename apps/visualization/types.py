@@ -627,6 +627,7 @@ class OverviewMapType:
     indicator_value: float
     iso3: str
     format: str
+    emergency: str
 
     @strawberry.field
     def country_id(self) -> ID:
@@ -638,6 +639,7 @@ class OverviewTableDataType:
     month: str
     indicator_value: float
     format: str
+    emergency: str
 
 
 @strawberry.type

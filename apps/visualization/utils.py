@@ -242,6 +242,7 @@ def process_overview_data(filters, indicator_value_order='indicator_value'):
         'indicator_value',
         'format',
         'country_name',
+        'emergency',
     )
     qs_with = With(qs, name="qs")
     return (
@@ -270,6 +271,7 @@ def get_overview_map_data(
             iso3=item['iso3'],
             indicator_value=item['indicator_value'],
             format=item['format'],
+            emergency=item['emergency'],
         ) for item in qs
     ]
 
@@ -289,6 +291,7 @@ def get_overview_table_data(
             month=data['indicator_month'],
             indicator_value=data['indicator_value'],
             format=data['format'],
+            emergency=data['emergency'],
         )
 
     filters = clean_filters({
@@ -314,6 +317,7 @@ def get_overview_table_data(
         'iso3',
         '-indicator_month',
         'subvariable',
+        '-indicator_value',
     ).distinct(
         'iso3',
         'indicator_month',
@@ -322,6 +326,7 @@ def get_overview_table_data(
         'indicator_month',
         'indicator_value',
         'format',
+        'emergency'
     )
     country_most_recent_qs_iso3_map = {}
     for item in country_most_recent_qs:
