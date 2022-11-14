@@ -120,7 +120,7 @@ class GlobalLevelFilter():
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
             greatest_subvariable_last_month = queryset.order_by(
-                '-indicator_month', '-indicator_value_global'
+                '-indicator_month', 'subvariable', '-indicator_value_global'
             ).first()
             if greatest_subvariable_last_month:
                 return queryset.filter(
@@ -226,53 +226,21 @@ class RegionLevelFilter():
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
             greatest_subvariable_last_month = queryset.order_by(
-                '-indicator_month', '-indicator_value_regional'
+                '-indicator_month', 'subvariable', '-indicator_value_regional'
             ).first()
             return queryset.filter(
                 subvariable=greatest_subvariable_last_month.subvariable
             )
         return queryset
 
-    def filter_is_regional_chart(self, queryset):
-        if self.is_regional_chart:
-            regions_with_highest_indicator_month = queryset.values('region').annotate(
-                latest_indicator_month=Max('indicator_month')
-            ).order_by('region')
-            if regions_with_highest_indicator_month:
-                regions_with_highest_indicator_month_filter = reduce(
-                    lambda acc, item: acc | item,
-                    [
-                        Q(
-                            region=value['region'],
-                            indicator_month=value['latest_indicator_month'],
-                        ) for value in regions_with_highest_indicator_month
-                    ]
-                )
-                regions_with_highest_indicator_month_highest_indicator_value_regional = queryset.filter(
-                    regions_with_highest_indicator_month_filter
-                ).values('region').annotate(
-                    highest_indicator_month=Max('indicator_month'),
-                    first_subvariable=Subquery(
-                        RegionLevel.objects.filter(
-                            indicator_id=OuterRef('indicator_id'),
-                            region=OuterRef('region'),
-                        ).order_by('subvariable').values('subvariable')[:1],
-                        output_field=CharField()
-                    )
-                )
-                filters = reduce(
-                    lambda acc,
-                    item: acc | item,
-                    [
-                        Q(
-                            region=value['region'],
-                            indicator_month=value['highest_indicator_month'],
-                            subvariable=value['first_subvariable'],
-                        ) for value in regions_with_highest_indicator_month_highest_indicator_value_regional
-                    ]
-                )
-                return queryset.filter(filters)
-
+    # NOTE :Create separate query in future.
+    def filter_is_regional_chart(self, queryset):  # NOTE : Do not use order_by filter if this filter is used.
+        subvariable = queryset.order_by('subvariable').first().subvariable
+        if subvariable:
+            data = queryset.filter(subvariable=subvariable).order_by(
+                'region', '-indicator_month', 'subvariable', 'indicator_value_regional'
+            ).distinct('region')
+            return data
         return queryset
 
     def filter_is_combined_indicators(self, queryset):
