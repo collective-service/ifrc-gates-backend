@@ -117,8 +117,9 @@ def get_country_indicators(iso3, outbreak, type):
         CountryIndicatorType(
             indicator_id=indicator['indicator_id'],
             indicator_description=indicator['indicator_description'],
+            type=indicator['type'],
         ) for indicator in indicators.distinct().values(
-            'indicator_id', 'indicator_description'
+            'indicator_id', 'indicator_description', 'type',
         ).order_by('indicator_description')
     ]
 
@@ -161,12 +162,13 @@ def get_topics(thematic):
 
 
 @sync_to_async
-def get_overview_indicators(out_break, region):
+def get_overview_indicators(out_break, region, type):
     from .types import OverviewIndicatorType
 
     filters = clean_filters({
         'emergency': out_break,
-        'region': region
+        'region': region,
+        'type': type,
     })
 
     options = list(
@@ -177,13 +179,15 @@ def get_overview_indicators(out_break, region):
         ).values_list(
             'indicator_id',
             'indicator_description',
+            'type',
         ).distinct().order_by('indicator_description')
     )
     return [
         OverviewIndicatorType(
             indicator_id=name,
             indicator_description=description,
-        ) for name, description in options
+            type=type,
+        ) for name, description, type in options
     ]
 
 
