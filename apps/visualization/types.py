@@ -546,12 +546,14 @@ class DisaggregationType:
 class CountryIndicatorType:
     indicator_id: Optional[str]
     indicator_description: Optional[str]
+    type: Optional[str]
 
 
 @strawberry.type
 class OverviewIndicatorType:
     indicator_id: Optional[str]
     indicator_description: Optional[str]
+    type: Optional[str]
 
 
 @strawberry.type
@@ -568,8 +570,8 @@ class FilterOptionsType:
     async def country_indicators(
         self,
         iso3: str,
-        type: Optional[str] = None,
         outbreak: Optional[str] = None,
+        type: Optional[str] = None,
     ) -> List[CountryIndicatorType]:
         return await get_country_indicators(iso3, outbreak, type)
 
@@ -586,9 +588,10 @@ class FilterOptionsType:
         self,
         out_break: Optional[str] = None,
         region: Optional[str] = None,
+        type: Optional[str] = None,
     ) -> List[OverviewIndicatorType]:
 
-        return await get_overview_indicators(out_break, region)
+        return await get_overview_indicators(out_break, region, type)
 
     @strawberry.field
     async def types(self) -> List[str]:
