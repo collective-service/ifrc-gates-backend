@@ -26,9 +26,11 @@ from .models import (
     DataCountryLevelPublic,
     DataGranularPublic,
     DataCountryLevelPublicContext,
+    Outbreaks,
 )
 from apps.migrate_csv.models import CountryFilterOptions
 from utils import get_async_list_from_queryset, clean_filters
+from django.contrib.postgres.aggregates import ArrayAgg
 
 COUNTRY_LEVEL = 'country_level'
 REGIONAL_LEVEL = 'region_level'
@@ -111,20 +113,28 @@ def get_outbreaks(iso3):
 @sync_to_async
 def get_country_indicators(iso3, outbreak, type):
     from .types import CountryIndicatorType
-    filters = clean_filters({'iso3': iso3, 'emergency': outbreak, 'type': type})
-    indicators = CountryFilterOptions.objects.filter(
-        **filters
+    active_outbreaks = list(
+        Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
     )
-    if outbreak:
-        indicators = indicators.filter(emergency=outbreak)
+    qs = CountryFilterOptions.objects.filter(
+        emergency__in=active_outbreaks
+    )
+    filters = clean_filters({'iso3': iso3, 'emergency': outbreak, 'type': type})
+    qs = qs.filter(
+        **filters
+    ).values(
+        'indicator_id', 'indicator_description', 'type'
+    ).annotate(
+        emergencies=ArrayAgg('emergency', distinct=True)
+    )
+
     return [
         CountryIndicatorType(
             indicator_id=indicator['indicator_id'],
             indicator_description=indicator['indicator_description'],
             type=indicator['type'],
-        ) for indicator in indicators.distinct().values(
-            'indicator_id', 'indicator_description', 'type',
-        ).order_by('indicator_description')
+            emergencies=indicator['emergencies']
+        ) for indicator in qs
     ]
 
 
