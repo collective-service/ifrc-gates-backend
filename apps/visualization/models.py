@@ -621,3 +621,107 @@ class Sources(models.Model):
     class Meta:
         managed = False
         db_table = 't_sources'
+
+
+class CountryFilterOptions(models.Model):
+    iso3 = models.CharField(primary_key=True, max_length=3)
+    emergency = models.CharField(max_length=50)
+    indicator_id = models.CharField(max_length=6, default='')
+    indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    subvariable = models.CharField(max_length=255)
+
+    class Meta:
+        managed = False
+        db_table = 't_country_indicator_options'
+
+
+class DataCountryLevelPublic(models.Model):
+    emergency = models.CharField(primary_key=True, max_length=50)
+    country_name = models.CharField(max_length=50, blank=True, null=True)
+    iso3 = models.CharField(max_length=3)
+    admin_level_1 = models.CharField(max_length=100)
+    region = models.CharField(max_length=15, blank=True, null=True)
+    income_group = models.CharField(max_length=50, blank=True, null=True)
+    fragility_index_fund_for_peace = models.CharField(max_length=50, blank=True, null=True)
+    population_size = models.BigIntegerField(blank=True, null=True)
+    indicator_id = models.CharField(max_length=6)
+    subvariable = models.CharField(max_length=50)
+    indicator_name = models.CharField(max_length=200, blank=True, null=True)
+    thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
+    topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
+    indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    type = models.CharField(max_length=50, blank=True, null=True)
+    indicator_value = models.FloatField(blank=True, null=True)
+    error_margin = models.FloatField(blank=True, null=True)
+    indicator_month = models.DateField()
+    category = models.CharField(max_length=50)
+
+    class Meta:
+        managed = False
+        db_table = 't_data_country_level_public'
+        unique_together = (
+            (
+                'emergency', 'iso3', 'indicator_month', 'indicator_id', 'subvariable',
+                'category', 'admin_level_1'
+            ),
+        )
+
+
+class DataGranularPublic(models.Model):
+    emergency = models.CharField(primary_key=True, max_length=50)
+    country_name = models.CharField(max_length=50, blank=True, null=True)
+    region = models.CharField(max_length=15, blank=True, null=True)
+    iso3 = models.CharField(max_length=3)
+    admin_level_1 = models.CharField(max_length=100)
+    indicator_id = models.CharField(max_length=6)
+    subvariable = models.CharField(max_length=50)
+    indicator_name = models.CharField(max_length=200, blank=True, null=True)
+    thematic = models.CharField(max_length=50, blank=True, null=True)
+    thematic_description = models.CharField(max_length=250, blank=True, null=True)
+    topic = models.CharField(max_length=50, blank=True, null=True)
+    topic_description = models.CharField(max_length=250, blank=True, null=True)
+    indicator_description = models.CharField(max_length=250, blank=True, null=True)
+    type = models.CharField(max_length=50, blank=True, null=True)
+    question = models.CharField(max_length=1000, blank=True, null=True)
+    indicator_value = models.FloatField(blank=True, null=True)
+    nominator = models.BigIntegerField(blank=True, null=True)
+    error_margin = models.FloatField(blank=True, null=True)
+    denominator = models.BigIntegerField(blank=True, null=True)
+    indicator_month = models.DateField()
+    category = models.CharField(max_length=50)
+    gender = models.CharField(max_length=6, blank=True, null=True)
+    age_group = models.CharField(max_length=10, blank=True, null=True)
+    age_info = models.CharField(max_length=20, blank=True, null=True)
+    target_group = models.CharField(max_length=40, blank=True, null=True)
+    indicator_matching = models.CharField(max_length=8, blank=True, null=True)
+    representativeness = models.CharField(max_length=15, blank=True, null=True)
+    limitation = models.CharField(max_length=1000, blank=True, null=True)
+    indicator_comment = models.CharField(max_length=1000, blank=True, null=True)
+    source_id = models.CharField(max_length=5)
+    organisation = models.CharField(max_length=100, blank=True, null=True)
+    title = models.CharField(max_length=250, blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+    authors = models.CharField(max_length=1000, blank=True, null=True)
+    methodology = models.CharField(max_length=250, blank=True, null=True)
+    sample_size = models.CharField(max_length=250, blank=True, null=True)
+    target_pop = models.CharField(max_length=500, blank=True, null=True)
+    scale = models.CharField(max_length=25, blank=True, null=True)
+    quality_check = models.CharField(max_length=50, blank=True, null=True)
+    access_type = models.CharField(max_length=25, blank=True, null=True)
+    source_comment = models.CharField(max_length=5000, blank=True, null=True)
+    publication_channel = models.CharField(max_length=100, blank=True, null=True)
+    link = models.CharField(max_length=1000, blank=True, null=True)
+    source_date = models.DateField(blank=True, null=True)
+    sample_type = models.CharField(max_length=25, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 't_data_granular_public'
+        unique_together = (
+            (
+                'emergency', 'iso3', 'indicator_month', 'indicator_id',
+                'subvariable', 'category', 'admin_level_1', 'source_id'
+            ),
+        )

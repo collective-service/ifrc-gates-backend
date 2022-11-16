@@ -45,7 +45,9 @@ urlpatterns = [
     # rest api urls
     path('api/v1/', schema_view.with_ui('swagger', cache_timeout=0), name="swagger-schema"),
     path('api/v1/context_indicators/', views.ContextIndicatorsViews.as_view()),
-
+    path('api/v1/export-raw-data/', views.ExportRawDataView.as_view()),
+    path('api/v1/export-summary/', views.ExportSummaryView.as_view()),
+    path('api/v1/export-country-contextual-data/', views.ExportCountryDataCountryLevelPublicContextView.as_view()),
     path('clear-cache/', cache_clear, name='clear_cache')
 ]
 

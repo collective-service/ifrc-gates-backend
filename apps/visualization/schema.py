@@ -26,6 +26,7 @@ from .types import (
     OverviewTableType,
     CombinedIndicatorType,
     IndicatorLatestStatsType,
+    ExportMetaType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -57,6 +58,7 @@ from .utils import (
     get_region_combined_indicators,
     get_global_combined_indicators,
     get_indicator_stats_latest,
+    get_export_meta_data,
 )
 from utils import (
     get_redis_cache_data,
@@ -250,3 +252,11 @@ class Query:
         )
         set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
         return data
+
+    @strawberry.field
+    async def export_meta(
+        self,
+        iso3: Optional[str] = None,
+        indicator_id: Optional[str] = None,
+    ) -> ExportMetaType:
+        return await get_export_meta_data(iso3, indicator_id)
