@@ -662,6 +662,7 @@ class OverviewTableType:
 
 @strawberry.type
 class IndicatorType:
+    emergency: str
     indicator_name: str
     indicator_id: Optional[str]
     indicator_description: Optional['str']

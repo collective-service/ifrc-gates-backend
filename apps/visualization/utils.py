@@ -522,10 +522,84 @@ async def get_region_combined_indicators(filters):
 
 
 async def get_global_combined_indicators(filters):
+    from .types import (
+        CombinedIndicatorType,
+        CombinedIndicatorTopicType,
+        IndicatorType
+    )
     qs = GlobalLevel.objects.filter(category='Global')
     if filters:
         qs = filter_apply(filters, qs)
-    return await process_combined_indicators(qs, type=GLOBAL_LEVEL)
+    qs = await get_async_list_from_queryset(
+         qs.order_by(
+            'emergency',
+            'subvariable',
+            '-indicator_month',
+            '-indicator_value_global',
+            'topic',
+        ).distinct(
+            'emergency',
+            'subvariable',
+        ).values(
+            'indicator_month',
+            'indicator_name',
+            'subvariable',
+            'indicator_id',
+            'indicator_description',
+            'indicator_value_global',
+            'format',
+            'emergency',
+            'topic',
+            'topic_description',
+            'thematic',
+            'thematic_description',
+            'region',
+        )
+    )
+
+    thematic_map = defaultdict(list)
+    thematic_topic_map = defaultdict(list)
+    topic_emergency_map = defaultdict(list)
+
+    for item in qs:
+        thematic_map[item['thematic']] = item['thematic_description']
+        thematic_topic_map[item['thematic']].append(
+            {
+                'topic': item['topic'],
+                'topic_description': item['topic_description'],
+            }
+        )
+        topic_emergency_map[item['topic']].append(
+            {
+                'emergency': item['emergency'],
+                'indicator_name': item['indicator_name'],
+                'subvariable': item['subvariable'],
+                'indicator_id': item['indicator_id'],
+                'indicator_description' : item['indicator_description'],
+                'indicator_value': item['indicator_value_global'],
+                'format': item['format'],
+                'region': item['region'],
+                'indicator_value_regional': None,
+            }
+        )
+
+    return [
+        CombinedIndicatorType(
+            thematic=thematic,
+            thematic_description=thematic_description,
+            topics=[
+                CombinedIndicatorTopicType(
+                    topic_name=topic['topic'],
+                    topic_description=topic['topic_description'],
+                    indicators=[
+                        IndicatorType(
+                           **indicator_info 
+                        ) for indicator_info in topic_emergency_map[topic['topic']]
+                    ]
+                ) for topic in thematic_topic_map[thematic]
+            ],
+        ) for thematic, thematic_description in thematic_map.items()
+    ]
 
 
 @sync_to_async

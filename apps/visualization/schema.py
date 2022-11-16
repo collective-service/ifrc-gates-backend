@@ -223,6 +223,7 @@ class Query:
     async def global_combined_indicators(
         filters: Optional[ContextIndicatorGlobalLevelFilter] = None,
     ) -> List[CombinedIndicatorType]:
+        return await get_global_combined_indicators(filters)
         prefix_key = 'global_combined_indicators'
         filter_values = get_values_list_from_dataclass(filters)
         cached_data = get_redis_cache_data(prefix_key, *filter_values)
