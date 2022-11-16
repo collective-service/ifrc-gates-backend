@@ -280,6 +280,7 @@ def get_overview_map_data(
             indicator_value=item['indicator_value'],
             format=item['format'],
             emergency=item['emergency'],
+            indicator_month=item['indicator_month']
         ) for item in qs
     ]
 
