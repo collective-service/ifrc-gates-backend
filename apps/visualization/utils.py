@@ -25,6 +25,7 @@ from .models import (
     GlobalLevel,
     DataCountryLevelPublic,
     DataGranularPublic,
+    DataCountryLevelPublicContext,
 )
 from apps.migrate_csv.models import CountryFilterOptions
 from utils import get_async_list_from_queryset, clean_filters
@@ -557,21 +558,16 @@ def get_indicator_stats_latest(
 
 
 @sync_to_async
-def get_export_meta_data(iso3, indicator_id, context_indicator_id):
+def get_export_meta_data(iso3, indicator_id):
     from .types import ExportMetaType
     filters_map = {
         'iso3': iso3,
         'indicator_id': indicator_id,
     }
-    contextual_filters_map = {
-        'iso3': iso3,
-        'context_indicator_id': context_indicator_id,
-    }
     filters = clean_filters(filters_map)
-    contextual_filters = clean_filters(contextual_filters_map)
     return ExportMetaType(
         total_raw_data_count=DataGranularPublic.objects.filter(**filters).count(),
         total_summary_count=DataCountryLevelPublic.objects.filter(**filters).count(),
-        total_country_contextual_data_count=ContextualData.objects.filter(**contextual_filters).count(),
+        total_country_contextual_data_count=DataCountryLevelPublicContext.objects.filter(**filters).count(),
         max_page_limit=settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT,
     )

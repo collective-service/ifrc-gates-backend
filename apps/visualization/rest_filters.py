@@ -1,9 +1,6 @@
 from django_filters import rest_framework as filters
 from .models import (
     DataCountryLevelMostRecent,
-    DataCountryLevelPublic,
-    DataGranularPublic,
-    ContextualData,
 )
 
 
@@ -28,31 +25,4 @@ class DataCountryLevelMostRecentFilter(filters.FilterSet):
 
 class BaseExportFilter(filters.FilterSet):
     iso3 = filters.CharFilter(field_name='iso3')
-
-    def filter_include_header(self, queryset, name, value):
-        # Used for browseable api documentation
-        return queryset
-
-
-class DataCountryLevelPublicExportFilter(BaseExportFilter):
     indicator_id = filters.CharFilter(field_name='indicator_id')
-
-    class Meta:
-        model = DataCountryLevelPublic
-        fields = ()
-
-
-class DataGranularPublicExportFilter(BaseExportFilter):
-    indicator_id = filters.CharFilter(field_name='indicator_id')
-
-    class Meta:
-        model = DataGranularPublic
-        fields = ()
-
-
-class ContextualDataExportFilter(BaseExportFilter):
-    context_indicator_id = filters.CharFilter(field_name='context_indicator_id')
-
-    class Meta:
-        model = ContextualData
-        fields = ()

@@ -9,14 +9,12 @@ from .models import (
     DataCountryLevelMostRecent,
     DataCountryLevelPublic,
     DataGranularPublic,
-    ContextualData,
+    DataCountryLevelPublicContext,
 )
 from .serializers import DataCountryLevelMostRecentSerializer
 from .rest_filters import (
     DataCountryLevelMostRecentFilter,
-    DataCountryLevelPublicExportFilter,
-    DataGranularPublicExportFilter,
-    ContextualDataExportFilter,
+    BaseExportFilter,
 )
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
@@ -61,6 +59,7 @@ class ContextIndicatorsViews(ListAPIView):
 
 
 class ExportBaseView(ListAPIView):
+    filterset_class = BaseExportFilter
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
@@ -110,15 +109,12 @@ class ExportBaseView(ListAPIView):
 
 
 class ExportRawDataView(ExportBaseView):
-    filterset_class = DataGranularPublicExportFilter
     queryset = DataGranularPublic.objects.all()
 
 
 class ExportSummaryView(ExportBaseView):
-    filterset_class = DataCountryLevelPublicExportFilter
     queryset = DataCountryLevelPublic.objects.all()
 
 
-class ExportCountryContextualDataView(ExportBaseView):
-    filterset_class = ContextualDataExportFilter
-    queryset = ContextualData.objects.all()
+class ExportCountryDataCountryLevelPublicContextView(ExportBaseView):
+    queryset = DataCountryLevelPublicContext.objects.all()
