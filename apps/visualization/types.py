@@ -631,6 +631,7 @@ class OverviewMapType:
     iso3: str
     format: str
     emergency: str
+    indicator_month: str
 
     @strawberry.field
     def country_id(self) -> ID:
