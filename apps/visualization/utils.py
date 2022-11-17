@@ -376,7 +376,17 @@ async def process_combined_indicators(qs, type):
         '''
         if type == COUNTRY_LEVEL:
             return {
-                'indicator_value': Max('indicator_value'),
+                'indicator_value': Subquery(
+                    DataCountryLevel.objects.filter(
+                        iso3=OuterRef('iso3'),
+                        indicator_id=OuterRef('indicator_id'),
+                        subvariable=OuterRef('subvariable'),
+                        region=OuterRef('region'),
+                        emergency=OuterRef('emergency'),
+                        category='Global',
+                    ).order_by('-indicator_month', 'subvariable').values('indicator_value')[:1],
+                    output_field=FloatField()
+                ),
                 'region_name': F('region'),
                 'indicator_value_regional': Subquery(
                     RegionLevel.objects.filter(
@@ -390,11 +400,29 @@ async def process_combined_indicators(qs, type):
             }
         elif type == REGIONAL_LEVEL:
             return {
-                'indicator_value': Max('indicator_value_regional'),
+                'indicator_value': Subquery(
+                    RegionLevel.objects.filter(
+                        indicator_id=OuterRef('indicator_id'),
+                        subvariable=OuterRef('subvariable'),
+                        region=OuterRef('region'),
+                        emergency=OuterRef('emergency'),
+                        category='Global',
+                    ).order_by('-indicator_month', 'subvariable').values('indicator_value_regional')[:1],
+                    output_field=FloatField()
+                )
             }
         elif type == GLOBAL_LEVEL:
             return {
-                'indicator_value': Max('indicator_value_global'),
+                'indicator_value': Subquery(
+                    GlobalLevel.objects.filter(
+                        indicator_id=OuterRef('indicator_id'),
+                        subvariable=OuterRef('subvariable'),
+                        region=OuterRef('region'),
+                        emergency=OuterRef('emergency'),
+                        category='Global',
+                    ).order_by('-indicator_month', 'subvariable').values('indicator_value_global')[:1],
+                    output_field=FloatField()
+                )
             }
         return {}
 
@@ -421,6 +449,8 @@ async def process_combined_indicators(qs, type):
     for item in topic_indicator_name_qs:
         topic_indicator_name_map[item['topic']].append(item['indicator_name'])
 
+    indicator_value_annotate_statement = get_indicator_value_annotate_statements(type)
+
     indicators_with_max_month = await get_async_list_from_queryset(
         qs.values(
             'indicator_name', 'subvariable'
@@ -446,15 +476,35 @@ async def process_combined_indicators(qs, type):
     if indicator_filters:
         qs = qs.filter(indicator_filters)
 
-    indicator_value_annotate_statement = get_indicator_value_annotate_statements(type)
-    indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
-        qs.values(
-            'indicator_name', 'subvariable', 'indicator_id', 'indicator_description', 'format',
-        ).annotate(
-            max_indicator_month=F('indicator_month'),
-            **indicator_value_annotate_statement,
-        ).order_by('-max_indicator_month', 'subvariable')
-    )
+    if type == COUNTRY_LEVEL:
+        indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
+            qs.values(
+                'iso3',
+                'indicator_name',
+                'subvariable',
+                'indicator_id',
+                'indicator_description',
+                'format',
+                'emergency',
+            ).order_by('subvariable').annotate(
+                max_indicator_month=Max('indicator_month'),
+                **indicator_value_annotate_statement,
+            )
+        )
+    else:
+        indicator_name_max_indicator_value_qs = await get_async_list_from_queryset(
+            qs.values(
+                'indicator_name',
+                'subvariable',
+                'indicator_id',
+                'indicator_description',
+                'format',
+                'emergency',
+            ).order_by('subvariable').annotate(
+                max_indicator_month=Max('indicator_month'),
+                **indicator_value_annotate_statement,
+            )
+        )
     indicator_name_max_indicator_value_map = defaultdict(list)
     for item in indicator_name_max_indicator_value_qs:
         indicator_name_max_indicator_value_map[item['indicator_name']].append({
@@ -466,6 +516,7 @@ async def process_combined_indicators(qs, type):
             'subvariable': item['subvariable'],
             'indicator_value_regional': item.get('indicator_value_regional', None),
             'region': item.get('region_name', None),
+            'emergency': item['emergency'],
         })
 
     # Format data for dashboard
@@ -481,6 +532,7 @@ async def process_combined_indicators(qs, type):
                         'topic_description': topic['topic_description'],
                         'indicators': [
                             {
+                                'emergency': indicator_data['emergency'],
                                 'indicator_name': indicator_data['indicator_name'],
                                 'indicator_value': indicator_data['indicator_value'],
                                 'subvariable': indicator_data['subvariable'],
