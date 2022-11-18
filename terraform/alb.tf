@@ -14,12 +14,12 @@ resource "aws_alb_target_group" "tg" {
   health_check {
     port                = 7020
     healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 15
+    unhealthy_threshold = 3
+    timeout             = 30
     protocol            = "HTTP"
     matcher             = "200,301,302"
     path                = var.health_check_path
-    interval            = 30
+    interval            = 60
   }
 }
 
