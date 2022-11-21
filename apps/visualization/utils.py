@@ -162,13 +162,14 @@ def get_topics(thematic):
 
 
 @sync_to_async
-def get_overview_indicators(out_break, region, type):
+def get_overview_indicators(out_break, region, type, indicator_id):
     from .types import OverviewIndicatorType
 
     filters = clean_filters({
         'emergency': out_break,
         'region': region,
         'type': type,
+        'indicator_id': indicator_id,
     })
 
     options = list(
@@ -180,6 +181,7 @@ def get_overview_indicators(out_break, region, type):
             'indicator_id',
             'indicator_description',
             'type',
+            'subvariable',
         ).distinct().order_by('indicator_description')
     )
     return [
@@ -187,7 +189,8 @@ def get_overview_indicators(out_break, region, type):
             indicator_id=name,
             indicator_description=description,
             type=type,
-        ) for name, description, type in options
+            subvariable=subvariable,
+        ) for name, description, type, subvariable in options
     ]
 
 
@@ -228,10 +231,11 @@ def process_overview_data(filters, indicator_value_order='indicator_value'):
         category='Global',
     )
     if 'indicator_id' in filters:
-        qs = qs.filter(
-            # NOTE: subvariable should not be empty, if empty contact cyrille
-            subvariable=qs.order_by('subvariable').values('subvariable').distinct()[:1],
-        )
+        if 'subvariable' not in filters:
+            qs = qs.filter(
+                # NOTE: subvariable should not be empty, if empty contact cyrille
+                subvariable=qs.order_by('subvariable').values('subvariable').distinct()[:1],
+            )
     qs = qs.order_by(
         'iso3',
         '-indicator_month',
@@ -260,6 +264,7 @@ def get_overview_map_data(
     emergency,
     region,
     indicator_id,
+    subvariable,
 ):
     from .types import OverviewMapType
 
@@ -267,6 +272,7 @@ def get_overview_map_data(
         'region': region,
         'indicator_id': indicator_id,
         'emergency': emergency,
+        'subvariable': subvariable,
     })
     indicator_value_order = '-indicator_value'
     qs = process_overview_data(filters, indicator_value_order=indicator_value_order)
@@ -276,6 +282,7 @@ def get_overview_map_data(
             indicator_value=item['indicator_value'],
             format=item['format'],
             emergency=item['emergency'],
+            subvariable=item['subvariable'],
         ) for item in qs
     ]
 
@@ -285,6 +292,7 @@ def get_overview_table_data(
     emergency,
     region,
     indicator_id,
+    subvariable,
 ):
     from .types import OverviewTableType, OverviewTableDataType
 
@@ -296,6 +304,7 @@ def get_overview_table_data(
             indicator_value=data['indicator_value'],
             format=data['format'],
             emergency=data['emergency'],
+            subvariable=data['subvariable'],
         )
 
     filters = clean_filters({
@@ -305,6 +314,7 @@ def get_overview_table_data(
         'indicator_month__lte': TruncMonth(datetime.today()),
         'indicator_month__gte': TruncMonth(datetime.today() - timedelta(days=365)),
         'category': 'Global',
+        'subvariable': subvariable,
     })
 
     qs = DataCountryLevel.objects.filter(
@@ -312,7 +322,7 @@ def get_overview_table_data(
         iso3__in=countries_qs,
     )
 
-    if 'indicator_id' in filters:
+    if 'subvariable' not in filters:
         qs = qs.filter(
             # NOTE: subvariable should not be empty, if empty contact to cyrille
             subvariable=qs.order_by('subvariable').values('subvariable').distinct()[:1],
@@ -330,7 +340,8 @@ def get_overview_table_data(
         'indicator_month',
         'indicator_value',
         'format',
-        'emergency'
+        'emergency',
+        'subvariable',
     )
     country_most_recent_qs_iso3_map = {}
     for item in country_most_recent_qs:
@@ -528,6 +539,7 @@ def get_indicator_stats_latest(
     emergency,
     region,
     indicator_id,
+    subvariable,
     is_top=False,
 ):
     from .types import IndicatorLatestStatsType
@@ -536,7 +548,8 @@ def get_indicator_stats_latest(
         'region': region,
         'emergency': emergency,
         'indicator_id': indicator_id,
-        'indicator_value__gt': 0
+        'indicator_value__gt': 0,
+        'subvariable': subvariable,
     })
 
     indicator_value_order = 'indicator_value'
@@ -549,5 +562,6 @@ def get_indicator_stats_latest(
             indicator_value=item['indicator_value'],
             format=item['format'],
             country_name=item['country_name'],
+            subvariable=item['subvariable'],
         ) for item in qs[:5]
     ]
