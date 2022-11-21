@@ -554,6 +554,7 @@ class OverviewIndicatorType:
     indicator_id: Optional[str]
     indicator_description: Optional[str]
     type: Optional[str]
+    subvariable: Optional[str]
 
 
 @strawberry.type
@@ -589,9 +590,10 @@ class FilterOptionsType:
         out_break: Optional[str] = None,
         region: Optional[str] = None,
         type: Optional[str] = None,
+        indicator_id: Optional[str] = None,
     ) -> List[OverviewIndicatorType]:
 
-        return await get_overview_indicators(out_break, region, type)
+        return await get_overview_indicators(out_break, region, type, indicator_id)
 
     @strawberry.field
     async def types(self) -> List[str]:
@@ -632,6 +634,7 @@ class OverviewMapType:
     format: str
     emergency: str
     indicator_month: str
+    subvariable: str
 
     @strawberry.field
     def country_id(self) -> ID:
@@ -644,6 +647,7 @@ class OverviewTableDataType:
     indicator_value: float
     format: str
     emergency: str
+    subvariable: str
 
 
 @strawberry.type
@@ -692,6 +696,7 @@ class IndicatorLatestStatsType:
     iso3: str
     format: str
     country_name: str
+    subvariable: str
 
     @strawberry.field
     def country_id(self) -> ID:

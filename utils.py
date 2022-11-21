@@ -5,6 +5,9 @@ from django.urls import reverse
 from django.contrib import messages
 from django.utils.safestring import mark_safe
 from strawberry import UNSET
+from strawberry_django.filters import apply as filter_apply
+from strawberry_django.pagination import apply as pagination_apply
+from strawberry_django.ordering import apply as ordering_apply
 from dataclasses import asdict
 
 
@@ -73,3 +76,15 @@ def str_to_bool(value):
     if isinstance(value, str) and value.lower() in ("false", "0"):
         return False
     return bool(value)
+
+
+async def get_filtered_ordered_paginated_qs(
+    qs, filters, order, pagination
+):
+    if filters:
+        qs = filter_apply(filters, qs)
+    if order:
+        qs = ordering_apply(order, qs)
+    if pagination:
+        qs = pagination_apply(pagination, qs)
+    return await get_async_list_from_queryset(qs)

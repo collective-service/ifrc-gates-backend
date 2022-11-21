@@ -225,6 +225,9 @@ class RegionLevelFilter():
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
+            if self.subvariable:
+                return queryset.filter(subvariable=self.subvariable).order_by('-indicator_month')
+
             greatest_subvariable_last_month = queryset.order_by(
                 '-indicator_month', 'subvariable', '-indicator_value_regional'
             ).first()
@@ -235,8 +238,13 @@ class RegionLevelFilter():
 
     # NOTE :Create separate query in future.
     def filter_is_regional_chart(self, queryset):  # NOTE : Do not use order_by filter if this filter is used.
-        subvariable = queryset.order_by('subvariable').first().subvariable
-        if subvariable:
+        if self.subvariable:
+            return queryset.filter(subvariable=self.subvariable).order_by(
+                'region', '-indicator_month', 'subvariable', 'indicator_value_regional'
+            ).distinct('region')
+        first_subvariable = queryset.order_by('subvariable').first()
+        if first_subvariable:
+            subvariable = first_subvariable.subvariable
             data = queryset.filter(subvariable=subvariable).order_by(
                 'region', '-indicator_month', 'subvariable', 'indicator_value_regional'
             ).distinct('region')
