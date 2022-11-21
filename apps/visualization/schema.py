@@ -1,9 +1,12 @@
 import strawberry
+from django.db.models import Q
 from typing import List
 from typing import Optional
+from strawberry_django.pagination import OffsetPaginationInput
 from .models import (
     CountryProfile,
     Outbreaks,
+    DataGranular,
 )
 from .types import (
     CountryProfileType,
@@ -64,6 +67,7 @@ from utils import (
     get_redis_cache_data,
     set_redis_cache_data,
     get_values_list_from_dataclass,
+    get_filtered_ordered_paginated_qs,
 )
 
 
@@ -105,11 +109,6 @@ class Query:
 
     # NOTE : Needed for future
     # data_country_level_quantiles: List[DataCountryLevelQuantilesType] = strawberry.django.field()
-    data_granular: List[DataGranularType] = strawberry.django.field(
-        filters=DataGranularFilter,
-        order=DataGranularOrder,
-        pagination=True,
-    )
     epi_data_global: List[EpiDataGlobalType] = strawberry.django.field(
         filters=EpiDataGlobalFilter,
         order=EpiDataGlobalOrder,
@@ -145,6 +144,22 @@ class Query:
         return DisaggregationType
 
     @strawberry.field
+    async def data_granular(
+        self,
+        filters: Optional[DataGranularFilter] = None,
+        order: Optional[DataGranularOrder] = None,
+        pagination: Optional[OffsetPaginationInput] = None,
+    ) -> List[DataGranularType]:
+        return await get_filtered_ordered_paginated_qs(
+            DataGranular.objects.filter(
+                ~Q(title="Interpolation", organisation="Interpolation")
+            ),
+            filters,
+            order,
+            pagination,
+        )
+
+    @strawberry.field
     async def contextualDataWithMultipleEmergency(
         self,
         iso3: Optional[str] = None,
@@ -161,17 +176,19 @@ class Query:
         emergency: Optional[str] = None,
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
+        subvariable: Optional[str] = None,
     ) -> List[OverviewMapType]:
         prefix_key = 'overview-map'
-        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id, subvariable)
         if cached_data:
             return cached_data
         data = await get_overview_map_data(
             emergency,
             region,
             indicator_id,
+            subvariable,
         )
-        set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id, subvariable, value=data)
         return data
 
     @strawberry.field
@@ -180,17 +197,19 @@ class Query:
         emergency: Optional[str] = None,
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
+        subvariable: Optional[str] = None,
     ) -> List[OverviewTableType]:
         prefix_key = 'overview-table'
-        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id)
+        cached_data = get_redis_cache_data(prefix_key, emergency, region, indicator_id, subvariable)
         if cached_data:
             return cached_data
         data = await get_overview_table_data(
             emergency,
             region,
             indicator_id,
+            subvariable,
         )
-        set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id, subvariable, value=data)
         return data
 
     @strawberry.field
@@ -239,18 +258,20 @@ class Query:
         emergency: Optional[str] = None,
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
+        subvariable: Optional[str] = None,
     ) -> List[IndicatorLatestStatsType]:
         prefix_key = 'stats-latest'
-        cached_data = get_redis_cache_data(prefix_key, str(is_top), emergency, region, indicator_id)
+        cached_data = get_redis_cache_data(prefix_key, str(is_top), emergency, region, indicator_id, subvariable)
         if cached_data:
             return cached_data
         data = await get_indicator_stats_latest(
             emergency,
             region,
             indicator_id,
-            is_top
+            subvariable,
+            is_top,
         )
-        set_redis_cache_data(prefix_key, emergency, region, indicator_id, value=data)
+        set_redis_cache_data(prefix_key, emergency, region, indicator_id, subvariable, value=data)
         return data
 
     @strawberry.field
