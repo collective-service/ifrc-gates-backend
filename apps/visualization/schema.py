@@ -90,7 +90,7 @@ class Query:
         order=CountryEmergencyProfileOrder,
         pagination=True,
     )
-    naratives: List[NarrativesType] = strawberry.django.field(
+    narratives: List[NarrativesType] = strawberry.django.field(
         filters=NarrativesFilter
     )
     countries: List[CountryType] = strawberry.django.field()
