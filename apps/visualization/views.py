@@ -4,6 +4,9 @@ from django.http import HttpResponse
 from django.db.models import Max, Q
 from functools import reduce
 from rest_framework.exceptions import ValidationError
+from django.db import connection
+from django_redis import get_redis_connection
+from rest_framework import response
 from utils import str_to_bool
 from .models import (
     DataCountryLevelMostRecent,
@@ -18,6 +21,7 @@ from .rest_filters import (
 )
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
 
 
 class ContextIndicatorsViews(ListAPIView):
@@ -118,3 +122,16 @@ class ExportSummaryView(ExportBaseView):
 
 class ExportCountryDataCountryLevelPublicContextView(ExportBaseView):
     queryset = DataCountryLevelPublicContext.objects.all()
+
+
+class HealthCheckupView(APIView):
+
+    def get(self, request):
+        """
+        Check database connection and redis
+        """
+        is_database_connected = connection.ensure_connection()
+        is_redis_connected = get_redis_connection("default")
+
+        if not is_database_connected and is_redis_connected:
+            return response.Response({'message': 'success'})
