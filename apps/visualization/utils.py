@@ -186,25 +186,32 @@ def get_overview_indicators(out_break, region, type, indicator_id):
         'indicator_id': indicator_id,
     })
 
+    active_outbreaks = list(
+        Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
+    )
     options = list(
         DataCountryLevel.objects.filter(
+            emergency__in=active_outbreaks,
             **filters,
         ).exclude(
             indicator_name=None
-        ).values_list(
+        ).values(
             'indicator_id',
             'indicator_description',
             'type',
             'subvariable',
-        ).distinct().order_by('indicator_description')
+        ).annotate(
+            emergencies=ArrayAgg('emergency', distinct=True)
+        )
     )
     return [
         OverviewIndicatorType(
-            indicator_id=name,
-            indicator_description=description,
-            type=type,
-            subvariable=subvariable,
-        ) for name, description, type, subvariable in options
+            indicator_id=item['indicator_id'],
+            indicator_description=item['indicator_description'],
+            type=item['type'],
+            subvariable=item['subvariable'],
+            emergencies=item['emergencies'],
+        ) for item in options
     ]
 
 
