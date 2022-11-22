@@ -132,6 +132,6 @@ class HealthCheckupView(APIView):
         """
         is_database_connected = connection.ensure_connection()
         is_redis_connected = get_redis_connection("default")
-
+        # NOTE: if database is connected is_database_connected will return None
         if not is_database_connected and is_redis_connected:
-            return response.Response({'message': 'success'})
+            return response.Response({'message': 'OK'})
