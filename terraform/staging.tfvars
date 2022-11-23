@@ -4,6 +4,7 @@ environment = "staging"
 
 # vpc
 az_count = 2
+cidr_block = "172.16.0.0/16"
 
 # app
 app_port = "7020"
@@ -34,6 +35,13 @@ postgres_secret_name = "prod/postgres"
 
 # Django
 django_secret_name = "prod/django"
+
+# Autoscaling
+max_capacity = 3
+min_capacity = 1
+request_target_value = 300
+scale_in_cooldown_secs = 100
+scale_out_cooldown_secs = 300
 
 # Route 53
 domain_name = "ifrc-gates.dev.datafriendlyspace.org"
