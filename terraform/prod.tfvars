@@ -4,7 +4,7 @@ environment = "prod"
 
 # vpc
 az_count = 2
-cidr_block = "172.17.0.0/16"
+cidr_block = "172.16.0.0/16"
 
 # app
 app_port = "7020"
