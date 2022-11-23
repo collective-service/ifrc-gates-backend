@@ -48,7 +48,8 @@ urlpatterns = [
     path('api/v1/export-raw-data/', views.ExportRawDataView.as_view()),
     path('api/v1/export-summary/', views.ExportSummaryView.as_view()),
     path('api/v1/export-country-contextual-data/', views.ExportCountryDataCountryLevelPublicContextView.as_view()),
-    path('clear-cache/', cache_clear, name='clear_cache')
+    path('clear-cache/', cache_clear, name='clear_cache'),
+    path('health-checkup/', views.HealthCheckupView.as_view(), name="health_checkup")
 ]
 
 admin.site.site_header = "RCCE Collective Services Administration"
