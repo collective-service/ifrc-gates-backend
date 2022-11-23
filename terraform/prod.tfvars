@@ -44,4 +44,4 @@ scale_in_cooldown_secs = 100
 scale_out_cooldown_secs = 300
 
 # Route 53
-domain_name = "dashboard.rcce-collective.net"
+domain_name = "ifrc-gates.dev.datafriendlyspace.org"
