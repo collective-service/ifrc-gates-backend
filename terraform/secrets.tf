@@ -50,6 +50,14 @@ data "aws_ssm_parameter" "rcce_cs_environment" {
     name = "rcce_cs_environment"
 }
 
+data "aws_ssm_parameter" "react_app_api_end" {
+    name = "react_app_api_end"
+}
+
+data "aws_ssm_parameter" "react_app_api_https" {
+    name = "react_app_api_https"
+}
+
 resource "aws_ssm_parameter" "celery_redis_url" {
     name    = "celery_redis_url"
     type    = "SecureString"
