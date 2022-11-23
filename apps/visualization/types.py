@@ -677,6 +677,7 @@ class IndicatorType:
     subvariable: Optional[str]
     region: Optional[str]
     format: Optional[str]
+    indicator_month: Optional[str]
 
 
 @strawberry.type
