@@ -1,6 +1,6 @@
 resource "aws_appautoscaling_target" "ecs_target" {
-  max_capacity       = 3
-  min_capacity       = 1
+  max_capacity       = var.max_capacity
+  min_capacity       = var.min_capacity
   resource_id        = "service/${aws_ecs_cluster.cluster.name}/${aws_ecs_service.service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -54,8 +54,8 @@ resource "aws_appautoscaling_policy" "ecs_target_tracking_predefined_metric_poli
       resource_label = "${aws_alb.alb.arn_suffix}/${aws_alb_target_group.tg.arn_suffix}"
     }
 
-    target_value       = 300
-    scale_in_cooldown  = 100
-    scale_out_cooldown = 300
+    target_value       = var.request_target_value
+    scale_in_cooldown  = var.scale_in_cooldown_secs
+    scale_out_cooldown = var.scale_out_cooldown_secs
   }
 }

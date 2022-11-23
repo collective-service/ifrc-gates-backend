@@ -20,11 +20,21 @@ variable fargate_memory {}
 
 variable app_count {}
 
+# VPC
+variable cidr_block {}
+
 # Redis
 variable redis_cluster_name {}
 variable redis_node_type {}
 variable redis_num_cache_nodes {}
 variable redis_port {}
+
+# Autoscaling
+variable max_capacity {}
+variable min_capacity {}
+variable request_target_value {}
+variable scale_in_cooldown_secs {}
+variable scale_out_cooldown_secs {}
 
 # Secrets
 variable backend_ecr_secret_name {}
