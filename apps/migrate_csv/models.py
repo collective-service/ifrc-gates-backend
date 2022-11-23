@@ -369,7 +369,7 @@ class DataImport(models.Model):
             )
 
 
-class CountryFilterOptions(models.Model):
+class CachedCountryFilterOptions(models.Model):
     iso3 = models.CharField(max_length=3)
     emergency = models.CharField(max_length=50)
     indicator_id = models.CharField(max_length=50, default='')
