@@ -539,6 +539,7 @@ async def process_combined_indicators(qs, type):
             'indicator_value_regional': item.get('indicator_value_regional', None),
             'region': item.get('region_name', None),
             'emergency': item['emergency'],
+            'indicator_month': item['max_indicator_month'],
         })
 
     # Format data for dashboard
@@ -563,6 +564,7 @@ async def process_combined_indicators(qs, type):
                                 'format': indicator_data['format'],
                                 'indicator_value_regional': indicator_data.get('indicator_value_regional', None),
                                 'region': indicator_data.get('region', None),
+                                'indicator_month': indicator_data['indicator_month'],
                             } for indicator_name in topic_indicator_name_map.get(
                                 topic['topic']
                             ) for indicator_data in indicator_name_max_indicator_value_map.get(
