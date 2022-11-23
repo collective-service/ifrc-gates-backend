@@ -37,6 +37,18 @@ REGIONAL_LEVEL = 'region_level'
 GLOBAL_LEVEL = 'global_level'
 
 
+def get_active_outbreaks_qs():
+    # Use this function to query outbreaks in same schema
+    return Outbreaks.objects.filter(active=True).values('outbreak')
+
+
+def get_active_outbreaks_list():
+    # Use this fuction to qyery outbreaks in different schema
+    return list(
+        Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
+    )
+
+
 @sync_to_async
 def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
     from .types import GenderDisaggregationType
@@ -113,13 +125,8 @@ def get_outbreaks(iso3):
 @sync_to_async
 def get_country_indicators(iso3, outbreak, type):
     from .types import CountryIndicatorType
-
-    # NOTE: outbreaks and cached country filter options are in two different schema
-    active_outbreaks = list(
-        Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
-    )
     qs = CachedCountryFilterOptions.objects.filter(
-        emergency__in=active_outbreaks
+        emergency__in=get_active_outbreaks_list()
     )
     filters = clean_filters({'iso3': iso3, 'emergency': outbreak, 'type': type})
     qs = qs.filter(
@@ -187,14 +194,9 @@ def get_overview_indicators(out_break, region, type, indicator_id):
         'type': type,
         'indicator_id': indicator_id,
     })
-
-    # NOTE: outbreaks and cached country filter options are in two different schema
-    active_outbreaks = list(
-        Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
-    )
     options = list(
         DataCountryLevel.objects.filter(
-            emergency__in=active_outbreaks,
+            emergency__in=get_active_outbreaks_list(),
             **filters,
         ).exclude(
             indicator_name=None
@@ -591,21 +593,30 @@ async def process_combined_indicators(qs, type):
 
 
 async def get_country_combined_indicators(filters):
-    qs = DataCountryLevelMostRecent.objects.filter(category='Global')
+    qs = DataCountryLevelMostRecent.objects.filter(
+        category='Global',
+        emergency__in=get_active_outbreaks_qs(),
+    )
     if filters:
         qs = filter_apply(filters, qs)
     return await process_combined_indicators(qs, type=COUNTRY_LEVEL)
 
 
 async def get_region_combined_indicators(filters):
-    qs = RegionLevel.objects.filter(category='Global')
+    qs = RegionLevel.objects.filter(
+        category='Global',
+        emergency__in=get_active_outbreaks_qs(),
+    )
     if filters:
         qs = filter_apply(filters, qs)
     return await process_combined_indicators(qs, type=REGIONAL_LEVEL)
 
 
 async def get_global_combined_indicators(filters):
-    qs = GlobalLevel.objects.filter(category='Global')
+    qs = GlobalLevel.objects.filter(
+        category='Global',
+        emergency__in=get_active_outbreaks_qs(),
+    )
     if filters:
         qs = filter_apply(filters, qs)
     return await process_combined_indicators(qs, type=GLOBAL_LEVEL)
