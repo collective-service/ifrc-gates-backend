@@ -116,6 +116,7 @@ class GlobalLevelFilter():
     type: str
     is_combined_indicators: bool
     is_most_recent: bool
+    subvariable: str
 
     def filter_is_twelve_month(self, queryset):
         if self.is_twelve_month:
