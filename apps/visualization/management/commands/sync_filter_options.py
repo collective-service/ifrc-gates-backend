@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from apps.visualization.models import DataCountryLevel
-from apps.migrate_csv.models import CountryFilterOptions
+from apps.migrate_csv.models import CachedCountryFilterOptions
 
 
 class Command(BaseCommand):
@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         # Remove old filter options
-        CountryFilterOptions.objects.all().delete()
+        CachedCountryFilterOptions.objects.all().delete()
         self.stdout.write(self.style.SUCCESS('Removed old filter options'))
 
         # Get distinct values queryset
@@ -18,8 +18,8 @@ class Command(BaseCommand):
         ).distinct(
             'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
         )
-        CountryFilterOptions.objects.bulk_create([
-            CountryFilterOptions(
+        CachedCountryFilterOptions.objects.bulk_create([
+            CachedCountryFilterOptions(
                 iso3=item['iso3'],
                 emergency=item['emergency'],
                 indicator_id=item['indicator_id'],

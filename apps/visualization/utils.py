@@ -28,7 +28,7 @@ from .models import (
     DataCountryLevelPublicContext,
     Outbreaks,
 )
-from apps.migrate_csv.models import CountryFilterOptions
+from apps.migrate_csv.models import CachedCountryFilterOptions
 from utils import get_async_list_from_queryset, clean_filters
 from django.contrib.postgres.aggregates import ArrayAgg
 
@@ -102,7 +102,7 @@ def get_age_disaggregation_data(iso3, indicator_id, subvariable):
 @sync_to_async
 def get_outbreaks(iso3):
     return list(
-        CountryFilterOptions.objects.filter(
+        CachedCountryFilterOptions.objects.filter(
             iso3=iso3,
         ).distinct(
             'emergency'
@@ -113,10 +113,12 @@ def get_outbreaks(iso3):
 @sync_to_async
 def get_country_indicators(iso3, outbreak, type):
     from .types import CountryIndicatorType
+
+    # NOTE: outbreaks and cached country filter options are in two different schema
     active_outbreaks = list(
         Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
     )
-    qs = CountryFilterOptions.objects.filter(
+    qs = CachedCountryFilterOptions.objects.filter(
         emergency__in=active_outbreaks
     )
     filters = clean_filters({'iso3': iso3, 'emergency': outbreak, 'type': type})
@@ -140,7 +142,7 @@ def get_country_indicators(iso3, outbreak, type):
 
 @sync_to_async
 def get_subvariables(iso3, indicator_id):
-    subvariables = CountryFilterOptions.objects.filter(
+    subvariables = CachedCountryFilterOptions.objects.filter(
         iso3=iso3,
     ).distinct('subvariable')
     if indicator_id:
@@ -186,6 +188,7 @@ def get_overview_indicators(out_break, region, type, indicator_id):
         'indicator_id': indicator_id,
     })
 
+    # NOTE: outbreaks and cached country filter options are in two different schema
     active_outbreaks = list(
         Outbreaks.objects.filter(active=True).values_list('outbreak', flat=True)
     )
