@@ -31,8 +31,6 @@ data "template_file" "config" {
     app_type = data.aws_ssm_parameter.app_type.arn
     rcce_cs_environment = data.aws_ssm_parameter.rcce_cs_environment.arn
     sentry_dsn = data.aws_ssm_parameter.sentry_dsn.arn
-    react_app_api_end = data.aws_ssm_parameter.react_app_api_end.arn
-    react_app_api_https = data.aws_ssm_parameter.react_app_api_https.arn
   }
 }
 
