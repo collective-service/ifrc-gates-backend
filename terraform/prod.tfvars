@@ -14,7 +14,7 @@ ecs_task_execution_role = "ECSTaskExecutionRole"
 ecs_task_role = "ECSTaskRole"
 
 # alb
-health_check_path = "/admin/"
+health_check_path = "/health-checkup/"
 
 # ECS
 fargate_cpu = "1024"
