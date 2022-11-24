@@ -555,7 +555,6 @@ class OverviewIndicatorType:
     indicator_id: Optional[str]
     indicator_description: Optional[str]
     type: Optional[str]
-    subvariable: Optional[str]
     emergencies: List[str]
 
 
@@ -581,10 +580,10 @@ class FilterOptionsType:
     @strawberry.field
     async def subvariables(
         self,
-        iso3: str,
-        indicator_id: Optional[str] = None,
+        indicator_id: str,
+        iso3: Optional['str'] = None,
     ) -> List[str]:
-        return await get_subvariables(iso3, indicator_id)
+        return await get_subvariables(indicator_id, iso3)
 
     @strawberry.field
     async def overview_indicators(
