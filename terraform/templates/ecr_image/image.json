@@ -124,14 +124,6 @@
             {
                 "name": "SENTRY_DSN",
                 "valueFrom": "${sentry_dsn}"
-            },
-            {
-                "name": "REACT_APP_API_END",
-                "valueFrom": "${react_app_api_end}"
-            },
-            {
-                "name": "REACT_APP_API_HTTPS",
-                "valueFrom": "${react_app_api_https}"
             }
         ]
     }
