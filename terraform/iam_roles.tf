@@ -48,9 +48,7 @@ resource "aws_iam_role_policy" "param_store" {
           "${data.aws_ssm_parameter.cors_allowed_origins.arn}",
           "${data.aws_ssm_parameter.app_type.arn}",
           "${data.aws_ssm_parameter.rcce_cs_environment.arn}",
-          "${data.aws_ssm_parameter.sentry_dsn.arn}",
-          "${data.aws_ssm_parameter.react_app_api_end.arn}",
-          "${data.aws_ssm_parameter.react_app_api_https.arn}"
+          "${data.aws_ssm_parameter.sentry_dsn.arn}"
         ]
       }
     ]
