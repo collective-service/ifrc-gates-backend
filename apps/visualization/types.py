@@ -555,7 +555,6 @@ class OverviewIndicatorType:
     indicator_id: Optional[str]
     indicator_description: Optional[str]
     type: Optional[str]
-    subvariable: Optional[str]
     emergencies: List[str]
 
 

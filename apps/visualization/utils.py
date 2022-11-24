@@ -204,7 +204,6 @@ def get_overview_indicators(out_break, region, type, indicator_id):
             'indicator_id',
             'indicator_description',
             'type',
-            'subvariable',
         ).annotate(
             emergencies=ArrayAgg('emergency', distinct=True)
         )
@@ -214,7 +213,6 @@ def get_overview_indicators(out_break, region, type, indicator_id):
             indicator_id=item['indicator_id'],
             indicator_description=item['indicator_description'],
             type=item['type'],
-            subvariable=item['subvariable'],
             emergencies=item['emergencies'],
         ) for item in options
     ]
