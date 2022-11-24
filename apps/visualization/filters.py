@@ -351,6 +351,10 @@ class NarrativesFilter():
     indicator_id: str
     topic: str
     thematic: str
+    iso3_isnull: bool
+    indicator_id_isnull: bool
+    topic_isnull: bool
+    thematic_isnull: bool
 
     def filter_indicator_id(self, queryset):
         if not self.indicator_id:
@@ -359,6 +363,27 @@ class NarrativesFilter():
             indicator_id=self.indicator_id
         ).first().topic
         return queryset.filter(topic=topic)
+
+    def filter_iso3_isnull(self, queryset):
+        if self.indicator_id_isnull:
+            return queryset.filter(indicator_id="")
+        return queryset.filter(~Q(indicator_id=""))
+
+    def filter_topic_isnull(self, queryset):
+        print(self.topic_isnull)
+        if self.topic_isnull:
+            return queryset.filter(topic="")
+        return queryset.filter(~Q(topic=""))
+
+    def filter_indicator_id_isnull(self, queryset):
+        if self.indicator_id_isnull:
+            return queryset.filter(indicator_id="")
+        return queryset.filter(~Q(indicator_id=""))
+
+    def filter_thematic_isnull(self, queryset):
+        if self.thematic_isnull:
+            return queryset.filter(thematic="")
+        return queryset.filter(~Q(thematic=""))
 
 
 @strawberry.django.filters.filter(RegionLevel, lookups=True)
