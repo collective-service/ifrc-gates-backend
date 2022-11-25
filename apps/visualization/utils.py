@@ -672,7 +672,7 @@ def get_export_meta_data(iso3, indicator_id):
 
 
 @sync_to_async
-def get_region_level_subariables(region, indicator_id, emergency):
+def get_region_level_subvariables(region, indicator_id, emergency):
     from .types import SubvariableType
 
     filters_map = {
@@ -685,6 +685,7 @@ def get_region_level_subariables(region, indicator_id, emergency):
         **filters
     ).order_by(
         'subvariable',
+        '-indicator_month',
         '-indicator_value_regional'
     ).distinct(
         'subvariable',
@@ -707,7 +708,7 @@ def get_region_level_subariables(region, indicator_id, emergency):
 
 
 @sync_to_async
-def get_global_level_subariables(indicator_id, emergency):
+def get_global_level_subvariables(indicator_id, emergency):
     from .types import SubvariableType
 
     filters_map = {
@@ -719,6 +720,7 @@ def get_global_level_subariables(indicator_id, emergency):
         **filters
     ).order_by(
         'subvariable',
+        '-indicator_month',
         '-indicator_value_global'
     ).distinct(
         'subvariable',

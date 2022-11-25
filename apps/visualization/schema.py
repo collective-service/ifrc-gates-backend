@@ -63,8 +63,8 @@ from .utils import (
     get_global_combined_indicators,
     get_indicator_stats_latest,
     get_export_meta_data,
-    get_region_level_subariables,
-    get_global_level_subariables,
+    get_region_level_subvariables,
+    get_global_level_subvariables,
 )
 from utils import (
     get_redis_cache_data,
@@ -292,7 +292,7 @@ class Query:
         indicator_id: Optional[str] = None,
         emergency: Optional[str] = None,
     ) -> List[SubvariableType]:
-        return  await get_region_level_subariables(region, indicator_id, emergency)
+        return  await get_region_level_subvariables(region, indicator_id, emergency)
 
     @strawberry.field
     async def global_level_subvariables(
@@ -300,4 +300,4 @@ class Query:
         indicator_id: Optional[str] = None,
         emergency: Optional[str] = None,
     ) -> List[SubvariableType]:
-        return await get_global_level_subariables(indicator_id, emergency)
+        return await get_global_level_subvariables(indicator_id, emergency)
