@@ -712,3 +712,9 @@ class ExportMetaType:
     total_summary_count: int
     total_country_contextual_data_count: int
     max_page_limit: int
+
+
+@strawberry.type
+class SubvariableType:
+    subvariable: str
+    indicator_value: str

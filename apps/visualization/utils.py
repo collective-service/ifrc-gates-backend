@@ -669,3 +669,56 @@ def get_export_meta_data(iso3, indicator_id):
         total_country_contextual_data_count=DataCountryLevelPublicContext.objects.filter(**filters).count(),
         max_page_limit=settings.OPEN_API_MAX_EXPORT_PAGE_LIMIT,
     )
+
+
+@sync_to_async
+def get_region_level_subariables(region, indicator_id, emergency):
+    from .types import SubvariableType
+
+    filters_map = {
+        'region': region,
+        'indicator_id': indicator_id,
+        'emergency': emergency,
+    }
+    filters = clean_filters(filters_map)
+    qs = RegionLevel.objects.filter(
+        **filters
+    ).order_by(
+        'subvariable', '-indicator_value_regional'
+    ).distinct(
+        'subvariable',
+    ).values(
+        'subvariable', 'indicator_value_regional'
+    )
+    return [
+        SubvariableType(
+            subvariable=item['subvariable'],
+            indicator_value=item['indicator_value_regional'],
+        ) for item in qs
+    ]
+
+
+@sync_to_async
+def get_global_level_subariables(indicator_id, emergency):
+    from .types import SubvariableType
+
+    filters_map = {
+        'indicator_id': indicator_id,
+        'emergency': emergency,
+    }
+    filters = clean_filters(filters_map)
+    qs = GlobalLevel.objects.filter(
+        **filters
+    ).order_by(
+        'subvariable', '-indicator_value_global'
+    ).distinct(
+        'subvariable',
+    ).values(
+        'subvariable', 'indicator_value_global'
+    )
+    return [
+        SubvariableType(
+            subvariable=item['subvariable'],
+            indicator_value=item['indicator_value_global'],
+        ) for item in qs
+    ]
