@@ -23,9 +23,9 @@ def csv_file_validator(document, required_headers):
     try:
         dialect = csv.Sniffer().sniff(document.read(1024).decode('utf-8'))
         document.seek(0, 0)
+        reader = csv.reader(document.read().decode('utf-8').splitlines(), dialect)
     except (csv.Error, UnicodeDecodeError):
         raise ValidationError(_('Not a valid CSV file'))
-    reader = csv.reader(document.read().decode('utf-8').splitlines(), dialect)
     for index, row in enumerate(reader):
         # check that all headers are present
         if index == 0:
