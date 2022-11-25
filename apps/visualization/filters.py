@@ -356,21 +356,12 @@ class NarrativesFilter():
     topic_isnull: bool
     thematic_isnull: bool
 
-    def filter_indicator_id(self, queryset):
-        if not self.indicator_id:
-            return queryset
-        topic = DataCountryLevel.objects.filter(
-            indicator_id=self.indicator_id
-        ).first().topic
-        return queryset.filter(topic=topic)
-
     def filter_iso3_isnull(self, queryset):
-        if self.indicator_id_isnull:
-            return queryset.filter(indicator_id="")
-        return queryset.filter(~Q(indicator_id=""))
+        if self.iso3_isnull:
+            return queryset.filter(iso3="")
+        return queryset.filter(~Q(iso3=""))
 
     def filter_topic_isnull(self, queryset):
-        print(self.topic_isnull)
         if self.topic_isnull:
             return queryset.filter(topic="")
         return queryset.filter(~Q(topic=""))
