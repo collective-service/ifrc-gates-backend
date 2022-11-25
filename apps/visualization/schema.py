@@ -286,7 +286,7 @@ class Query:
         return await get_export_meta_data(iso3, indicator_id)
 
     @strawberry.field
-    async def region_level_subariables(
+    async def region_level_subvariables(
         self,
         region: Optional[str] = None,
         indicator_id: Optional[str] = None,
@@ -295,7 +295,7 @@ class Query:
         return  await get_region_level_subariables(region, indicator_id, emergency)
 
     @strawberry.field
-    async def global_level_subariables(
+    async def global_level_subvariables(
         self,
         indicator_id: Optional[str] = None,
         emergency: Optional[str] = None,
