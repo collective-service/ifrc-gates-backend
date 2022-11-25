@@ -1,5 +1,6 @@
 # types.py
 import strawberry
+import datetime
 from typing import List, Optional
 from strawberry import auto, ID
 from strawberry.types import Info
@@ -712,3 +713,12 @@ class ExportMetaType:
     total_summary_count: int
     total_country_contextual_data_count: int
     max_page_limit: int
+
+
+@strawberry.type
+class SubvariableType:
+    subvariable: str
+    indicator_value: float
+    indicator_description: Optional[str]
+    format: Optional[str]
+    indicator_month: datetime.date
