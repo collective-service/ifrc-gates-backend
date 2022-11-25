@@ -718,3 +718,6 @@ class ExportMetaType:
 class SubvariableType:
     subvariable: str
     indicator_value: str
+    indicator_description: Optional[str]
+    format: Optional[str]
+    indicator_month: str

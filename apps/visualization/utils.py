@@ -684,16 +684,24 @@ def get_region_level_subariables(region, indicator_id, emergency):
     qs = RegionLevel.objects.filter(
         **filters
     ).order_by(
-        'subvariable', '-indicator_value_regional'
+        'subvariable',
+        '-indicator_value_regional'
     ).distinct(
         'subvariable',
     ).values(
-        'subvariable', 'indicator_value_regional'
+        'subvariable',
+        'indicator_value_regional',
+        'indicator_description',
+        'indicator_month',
+        'format',
     )
     return [
         SubvariableType(
             subvariable=item['subvariable'],
             indicator_value=item['indicator_value_regional'],
+            indicator_description=item['indicator_description'],
+            indicator_month=item['indicator_month'],
+            format=item['format'],
         ) for item in qs
     ]
 
@@ -710,15 +718,23 @@ def get_global_level_subariables(indicator_id, emergency):
     qs = GlobalLevel.objects.filter(
         **filters
     ).order_by(
-        'subvariable', '-indicator_value_global'
+        'subvariable',
+        '-indicator_value_global'
     ).distinct(
         'subvariable',
     ).values(
-        'subvariable', 'indicator_value_global'
+        'subvariable',
+        'indicator_value_global',
+        'indicator_description',
+        'indicator_month',
+        'format',
     )
     return [
         SubvariableType(
             subvariable=item['subvariable'],
             indicator_value=item['indicator_value_global'],
+            indicator_description=item['indicator_description'],
+            indicator_month=item['indicator_month'],
+            format=item['format'],
         ) for item in qs
     ]
