@@ -412,6 +412,7 @@ async def process_combined_indicators(qs, type):
                     RegionLevel.objects.filter(
                         indicator_id=OuterRef('indicator_id'),
                         subvariable=OuterRef('subvariable'),
+                        emergency=OuterRef('emergency'),
                         region=OuterRef('region'),
                         category='Global',
                     ).order_by('-indicator_month', 'subvariable').values('indicator_value_regional')[:1],
