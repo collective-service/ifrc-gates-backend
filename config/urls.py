@@ -30,7 +30,7 @@ router = routers.DefaultRouter()
 
 schema_view = swagger_get_schema_view(
     openapi.Info(
-        title="RCCE-Collective API",
+        title="Collective Service API",
         default_version='1.0.0',
         description="API documentation of App",
     ),
@@ -52,8 +52,8 @@ urlpatterns = [
     path('health-checkup/', views.HealthCheckupView.as_view(), name="health_checkup")
 ]
 
-admin.site.site_header = "RCCE Collective Services Administration"
-admin.site.index_title = "RCCE Collective Services Admin Portal"
+admin.site.site_header = "Collective Service Administration"
+admin.site.index_title = "Collective Service Admin Portal"
 admin.site.site_title = " "
 
 # Enable graphiql in local only
