@@ -269,8 +269,8 @@ class ImportUserSourceDataPreview(DataImportPreviewBase):
 # ---- Previews [End]
 class DataImport(models.Model):
     class FileType(models.IntegerChoices):
-        USER = 0, _('RCCE Data Input User')
-        USER_SOURCE = 1, _('RCCE Data Input User Sources')
+        USER = 0, _('Collective Service Data Input User')
+        USER_SOURCE = 1, _('Collective Service Data Input User Sources')
 
     class Status(models.IntegerChoices):
         PENDING = 0, _('Pending')

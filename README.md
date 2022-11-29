@@ -1,6 +1,6 @@
-# RCCE Collective Service Server
+# Collective Service Server
 
-Backend Server for RCCE Collective Service Project
+Backend Server for Collective Service Project
 
 # Sync Filter Options
 
