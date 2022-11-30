@@ -614,7 +614,7 @@ class FilterOptionsType:
 class ContexualDataMultipleType:
     iso3: str
     context_date: str
-    context_indicator_value: Optional[str]
+    context_indicator_value: Optional[float]
     context_indicator_id: Optional[str]
     format: Optional[str]
 
