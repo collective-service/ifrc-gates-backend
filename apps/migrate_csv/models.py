@@ -21,7 +21,7 @@ def csv_file_validator(document, required_headers):
     from .tasks import format_column
 
     try:
-        dialect = csv.Sniffer().sniff(document.read(1024).decode('utf-8'))
+        dialect = csv.Sniffer().sniff(document.readline().decode('utf-8'))
         document.seek(0, 0)
         reader = csv.reader(document.read().decode('utf-8').splitlines(), dialect)
     except (csv.Error, UnicodeDecodeError):
