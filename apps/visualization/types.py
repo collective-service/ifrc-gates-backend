@@ -583,8 +583,9 @@ class FilterOptionsType:
         self,
         indicator_id: str,
         iso3: Optional['str'] = None,
+        emergency: Optional['str'] = None,
     ) -> List[str]:
-        return await get_subvariables(indicator_id, iso3)
+        return await get_subvariables(indicator_id, iso3, emergency)
 
     @strawberry.field
     async def overview_indicators(
