@@ -148,12 +148,14 @@ def get_country_indicators(iso3, outbreak, type):
 
 
 @sync_to_async
-def get_subvariables(indicator_id, iso3):
+def get_subvariables(indicator_id, iso3, emergency):
     subvariables = CachedCountryFilterOptions.objects.filter(
-        indicator_id=indicator_id,
+        indicator_id=indicator_id
     )
     if iso3:
         subvariables = subvariables.filter(iso3=iso3)
+    if emergency:
+        subvariables = subvariables.filter(emergency=emergency)
     return list(
         subvariables.distinct('subvariable').values_list('subvariable', flat=True).order_by('subvariable')
     )
