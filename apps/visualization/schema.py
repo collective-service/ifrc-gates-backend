@@ -292,7 +292,7 @@ class Query:
         indicator_id: Optional[str] = None,
         emergency: Optional[str] = None,
     ) -> List[SubvariableType]:
-        return  await get_region_level_subvariables(region, indicator_id, emergency)
+        return await get_region_level_subvariables(region, indicator_id, emergency)
 
     @strawberry.field
     async def global_level_subvariables(
