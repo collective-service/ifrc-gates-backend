@@ -9,7 +9,7 @@ from strawberry_django.filters import apply as filter_apply
 from strawberry_django.pagination import apply as pagination_apply
 from strawberry_django.ordering import apply as ordering_apply
 from dataclasses import asdict
-
+from django.contrib.auth.decorators import login_required
 
 REDIS_TTL = 86400  # Seconds
 
@@ -65,6 +65,7 @@ def clean_filters(filters):
     }
 
 
+@login_required
 def cache_clear(request):
     cache.clear()
     messages.add_message(request, messages.INFO, mark_safe("Cache Cleared"))
@@ -88,3 +89,34 @@ async def get_filtered_ordered_paginated_qs(
     if pagination:
         qs = pagination_apply(pagination, qs)
     return await get_async_list_from_queryset(qs)
+
+
+@login_required
+def sync_filter_options(request):
+
+    from apps.visualization.models import DataCountryLevel
+    from apps.migrate_csv.models import CachedCountryFilterOptions
+
+    # Remove old filter options
+    CachedCountryFilterOptions.objects.all().delete()
+    # Get distinct values queryset
+    qs = DataCountryLevel.objects.values(
+        'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
+    ).distinct(
+        'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
+    )
+    CachedCountryFilterOptions.objects.bulk_create([
+        CachedCountryFilterOptions(
+            iso3=item['iso3'],
+            emergency=item['emergency'],
+            indicator_id=item['indicator_id'],
+            indicator_description=item['indicator_description'],
+            subvariable=item['subvariable'],
+            type=item['type'],
+        ) for item in qs
+    ])
+    messages.add_message(
+        request,
+        messages.INFO, mark_safe(f'Synced {qs.count()} distinct filter options')
+    )
+    return HttpResponseRedirect(reverse('admin:index'))

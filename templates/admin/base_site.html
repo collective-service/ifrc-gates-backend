@@ -8,5 +8,6 @@
 
 {% block userlinks %}
     <a href="{% url 'clear_cache' %}">Clear cache</a> /
+    <a href="{% url 'sync_filter_options' %}">Sync filter options</a> /
     {{ block.super }}
 {% endblock userlinks %}
