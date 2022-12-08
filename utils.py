@@ -9,7 +9,7 @@ from strawberry_django.filters import apply as filter_apply
 from strawberry_django.pagination import apply as pagination_apply
 from strawberry_django.ordering import apply as ordering_apply
 from dataclasses import asdict
-
+from django.contrib.auth.decorators import login_required
 
 REDIS_TTL = 86400  # Seconds
 
@@ -65,6 +65,7 @@ def clean_filters(filters):
     }
 
 
+@login_required
 def cache_clear(request):
     cache.clear()
     messages.add_message(request, messages.INFO, mark_safe("Cache Cleared"))
@@ -90,6 +91,7 @@ async def get_filtered_ordered_paginated_qs(
     return await get_async_list_from_queryset(qs)
 
 
+@login_required
 def sync_filter_options(request):
 
     from apps.visualization.models import DataCountryLevel
