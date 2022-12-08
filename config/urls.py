@@ -24,7 +24,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view as swagger_get_schema_view
 
 from apps.visualization import views
-from utils import cache_clear
+from utils import cache_clear, sync_filter_options
 
 router = routers.DefaultRouter()
 
@@ -49,6 +49,7 @@ urlpatterns = [
     path('api/v1/export-summary/', views.ExportSummaryView.as_view()),
     path('api/v1/export-country-contextual-data/', views.ExportCountryDataCountryLevelPublicContextView.as_view()),
     path('clear-cache/', cache_clear, name='clear_cache'),
+    path('sync-filter-options/', sync_filter_options, name='sync_filter_options'),
     path('health-checkup/', views.HealthCheckupView.as_view(), name="health_checkup")
 ]
 
