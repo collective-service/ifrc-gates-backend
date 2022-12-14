@@ -217,7 +217,7 @@ class DataCountryLevelMostRecentFilter():
 
     def filter_thematics(self, queryset):
         if self.thematics:
-            return queryset.filter(thematic__in=self.topics)
+            return queryset.filter(thematic__in=self.thematics)
         return queryset
 
 
@@ -409,7 +409,7 @@ class ContextIndicatorRegionLevelFilter():
 
     def filter_thematics(self, queryset):
         if self.thematics:
-            return queryset.filter(thematic__in=self.topics)
+            return queryset.filter(thematic__in=self.thematics)
         return queryset
 
 
@@ -431,5 +431,5 @@ class ContextIndicatorGlobalLevelFilter():
 
     def filter_thematics(self, queryset):
         if self.thematics:
-            return queryset.filter(thematic__in=self.topics)
+            return queryset.filter(thematic__in=self.thematics)
         return queryset
