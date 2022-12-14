@@ -40,14 +40,19 @@ def generate_id_from_unique_non_model_fields(unique_field_list):
     return int(hashlib.sha1(unique_value.encode("utf-8")).hexdigest(), 16) % (10 ** 8)
 
 
+def get_redis_key(keys):
+    keys_list = list(map(''.join, keys))
+    return '-'.join(
+        filter(None, keys_list)
+    )
+
+
 def set_redis_cache_data(*keys, value=None):
-    redis_key = '-'.join(filter(None, list(keys)))
-    return cache.set(redis_key, value, REDIS_TTL)
+    return cache.set(get_redis_key(keys), value, REDIS_TTL)
 
 
 def get_redis_cache_data(*keys):
-    redis_key = '-'.join(filter(None, list(keys)))
-    return cache.get(redis_key)
+    return cache.get(get_redis_key(keys))
 
 
 def get_values_list_from_dataclass(data_class):
