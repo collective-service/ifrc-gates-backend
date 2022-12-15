@@ -363,8 +363,8 @@ class ContextualDataFilter():
 class NarrativesFilter():
     iso3: str
     indicator_id: str
-    topic: str
-    thematic: str
+    topics: List[str]
+    thematics: List[str]
     iso3_isnull: bool
     indicator_id_isnull: bool
     topic_isnull: bool
@@ -389,6 +389,16 @@ class NarrativesFilter():
         if self.thematic_isnull:
             return queryset.filter(thematic="")
         return queryset.filter(~Q(thematic=""))
+
+    def filter_topics(self, queryset):
+        if self.topics:
+            return queryset.filter(topic__in=self.topics)
+        return queryset
+
+    def filter_thematics(self, queryset):
+        if self.thematics:
+            return queryset.filter(thematic__in=self.thematics)
+        return queryset
 
 
 @strawberry.django.filters.filter(RegionLevel, lookups=True)
