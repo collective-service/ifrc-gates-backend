@@ -177,10 +177,10 @@ def get_thematics(type):
     )
 
 
-def get_topics(thematic):
+def get_topics(thematics):
     qs = DataCountryLevelMostRecent.objects.all()
-    if thematic:
-        qs = qs.filter(thematic=thematic)
+    if thematics:
+        qs = qs.filter(thematic__in=thematics)
     return get_async_list_from_queryset(
         qs.distinct('topic').values_list('topic', flat=True).order_by('topic')
     )

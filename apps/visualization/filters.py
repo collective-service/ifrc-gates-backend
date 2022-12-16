@@ -1,4 +1,5 @@
 import strawberry
+from typing import List
 from datetime import timedelta
 from django.db.models import (
     Q,
@@ -203,11 +204,21 @@ class DataCountryLevelMostRecentFilter():
     emergency: str
     indicator_id: str
     subvariable: str
-    topic: str
-    thematic: str
+    topics: List[str]
+    thematics: List[str]
     type: str
     region: str
     category: str
+
+    def filter_topics(self, queryset):
+        if self.topics:
+            return queryset.filter(topic__in=self.topics)
+        return queryset
+
+    def filter_thematics(self, queryset):
+        if self.thematics:
+            return queryset.filter(thematic__in=self.thematics)
+        return queryset
 
 
 @strawberry.django.filters.filter(RegionLevel, lookups=True)
@@ -352,8 +363,8 @@ class ContextualDataFilter():
 class NarrativesFilter():
     iso3: str
     indicator_id: str
-    topic: str
-    thematic: str
+    topics: List[str]
+    thematics: List[str]
     iso3_isnull: bool
     indicator_id_isnull: bool
     topic_isnull: bool
@@ -379,6 +390,16 @@ class NarrativesFilter():
             return queryset.filter(thematic="")
         return queryset.filter(~Q(thematic=""))
 
+    def filter_topics(self, queryset):
+        if self.topics:
+            return queryset.filter(topic__in=self.topics)
+        return queryset
+
+    def filter_thematics(self, queryset):
+        if self.thematics:
+            return queryset.filter(thematic__in=self.thematics)
+        return queryset
+
 
 @strawberry.django.filters.filter(RegionLevel, lookups=True)
 class ContextIndicatorRegionLevelFilter():
@@ -387,9 +408,19 @@ class ContextIndicatorRegionLevelFilter():
     category: str
     indicator_id: str
     subvariable: str
-    topic: str
-    thematic: str
+    topics: List[str]
+    thematics: List[str]
     type: str
+
+    def filter_topics(self, queryset):
+        if self.topics:
+            return queryset.filter(topic__in=self.topics)
+        return queryset
+
+    def filter_thematics(self, queryset):
+        if self.thematics:
+            return queryset.filter(thematic__in=self.thematics)
+        return queryset
 
 
 @strawberry.django.filters.filter(GlobalLevel, lookups=True)
@@ -399,6 +430,16 @@ class ContextIndicatorGlobalLevelFilter():
     category: str
     indicator_id: str
     subvariable: str
-    topic: str
-    thematic: str
+    topics: List[str]
+    thematics: List[str]
     type: str
+
+    def filter_topics(self, queryset):
+        if self.topics:
+            return queryset.filter(topic__in=self.topics)
+        return queryset
+
+    def filter_thematics(self, queryset):
+        if self.thematics:
+            return queryset.filter(thematic__in=self.thematics)
+        return queryset

@@ -607,8 +607,8 @@ class FilterOptionsType:
         return await get_thematics(type)
 
     @strawberry.field
-    async def topics(self, thematic: Optional[str] = None) -> List[str]:
-        return await get_topics(thematic)
+    async def topics(self, thematics: Optional[List[str]] = None) -> List[str]:
+        return await get_topics(thematics)
 
 
 @strawberry.type
