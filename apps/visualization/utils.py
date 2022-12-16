@@ -53,17 +53,20 @@ def get_active_outbreaks_list():
 def get_gender_disaggregation_data(iso3, indicator_id, subvariable):
     from .types import GenderDisaggregationType
 
-    gender_category = ['Male', 'Female']
     filters = clean_filters({
         'iso3': iso3,
         'indicator_id': indicator_id,
-        'subvariable': subvariable
+        'subvariable': subvariable,
     })
-    recent_data = DataCountryLevelMostRecent.objects.filter(**filters)
+    recent_data = DataCountryLevelMostRecent.objects.filter(
+        **filters,
+    ).filter(
+        ~Q(category__regex=r'^((\d+)-(\d+)|(\d+\+))')
+    )
     if recent_data:
-        data = recent_data.filter(
-            indicator_month=recent_data.latest('indicator_month').indicator_month,
-            category__in=gender_category
+        data = recent_data.order_by(
+            'category',
+            '-indicator_month',
         ).values_list(
             'category',
             'indicator_value',
@@ -94,7 +97,9 @@ def get_age_disaggregation_data(iso3, indicator_id, subvariable):
     if recent_data:
         data = recent_data.filter(
             category__regex=r'^((\d+)-(\d+)|(\d+\+))',
-            indicator_month=recent_data.latest('indicator_month').indicator_month,
+        ).order_by(
+            'category',
+            '-indicator_month',
         ).values_list(
             'category',
             'indicator_value',
