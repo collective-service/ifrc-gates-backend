@@ -41,10 +41,8 @@ def generate_id_from_unique_non_model_fields(unique_field_list):
 
 
 def get_redis_key(keys):
-    keys_list = list(map(''.join, keys))
-    return '-'.join(
-        filter(None, keys_list)
-    )
+    keys_list = list(map(''.join, filter(None, keys)))
+    return '-'.join(keys_list)
 
 
 def set_redis_cache_data(*keys, value=None):
