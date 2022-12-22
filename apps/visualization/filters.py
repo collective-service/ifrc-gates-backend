@@ -332,6 +332,7 @@ class DataGranularFilter():
             return queryset.distinct(
                 'title',
                 'organisation',
+                'indicator_month',
                 'source_date',
                 'link',
                 'source_comment'

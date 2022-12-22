@@ -51,3 +51,4 @@ class DataCountryLevelMostRecentOrder:
 @strawberry.django.ordering.order(DataGranular)
 class DataGranularOrder:
     source_date: auto
+    indicator_month: auto
