@@ -202,11 +202,9 @@ def get_overview_indicators(out_break, region, type, indicator_id):
         'indicator_id': indicator_id,
     })
     options = list(
-        DataCountryLevel.objects.filter(
+        CachedCountryFilterOptions.objects.filter(
             emergency__in=get_active_outbreaks_list(),
             **filters,
-        ).exclude(
-            indicator_name=None
         ).values(
             'indicator_id',
             'indicator_description',
