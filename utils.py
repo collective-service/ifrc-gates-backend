@@ -94,19 +94,30 @@ async def get_filtered_ordered_paginated_qs(
     return await get_async_list_from_queryset(qs)
 
 
-@login_required
-def sync_filter_options(request):
-
+def update_filter_options():
     from apps.visualization.models import DataCountryLevel
     from apps.migrate_csv.models import CachedCountryFilterOptions
 
     # Remove old filter options
     CachedCountryFilterOptions.objects.all().delete()
+
     # Get distinct values queryset
     qs = DataCountryLevel.objects.values(
-        'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
+        'iso3',
+        'emergency',
+        'indicator_id',
+        'indicator_description',
+        'subvariable',
+        'type',
+        'region'
     ).distinct(
-        'iso3', 'emergency', 'indicator_id', 'indicator_description', 'subvariable', 'type',
+        'iso3',
+        'emergency',
+        'indicator_id',
+        'indicator_description',
+        'subvariable',
+        'type',
+        'region'
     )
     CachedCountryFilterOptions.objects.bulk_create([
         CachedCountryFilterOptions(
@@ -116,10 +127,17 @@ def sync_filter_options(request):
             indicator_description=item['indicator_description'],
             subvariable=item['subvariable'],
             type=item['type'],
+            region=item['region'],
         ) for item in qs
     ])
+    return qs.count()
+
+
+@login_required
+def sync_filter_options(request):
+    count = update_filter_options()
     messages.add_message(
         request,
-        messages.INFO, mark_safe(f'Synced {qs.count()} distinct filter options')
+        messages.INFO, mark_safe(f'Synced {count} distinct filter options')
     )
     return HttpResponseRedirect(reverse('admin:index'))

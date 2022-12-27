@@ -376,6 +376,7 @@ class CachedCountryFilterOptions(models.Model):
     indicator_description = models.CharField(max_length=250, blank=True, null=True)
     subvariable = models.CharField(max_length=255)
     type = models.CharField(max_length=255, blank=True, null=True,)
+    region = models.CharField(max_length=255, blank=True, null=True,)
 
     def __str__(self):
         return self.iso3
