@@ -522,6 +522,16 @@ class AgeDisaggregationType:
 
 
 @strawberry.type
+class SourceType:
+    title: Optional[str]
+    source_comment: Optional[str]
+    organisation: Optional[str]
+    source_date: Optional[str]
+    link: Optional[str]
+    indicator_month: Optional[str]
+
+
+@strawberry.type
 class DisaggregationType:
     @strawberry.field
     async def gender_disaggregation(
