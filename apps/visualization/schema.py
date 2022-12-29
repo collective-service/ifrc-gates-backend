@@ -97,11 +97,21 @@ def get_sources(iso3, emergency, indicator_id, indicator_name, indicator_descrip
         'topic': topic,
         'type': type,
     })
-    qs = DataGranular.objects.filter(**filters)
+    qs = DataGranular.objects.filter(
+        ~Q(title="Interpolation", organisation="Interpolation"),
+        **filters
+    )
     latest_data_granular = qs.order_by('-indicator_month').first()
     if not latest_data_granular:
         return []
-    data = qs.filter(indicator_month=latest_data_granular.indicator_month).values(
+    data = qs.filter(indicator_month=latest_data_granular.indicator_month).distinct(
+        'title',
+        'source_comment',
+        'organisation',
+        'source_date',
+        'link',
+        'indicator_month',
+    ).values(
         'title',
         'source_comment',
         'organisation',
