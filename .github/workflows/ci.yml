@@ -4,7 +4,8 @@ on:
   pull_request:
   push:
     branches:
-      - cs-release
+      - develop
+      - release
 
 jobs:
   flake8_checker:
@@ -25,7 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: # FIXME: add value
+      url: https://server.dashboard.collective-service.net/admin
+    if: github.ref == 'refs/heads/release'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -53,6 +55,7 @@ jobs:
     defaults:
       run:
         working-directory: "./terraform"
+    if: github.ref == 'refs/heads/release'
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
