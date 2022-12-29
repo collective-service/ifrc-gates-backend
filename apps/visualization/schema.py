@@ -3,6 +3,7 @@ from django.db.models import Q
 from typing import List
 from typing import Optional
 from strawberry_django.pagination import OffsetPaginationInput
+from asgiref.sync import sync_to_async
 from .models import (
     CountryProfile,
     Outbreaks,
@@ -31,6 +32,7 @@ from .types import (
     IndicatorLatestStatsType,
     ExportMetaType,
     SubvariableType,
+    SourceType,
 )
 from .filters import (
     CountryEmergencyProfileFilter,
@@ -65,6 +67,7 @@ from .utils import (
     get_export_meta_data,
     get_region_level_subvariables,
     get_global_level_subvariables,
+    clean_filters,
 )
 from utils import (
     get_redis_cache_data,
@@ -79,6 +82,53 @@ async def get_country_profile_object(iso3):
         return await CountryProfile.objects.aget(iso3=iso3)
     except CountryProfile.DoesNotExist:
         return None
+
+
+@sync_to_async
+def get_sources(iso3, emergency, indicator_id, indicator_name, indicator_description, subvariable, thematic, topic, type):
+    filters = clean_filters({
+        'iso3': iso3,
+        'emergency': emergency,
+        'indicator_id': indicator_id,
+        'indicator_name': indicator_name,
+        'indicator_description': indicator_description,
+        'subvariable': subvariable,
+        'thematic': thematic,
+        'topic': topic,
+        'type': type,
+    })
+    qs = DataGranular.objects.filter(
+        ~Q(title="Interpolation", organisation="Interpolation"),
+        **filters
+    )
+    latest_data_granular = qs.order_by('-indicator_month').first()
+    if not latest_data_granular:
+        return []
+    data = qs.filter(indicator_month=latest_data_granular.indicator_month).distinct(
+        'title',
+        'source_comment',
+        'organisation',
+        'source_date',
+        'link',
+        'indicator_month',
+    ).values(
+        'title',
+        'source_comment',
+        'organisation',
+        'source_date',
+        'link',
+        'indicator_month',
+    )
+    return [
+        SourceType(
+            title=item['title'],
+            source_comment=item['source_comment'],
+            organisation=item['organisation'],
+            source_date=item['source_date'],
+            link=item['link'],
+            indicator_month=item['indicator_month'],
+        ) for item in data
+    ]
 
 
 def get_outbreaks():
@@ -160,6 +210,24 @@ class Query:
             filters,
             order,
             pagination,
+        )
+
+    @strawberry.field
+    async def sources(
+        self,
+        iso3: Optional[str] = None,
+        emergency: Optional[str] = None,
+        indicator_name: Optional[str] = None,
+        indicator_id: Optional[str] = None,
+        indicator_description: Optional[str] = None,
+        subvariable: Optional[str] = None,
+        thematic: Optional[str] = None,
+        topic: Optional[str] = None,
+        type: Optional[str] = None,
+    ) -> List[SourceType]:
+        return await get_sources(
+            iso3, emergency, indicator_id, indicator_name,
+            indicator_description, subvariable, thematic, topic, type
         )
 
     @strawberry.field

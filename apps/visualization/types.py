@@ -1,6 +1,7 @@
 # types.py
 import strawberry
 import datetime
+import random
 from typing import List, Optional
 from strawberry import auto, ID
 from strawberry.types import Info
@@ -519,6 +520,22 @@ class AgeDisaggregationType:
     category: Optional[str]
     indicator_value: Optional[float]
     format: Optional[str]
+
+
+@strawberry.type
+class SourceType:
+    title: Optional[str]
+    source_comment: Optional[str]
+    organisation: Optional[str]
+    source_date: Optional[str]
+    link: Optional[str]
+    indicator_month: Optional[str]
+
+    @strawberry.field
+    def id(self) -> ID:
+        return generate_id_from_unique_non_model_fields(
+            [self.title, self.source_comment, self.link, self.indicator_month, random.randint(1, 10000)]
+        )
 
 
 @strawberry.type
