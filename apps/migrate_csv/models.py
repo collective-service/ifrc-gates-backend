@@ -377,6 +377,8 @@ class CachedCountryFilterOptions(models.Model):
     subvariable = models.CharField(max_length=255)
     type = models.CharField(max_length=255, blank=True, null=True,)
     region = models.CharField(max_length=255, blank=True, null=True,)
+    topic = models.CharField(max_length=255, blank=True, null=True,)
+    thematic = models.CharField(max_length=255, blank=True, null=True,)
 
     def __str__(self):
         return self.iso3
