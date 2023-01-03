@@ -140,8 +140,8 @@ def get_country_indicators(iso3, outbreak, type):
         'indicator_id', 'indicator_description', 'type'
     ).annotate(
         emergencies=ArrayAgg('emergency', distinct=True),
-        topics=ArrayAgg('topic', distinct=True),
-        thematics=ArrayAgg('thematic', distinct=True),
+        topic=F('topic'),
+        thematic=F('thematic'),
     )
 
     return [
@@ -150,8 +150,8 @@ def get_country_indicators(iso3, outbreak, type):
             indicator_description=indicator['indicator_description'],
             type=indicator['type'],
             emergencies=indicator['emergencies'],
-            topics=indicator['topics'],
-            thematics=indicator['thematics'],
+            topic=indicator['topic'],
+            thematic=indicator['thematic'],
         ) for indicator in qs
     ]
 
@@ -215,8 +215,8 @@ def get_overview_indicators(out_break, region, type, indicator_id):
             'type',
         ).annotate(
             emergencies=ArrayAgg('emergency', distinct=True),
-            topics=ArrayAgg('topic', distinct=True),
-            thematics=ArrayAgg('thematic', distinct=True),
+            topic=F('topic'),
+            thematic=F('thematic'),
         )
     )
     return [
@@ -225,8 +225,8 @@ def get_overview_indicators(out_break, region, type, indicator_id):
             indicator_description=item['indicator_description'],
             type=item['type'],
             emergencies=item['emergencies'],
-            topics=item['topics'],
-            thematics=item['thematics'],
+            topic=item['topic'],
+            thematic=item['thematic'],
         ) for item in options
     ]
 

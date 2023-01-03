@@ -566,8 +566,8 @@ class CountryIndicatorType:
     indicator_description: Optional[str]
     type: Optional[str]
     emergencies: List[str]
-    topics: List[str]
-    thematics: List[str]
+    topic: str
+    thematic: str
 
 
 @strawberry.type
@@ -576,8 +576,8 @@ class OverviewIndicatorType:
     indicator_description: Optional[str]
     type: Optional[str]
     emergencies: List[str]
-    topics: List[str]
-    thematics: List[str]
+    topic: str
+    thematic: str
 
 
 @strawberry.type
