@@ -109,7 +109,9 @@ def update_filter_options():
         'indicator_description',
         'subvariable',
         'type',
-        'region'
+        'region',
+        'topic',
+        'thematic',
     ).distinct(
         'iso3',
         'emergency',
@@ -117,7 +119,9 @@ def update_filter_options():
         'indicator_description',
         'subvariable',
         'type',
-        'region'
+        'region',
+        'topic',
+        'thematic',
     )
     CachedCountryFilterOptions.objects.bulk_create([
         CachedCountryFilterOptions(
@@ -128,6 +132,8 @@ def update_filter_options():
             subvariable=item['subvariable'],
             type=item['type'],
             region=item['region'],
+            topic=item['topic'],
+            thematic=item['thematic'],
         ) for item in qs
     ])
     return qs.count()

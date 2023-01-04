@@ -139,7 +139,9 @@ def get_country_indicators(iso3, outbreak, type):
     ).values(
         'indicator_id', 'indicator_description', 'type'
     ).annotate(
-        emergencies=ArrayAgg('emergency', distinct=True)
+        emergencies=ArrayAgg('emergency', distinct=True),
+        topic=F('topic'),
+        thematic=F('thematic'),
     )
 
     return [
@@ -147,7 +149,9 @@ def get_country_indicators(iso3, outbreak, type):
             indicator_id=indicator['indicator_id'],
             indicator_description=indicator['indicator_description'],
             type=indicator['type'],
-            emergencies=indicator['emergencies']
+            emergencies=indicator['emergencies'],
+            topic=indicator['topic'],
+            thematic=indicator['thematic'],
         ) for indicator in qs
     ]
 
@@ -210,7 +214,9 @@ def get_overview_indicators(out_break, region, type, indicator_id):
             'indicator_description',
             'type',
         ).annotate(
-            emergencies=ArrayAgg('emergency', distinct=True)
+            emergencies=ArrayAgg('emergency', distinct=True),
+            topic=F('topic'),
+            thematic=F('thematic'),
         )
     )
     return [
@@ -219,6 +225,8 @@ def get_overview_indicators(out_break, region, type, indicator_id):
             indicator_description=item['indicator_description'],
             type=item['type'],
             emergencies=item['emergencies'],
+            topic=item['topic'],
+            thematic=item['thematic'],
         ) for item in options
     ]
 
@@ -657,6 +665,7 @@ def get_indicator_stats_latest(
             format=item['format'],
             country_name=item['country_name'],
             subvariable=item['subvariable'],
+            emergency=item['emergency'],
         ) for item in qs[:5]
     ]
 

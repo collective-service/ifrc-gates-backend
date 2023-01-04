@@ -566,6 +566,8 @@ class CountryIndicatorType:
     indicator_description: Optional[str]
     type: Optional[str]
     emergencies: List[str]
+    topic: str
+    thematic: str
 
 
 @strawberry.type
@@ -574,6 +576,8 @@ class OverviewIndicatorType:
     indicator_description: Optional[str]
     type: Optional[str]
     emergencies: List[str]
+    topic: str
+    thematic: str
 
 
 @strawberry.type
@@ -719,6 +723,7 @@ class IndicatorLatestStatsType:
     format: str
     country_name: str
     subvariable: str
+    emergency: str
 
     @strawberry.field
     def country_id(self) -> ID:
