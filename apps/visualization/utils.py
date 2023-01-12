@@ -687,13 +687,14 @@ def get_export_meta_data(iso3, indicator_id):
 
 
 @sync_to_async
-def get_region_level_subvariables(region, indicator_id, emergency):
+def get_region_level_subvariables(region, indicator_id, emergency, category):
     from .types import SubvariableType
 
     filters_map = {
         'region': region,
         'indicator_id': indicator_id,
         'emergency': emergency,
+        'category': category,
     }
     filters = clean_filters(filters_map)
     qs = RegionLevel.objects.filter(
@@ -710,6 +711,7 @@ def get_region_level_subvariables(region, indicator_id, emergency):
         'indicator_description',
         'indicator_month',
         'format',
+        'category',
     )
     return [
         SubvariableType(
@@ -718,17 +720,19 @@ def get_region_level_subvariables(region, indicator_id, emergency):
             indicator_description=item['indicator_description'],
             indicator_month=item['indicator_month'],
             format=item['format'],
+            category=item['category'],
         ) for item in qs
     ]
 
 
 @sync_to_async
-def get_global_level_subvariables(indicator_id, emergency):
+def get_global_level_subvariables(indicator_id, emergency, category):
     from .types import SubvariableType
 
     filters_map = {
         'indicator_id': indicator_id,
         'emergency': emergency,
+        'category': category,
     }
     filters = clean_filters(filters_map)
     qs = GlobalLevel.objects.filter(
@@ -745,6 +749,7 @@ def get_global_level_subvariables(indicator_id, emergency):
         'indicator_description',
         'indicator_month',
         'format',
+        'category',
     )
     return [
         SubvariableType(
@@ -753,5 +758,6 @@ def get_global_level_subvariables(indicator_id, emergency):
             indicator_description=item['indicator_description'],
             indicator_month=item['indicator_month'],
             format=item['format'],
+            category=item['category'],
         ) for item in qs
     ]

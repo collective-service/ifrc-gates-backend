@@ -745,3 +745,4 @@ class SubvariableType:
     indicator_description: Optional[str]
     format: Optional[str]
     indicator_month: datetime.date
+    category: Optional[str]
