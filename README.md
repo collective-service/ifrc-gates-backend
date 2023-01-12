@@ -2,7 +2,7 @@
 Backend Server for Collective Service Project
 
 # Sync Filter Options
-Whenever there is an **update in Production Database (e.g. addition of Indicators)**, the Filter Options need to be synced. This can be achieved by logging into the Django Admin Panel and click on the button `SYNC FILTER OPTIONS` on the top right.
+Whenever there is an **update in AWS RDS Production Database (e.g. addition of Indicators)**, the Filter Options need to be synced. This can be achieved by login into the Django Admin Panel and click on the button `SYNC FILTER OPTIONS` on the top right.
 
 # Deployment
 - Staging
