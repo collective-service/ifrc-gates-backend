@@ -22,6 +22,7 @@ Whenever there is an **update in Production Database (e.g. addition of Indicator
 - Production
     - The Github Actions deployment pipeline is triggered whenever changes are pushed to the branch `release`.
     - Requires approval from the administrator.
+    - These actions update the resources in AWS.
 
 # Access AWS ECS Container
 - Environment
