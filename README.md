@@ -2,12 +2,12 @@
 Backend Server for Collective Service Project
 
 # Sync Filter Options
-Whenever there is an **update in Production Database (for e.g. addition of Indicators)**, the Filter Options need to be synced. This can be achieved by logging into the Django Admin Panel and click on the button `SYNC FILTER OPTIONS` on the top right.
+Whenever there is an **update in Production Database (e.g. addition of Indicators)**, the Filter Options need to be synced. This can be achieved by logging into the Django Admin Panel and click on the button `SYNC FILTER OPTIONS` on the top right.
 
 # Deployment
 - Staging
     - Login to the VM.
-    - ```bash
+      ```bash
         # Update client and server
         cd ~/services/client
         git pull
@@ -18,7 +18,7 @@ Whenever there is an **update in Production Database (for e.g. addition of Indic
         # Update docker containers
         cd ~/services/
         docker-compose up --build -d
-    ```
+      ```
 - Production
     - The Github Actions deployment pipeline is triggered whenever changes are pushed to the branch `release`.
     - Requires approval from the administrator.
