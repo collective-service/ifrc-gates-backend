@@ -14,10 +14,11 @@ from .models import (
     DataGranularPublic,
     DataCountryLevelPublicContext,
 )
-from .serializers import DataCountryLevelMostRecentSerializer
+from .serializers import DataCountryLevelMostRecentSerializer, SourceListAggSerializer
 from .rest_filters import (
     DataCountryLevelMostRecentFilter,
     BaseExportFilter,
+    SourceListAggFilter,
 )
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
@@ -26,7 +27,7 @@ from rest_framework.views import APIView
 
 class ContextIndicatorsViews(ListAPIView):
     '''
-    Returns most recent inidcator values for a country level.
+    Returns most recent indicator values for a country level.
     It accepts String query parameters such as emergency, region, iso3, type, thematic,
     topic as filter.
     It also accepts query parameters such as limit and offset to request number of objects
@@ -60,6 +61,28 @@ class ContextIndicatorsViews(ListAPIView):
             ) for value in result
         ])
         return DataCountryLevelMostRecent.objects.filter(filters).distinct('subvariable')
+
+
+class SourceListAggViews(ListAPIView):
+    '''
+    Returns sources list.
+    It accepts String query parameters such as emergency,iso3 as filter.
+    It also accepts query parameters such as limit and offset to request number of objects
+    in a page
+    '''
+    default_limit = 10
+    serializer_class = SourceListAggSerializer
+    filterset_class = SourceListAggFilter
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        if self.request.query_params.get('limit'):
+            limit = int(self.request.query_params.get('limit'))
+            if limit > settings.OPEN_API_MAX_PAGE_LIMIT:
+                raise ValidationError(
+                    {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
+                )
+        return self.queryset
 
 
 class ExportBaseView(ListAPIView):
