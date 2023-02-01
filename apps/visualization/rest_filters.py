@@ -42,16 +42,17 @@ class SourceListAggFilter(filters.FilterSet):
 
     @property
     def qs(self):
-        parent = super().qs
+        qs = super().qs
+        date_from = self.data.get('date_from')
+        date_to = self.data.get('date_to')
 
-        query_params = [k for k in self.request.query_params]
-        # For date range, if not mentioned, default action is to pull the data from the last 7 days.
-        if any(item in query_params for item in ['date_from', 'date_to']):
-            return parent
-
-        latest_insert_date = SourceListAgg.objects.all().order_by('-insert_date').first().insert_date
-        date_before_7_days = latest_insert_date - timedelta(days=7)
-        return parent.filter(insert_date__gte=date_before_7_days)
+        if not (date_from or date_to):
+            latest_date_object = qs.order_by('-insert_date').first()
+            if latest_date_object:
+                latest_insert_date = latest_date_object.insert_date
+                date_before_7_days = latest_insert_date - timedelta(days=7)
+                return qs.filter(insert_date__gte=date_before_7_days)
+        return qs
 
 
 class BaseExportFilter(filters.FilterSet):

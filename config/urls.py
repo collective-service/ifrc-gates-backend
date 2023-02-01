@@ -58,9 +58,16 @@ admin.site.site_header = "Collective Service Administration"
 admin.site.index_title = "Collective Service Admin Portal"
 admin.site.site_title = " "
 
-# Enable graphiql in local only
+# Enable debug tool bar and graphiql in local only
 if settings.DEBUG:
-    urlpatterns.append(path("graphiql/", CustomAsyncGraphQLView.as_view(schema=schema)))
+    urlpatterns = urlpatterns + [
+        path("graphiql/", CustomAsyncGraphQLView.as_view(schema=schema)),
+    ]
+
+if 'debug_toolbar' in settings.INSTALLED_APPS:
+    urlpatterns += [
+        path('__debug__/', include('debug_toolbar.urls')),
+    ]
 
 # Static and media file urls
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

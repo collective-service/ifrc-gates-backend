@@ -27,6 +27,7 @@ gunicorn = "^20.1.0"
 boto3 = "*"
 django-tinymce = "^3.5.0"
 sentry-sdk = "*"
+django-debug-toolbar = "^3.8.1"
 
 [tool.poetry.dev-dependencies]
 factory-boy = "^3.2.1"

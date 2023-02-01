@@ -20,12 +20,16 @@ from .rest_filters import (
     BaseExportFilter,
     SourceListAggFilter,
 )
-from rest_framework.pagination import LimitOffsetPagination
+from config.pagination import LimitOffsetPagination
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 
 
-class ContextIndicatorsViews(ListAPIView):
+class BasePaginatedApiView(ListAPIView):
+    pagination_class = LimitOffsetPagination
+
+
+class ContextIndicatorsViews(BasePaginatedApiView):
     '''
     Returns most recent indicator values for a country level.
     It accepts String query parameters such as emergency, region, iso3, type, thematic,
@@ -35,18 +39,10 @@ class ContextIndicatorsViews(ListAPIView):
     Comma separated string query parameters can be given for topic to filter according
     to multiple topic.
     '''
-    default_limit = 10
     serializer_class = DataCountryLevelMostRecentSerializer
     filterset_class = DataCountryLevelMostRecentFilter
-    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
-        if self.request.query_params.get('limit'):
-            limit = int(self.request.query_params.get('limit'))
-            if limit > settings.OPEN_API_MAX_PAGE_LIMIT:
-                raise ValidationError(
-                    {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
-                )
         result = DataCountryLevelMostRecent.objects.filter(category='Global').order_by(
             '-indicator_month'
         ).values(
@@ -63,26 +59,15 @@ class ContextIndicatorsViews(ListAPIView):
         return DataCountryLevelMostRecent.objects.filter(filters).distinct('subvariable')
 
 
-class SourceListAggViews(ListAPIView):
+class SourceListAggViews(BasePaginatedApiView):
     '''
     Returns sources list.
     It accepts String query parameters such as emergency,iso3 as filter.
     It also accepts query parameters such as limit and offset to request number of objects
     in a page
     '''
-    default_limit = 10
     serializer_class = SourceListAggSerializer
     filterset_class = SourceListAggFilter
-    pagination_class = LimitOffsetPagination
-
-    def get_queryset(self):
-        if self.request.query_params.get('limit'):
-            limit = int(self.request.query_params.get('limit'))
-            if limit > settings.OPEN_API_MAX_PAGE_LIMIT:
-                raise ValidationError(
-                    {'error': f'Limit must be less or equal to {settings.OPEN_API_MAX_PAGE_LIMIT}'}
-                )
-        return self.queryset
 
 
 class ExportBaseView(ListAPIView):
