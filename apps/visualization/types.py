@@ -36,7 +36,7 @@ from .models import (
     Outbreaks,
     EpiDataGlobal,
     RegionLevel,
-    ContextualData
+    ContextualData,
 )
 
 

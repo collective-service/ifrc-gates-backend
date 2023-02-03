@@ -713,3 +713,39 @@ class DataGranularPublic(models.Model):
                 'subvariable', 'category', 'admin_level_1', 'source_id'
             ),
         )
+
+
+class SourceListAgg(models.Model):
+    source_id = models.CharField(primary_key=True, max_length=5)
+    organisation = models.CharField(max_length=100, blank=True, null=True)
+    title = models.TextField(blank=True, null=True)
+    details = models.TextField(blank=True, null=True)
+    authors = models.TextField(blank=True, null=True)
+    region = models.TextField(blank=True, null=True)
+    countries = models.TextField(blank=True, null=True)
+    iso3 = models.TextField(blank=True, null=True)
+    country_count = models.BigIntegerField(blank=True, null=True)
+    dimension = models.TextField(blank=True, null=True)
+    variables = models.TextField(blank=True, null=True)
+    methodology = models.CharField(max_length=250, blank=True, null=True)
+    sample_size = models.CharField(max_length=250, blank=True, null=True)
+    target_pop = models.CharField(max_length=500, blank=True, null=True)
+    scale = models.CharField(max_length=25, blank=True, null=True)
+    quality_check = models.CharField(max_length=50, blank=True, null=True)
+    impact_factor = models.CharField(max_length=1000, blank=True, null=True)
+    access_type = models.CharField(max_length=25, blank=True, null=True)
+    source_comment = models.TextField(blank=True, null=True)
+    publication_channel = models.CharField(max_length=100, blank=True, null=True)
+    link = models.CharField(max_length=1000, blank=True, null=True)
+    source_date = models.DateField(blank=True, null=True)
+    key_words = models.CharField(max_length=250, blank=True, null=True)
+    source_status = models.CharField(max_length=15, blank=True, null=True)
+    frequency = models.CharField(max_length=15, blank=True, null=True)
+    sample_type = models.CharField(max_length=25, blank=True, null=True)
+    publish = models.CharField(max_length=25, blank=True, null=True)
+    insert_date = models.DateTimeField(blank=True, null=True)
+    emergency = models.CharField(max_length=50)
+
+    class Meta:
+        managed = False
+        db_table = 'v_source_list_agg'

@@ -110,6 +110,10 @@ INSTALLED_APPS = [
     'drf_yasg',
     'tinymce',
     'strawberry.django',
+
+    # NOTE Graphene has some issue with django-debug-toolbar, so it's best to enable this manually when needed
+    # 'debug_toolbar',
+
     # Local
     'apps.visualization',
     'corsheaders',
@@ -119,6 +123,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # NOTE Graphene has some issue with django-debug-toolbar, so it's best to enable this manually when needed
+    # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -406,3 +412,9 @@ LOGGING = {
         },
     },
 }
+
+# debug tool bar reference: https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configure-internal-ips
+if DEBUG:
+    import socket
+    hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+    INTERNAL_IPS = [ip[: ip.rfind(".")] + ".1" for ip in ips] + ["127.0.0.1"]
