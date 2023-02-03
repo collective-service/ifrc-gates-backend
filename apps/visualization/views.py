@@ -13,6 +13,7 @@ from .models import (
     DataCountryLevelPublic,
     DataGranularPublic,
     DataCountryLevelPublicContext,
+    SourceListAgg,
 )
 from .serializers import DataCountryLevelMostRecentSerializer, SourceListAggSerializer
 from .rest_filters import (
@@ -68,6 +69,7 @@ class SourceListAggViews(BasePaginatedApiView):
     '''
     serializer_class = SourceListAggSerializer
     filterset_class = SourceListAggFilter
+    queryset = SourceListAgg.objects.all()
 
 
 class ExportBaseView(ListAPIView):
